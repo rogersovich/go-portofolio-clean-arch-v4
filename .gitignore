@@ -1,0 +1,40 @@
+# Go binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Output dari build
+/tmp
+/tmp/*
+
+# Go build output
+/main
+/tmp/main
+*.log
+
+# Go modules cache (optional)
+vendor/
+
+# IDE/editor files
+.idea/
+.vscode/
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Air binary if built inside project (optional)
+air
+
+.env
+.env.production
+
+config.yaml
