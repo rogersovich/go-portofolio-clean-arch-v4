@@ -5,21 +5,18 @@ import (
 	"gorm.io/gorm"
 )
 
-// type handler struct {
-// 	service Service
-// }
+type handler struct {
+	service Service
+}
 
 func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
-	// repo := NewRepository(db)
-	// service := NewService(repo)
-	// h := handler{service: service}
+	repo := NewRepository(db)
+	service := NewService(repo)
+	h := handler{service: service}
 
 	project := r.Group("/authors")
 	{
-		project.GET("", func(c *gin.Context) {
-			c.JSON(200, gin.H{
-				"message": "hello world",
-			})
-		})
+		project.GET("", h.GetAll)
+		project.GET("/:id", h.GetAuthorById)
 	}
 }
