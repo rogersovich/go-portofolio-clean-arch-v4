@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/about"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/author"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
 	"gorm.io/gorm"
@@ -21,5 +22,6 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 
 	api := r.Group("/api")
 	author.RegisterRoutes(api, db)
+	about.RegisterRoutes(api, db)
 	return r
 }

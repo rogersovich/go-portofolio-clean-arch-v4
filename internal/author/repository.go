@@ -42,13 +42,13 @@ func (r *repository) CreateAuthor(p CreateAuthorRequest) (Author, error) {
 }
 
 func (r *repository) UpdateAuthor(p UpdateAuthorDTO) (Author, error) {
-	about := Author{
+	author := Author{
 		ID:             p.Id,
 		Name:           p.Name,
 		AvatarUrl:      p.AvatarUrl,
 		AvatarFileName: p.AvatarFileName}
-	err := r.db.Updates(&about).Error
-	return about, err
+	err := r.db.Updates(&author).Error
+	return author, err
 }
 
 func (r *repository) DeleteAuthor(id int) (Author, error) {
