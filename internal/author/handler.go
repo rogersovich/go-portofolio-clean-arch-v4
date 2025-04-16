@@ -18,5 +18,8 @@ func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	{
 		project.GET("", h.GetAll)
 		project.GET("/:id", h.GetAuthorById)
+		project.POST("/store", h.CreateAuthor)
+		project.POST("/update", h.UpdateAuthor)
+		project.POST("/delete", h.DeleteAuthor)
 	}
 }
