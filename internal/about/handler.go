@@ -14,12 +14,12 @@ func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	service := NewService(repo)
 	h := handler{service: service}
 
-	project := r.Group("/abouts")
+	about := r.Group("/abouts")
 	{
-		project.GET("", h.GetAll)
-		project.GET("/:id", h.GetAboutById)
-		project.POST("/store", h.CreateAbout)
-		project.POST("/update", h.UpdateAbout)
-		project.POST("/delete", h.DeleteAbout)
+		about.GET("", h.GetAll)
+		about.GET("/:id", h.GetAboutById)
+		about.POST("/store", h.CreateAbout)
+		about.POST("/update", h.UpdateAbout)
+		about.POST("/delete", h.DeleteAbout)
 	}
 }

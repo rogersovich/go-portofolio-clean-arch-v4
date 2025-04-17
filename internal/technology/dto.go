@@ -29,7 +29,7 @@ type UpdateTechnologyDTO struct {
 type TechnologyResponse struct {
 	ID              uint   `json:"id"`
 	Name            string `json:"name"`
-	DescriptionHTML string `json:"description_html" validate:"required"`
+	DescriptionHTML string `json:"description_html"`
 	LogoUrl         string `json:"logo_url"`
 	LogoFileName    string `json:"logo_file_name"`
 	IsMajor         string `json:"is_major"`
@@ -39,7 +39,7 @@ type TechnologyResponse struct {
 type TechnologyUpdateResponse struct {
 	ID              uint   `json:"id"`
 	Name            string `json:"name"`
-	DescriptionHTML string `json:"description_html" validate:"required"`
+	DescriptionHTML string `json:"description_html"`
 	LogoUrl         string `json:"logo_url"`
 	LogoFileName    string `json:"logo_file_name"`
 	IsMajor         string `json:"is_major"`
