@@ -21,9 +21,9 @@ func NewRepository(db *gorm.DB) Repository {
 }
 
 func (r *repository) FindAll() ([]Statistic, error) {
-	var technologies []Statistic
-	err := r.db.Find(&technologies).Error
-	return technologies, err
+	var datas []Statistic
+	err := r.db.Find(&datas).Error
+	return datas, err
 }
 
 func (r *repository) FindById(id string) (Statistic, error) {

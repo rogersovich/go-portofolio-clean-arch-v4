@@ -17,13 +17,13 @@ func NewService(r Repository) Service {
 }
 
 func (s *service) GetAllStatistics() ([]StatisticResponse, error) {
-	technologies, err := s.repo.FindAll()
+	datas, err := s.repo.FindAll()
 	if err != nil {
 		return nil, err
 	}
 
 	var result []StatisticResponse
-	for _, p := range technologies {
+	for _, p := range datas {
 		result = append(result, ToStatisticResponse(p))
 	}
 	return result, nil
