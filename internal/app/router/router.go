@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/about"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/author"
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/project_content_image"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/statistic"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/technology"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
@@ -27,5 +28,7 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	about.RegisterRoutes(api, db)
 	technology.RegisterRoutes(api, db)
 	statistic.RegisterRoutes(api, db)
+	project_content_image.RegisterRoutes(api, db)
+
 	return r
 }
