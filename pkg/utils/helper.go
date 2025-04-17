@@ -76,3 +76,17 @@ func PrintJSON(v any) {
 	jsonBytes, _ := json.MarshalIndent(v, "", "  ")
 	fmt.Println(string(jsonBytes))
 }
+
+func BoolToYN(val bool) string {
+	if val {
+		return "Y"
+	}
+	return "N"
+}
+
+func StringBoolToYN(val string) string {
+	if val == "1" {
+		return "Y"
+	}
+	return "N"
+}

@@ -14,11 +14,11 @@ type UpdateAboutRequest struct {
 }
 
 type UpdateAboutDTO struct {
-	Id              uint   `json:"id" validate:"required"`
-	Title           string `json:"title" validate:"required"`
-	DescriptionHTML string `json:"description_html" validate:"required"`
-	AvatarUrl       string `json:"avatar_url"`
-	AvatarFileName  string `json:"avatar_file_name"`
+	Id              uint
+	Title           string
+	DescriptionHTML string
+	AvatarUrl       string
+	AvatarFileName  string
 }
 
 type AboutResponse struct {
