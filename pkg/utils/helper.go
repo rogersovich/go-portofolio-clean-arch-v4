@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -89,4 +90,47 @@ func StringBoolToYN(val string) string {
 		return "Y"
 	}
 	return "N"
+}
+
+// Validates that a string array is not empty and doesn't contain only empty strings
+func ValidateFormArrayString(strs []string, field string, is_required bool) ([]string, error) {
+	var result []string
+
+	for _, s := range strs {
+		if s != "" {
+			result = append(result, s)
+		}
+	}
+
+	if is_required && len(result) == 0 {
+		return nil, errors.New(field + " array must not be empty")
+	}
+
+	// Ensure empty slice (not nil) is returned if not required
+	if !is_required && len(result) == 0 {
+		return []string{}, nil
+	}
+
+	return result, nil
+}
+
+// BuildSQLInClause generates a string of "?, ?, ?" placeholders and a slice of interface{} args
+func BuildSQLInClause[intType ~int | ~int64 | ~string](values []intType) (string, []interface{}) {
+	placeholders := make([]string, len(values))
+	args := make([]interface{}, len(values))
+
+	for i, v := range values {
+		placeholders[i] = "?"
+		args[i] = v
+	}
+
+	return strings.Join(placeholders, ","), args
+}
+
+func ToInterfaceSlice(arr []interface{}) []interface{} {
+	out := make([]interface{}, len(arr))
+	for i, v := range arr {
+		out[i] = v
+	}
+	return out
 }
