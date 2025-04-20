@@ -21,7 +21,11 @@ func (h *handler) GetAll(c *gin.Context) {
 }
 
 func (h *handler) GetAuthorById(c *gin.Context) {
-	id := c.Param("id")
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		utils.Error(c, http.StatusBadRequest, "invalid ID")
+		return
+	}
 	data, err := h.service.GetAuthorById(id)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, "failed to get data")
@@ -117,7 +121,7 @@ func (h *handler) UpdateAuthor(c *gin.Context) {
 		return
 	}
 
-	author, err := h.service.GetAuthorById(strconv.Itoa(id))
+	author, err := h.service.GetAuthorById(id)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, "Data not found")
 		return

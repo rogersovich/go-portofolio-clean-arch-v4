@@ -6,7 +6,7 @@ import (
 
 type Repository interface {
 	FindAll() ([]Author, error)
-	FindById(id string) (Author, error)
+	FindById(id int) (Author, error)
 	CreateAuthor(p CreateAuthorRequest) (Author, error)
 	UpdateAuthor(p UpdateAuthorDTO) (Author, error)
 	DeleteAuthor(id int) (Author, error)
@@ -26,7 +26,7 @@ func (r *repository) FindAll() ([]Author, error) {
 	return abouts, err
 }
 
-func (r *repository) FindById(id string) (Author, error) {
+func (r *repository) FindById(id int) (Author, error) {
 	var about Author
 	err := r.db.Where("id = ?", id).First(&about).Error
 	return about, err

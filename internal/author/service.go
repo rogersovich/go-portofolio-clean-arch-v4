@@ -8,7 +8,7 @@ import (
 
 type Service interface {
 	GetAllAuthors() ([]AuthorResponse, error)
-	GetAuthorById(id string) (AuthorResponse, error)
+	GetAuthorById(id int) (AuthorResponse, error)
 	CreateAuthor(p CreateAuthorRequest) (AuthorResponse, error)
 	UpdateAuthor(p UpdateAuthorDTO, oldPath string, newFilePath string) (AuthorUpdateResponse, error)
 	DeleteAuthor(id int) (Author, error)
@@ -35,7 +35,7 @@ func (s *service) GetAllAuthors() ([]AuthorResponse, error) {
 	return result, nil
 }
 
-func (s *service) GetAuthorById(id string) (AuthorResponse, error) {
+func (s *service) GetAuthorById(id int) (AuthorResponse, error) {
 	author, err := s.repo.FindById(id)
 	if err != nil {
 		return AuthorResponse{}, err

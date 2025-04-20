@@ -2,6 +2,7 @@ package blog
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/author"
 	"gorm.io/gorm"
 )
 
@@ -10,9 +11,13 @@ type handler struct {
 }
 
 func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
-	repo := NewRepository(db)
-	service := NewService(repo)
-	h := handler{service: service}
+	// 1. Create author repo & service
+	authorRepo := author.NewRepository(db)
+	authorService := author.NewService(authorRepo)
+
+	blogRepo := NewRepository(db)
+	blogService := NewService(authorService, blogRepo)
+	h := handler{service: blogService}
 
 	blog := r.Group("/blogs")
 	{

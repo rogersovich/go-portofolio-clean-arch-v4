@@ -97,13 +97,11 @@ func (h *handler) CreateBlog(c *gin.Context) {
 		return
 	}
 
-	utils.PrintJSON(req)
+	data, err := h.service.CreateBlog(req)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
 
-	// data, err := h.service.CreateBlog(req)
-	// if err != nil {
-	// 	utils.Error(c, http.StatusInternalServerError, "failed to created data", err)
-	// 	return
-	// }
-
-	utils.Success(c, "success get data", nil)
+	utils.Success(c, "success get data", data)
 }
