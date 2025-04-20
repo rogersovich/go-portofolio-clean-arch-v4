@@ -1,0 +1,65 @@
+package topics
+
+import (
+	"gorm.io/gorm"
+)
+
+type Repository interface {
+	FindAll() ([]Topic, error)
+	FindById(id string) (Topic, error)
+	CreateTopic(p CreateTopicRequest) (Topic, error)
+	UpdateTopic(p UpdateTopicRequest) (Topic, error)
+	DeleteTopic(id int) (Topic, error)
+}
+
+type repository struct {
+	db *gorm.DB
+}
+
+func NewRepository(db *gorm.DB) Repository {
+	return &repository{db: db}
+}
+
+func (r *repository) FindAll() ([]Topic, error) {
+	var datas []Topic
+	err := r.db.Find(&datas).Error
+	return datas, err
+}
+
+func (r *repository) FindById(id string) (Topic, error) {
+	var data Topic
+	err := r.db.Where("id = ?", id).First(&data).Error
+	return data, err
+}
+
+func (r *repository) CreateTopic(p CreateTopicRequest) (Topic, error) {
+	data := Topic{
+		Name: p.Name}
+	err := r.db.Create(&data).Error
+	return data, err
+}
+
+func (r *repository) UpdateTopic(p UpdateTopicRequest) (Topic, error) {
+	data := Topic{
+		ID:   p.Id,
+		Name: p.Name}
+	err := r.db.Updates(&data).Error
+	return data, err
+}
+
+func (r *repository) DeleteTopic(id int) (Topic, error) {
+	var data Topic
+
+	// Step 1: Find by ID
+	if err := r.db.First(&data, id).Error; err != nil {
+		return Topic{}, err // return if not found or any error
+	}
+
+	// Step 2: Delete
+	if err := r.db.Delete(&data).Error; err != nil {
+		return Topic{}, err
+	}
+
+	// Step 3: Return the data
+	return data, nil
+}

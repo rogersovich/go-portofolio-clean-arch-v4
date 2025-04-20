@@ -10,6 +10,7 @@ import (
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/project_technology"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/statistic"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/technology"
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/topics"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
 	"gorm.io/gorm"
 )
@@ -35,6 +36,7 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	project_technology.RegisterRoutes(api, db)
 	project.RegisterRoutes(api, db)
 	project_content_temp_image.RegisterRoutes(api, db)
+	topics.RegisterRoutes(api, db)
 
 	return r
 }
