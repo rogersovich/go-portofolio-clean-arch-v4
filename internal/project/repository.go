@@ -23,6 +23,7 @@ type Repository interface {
 	CheckCreateProjectImages(ids []string) (int, error)
 	CheckUpdateProjectImages(project_id int, projectImages []ProjectImagesUpdatePayload) (int, error)
 	UpdateProject(p UpdateProjectDTO) (ProjectUpdateResponse, error)
+	UpdateProjectStatistic(p ProjectStatisticUpdateDTO) (ProjectStatisticUpdateResponse, error)
 	DeleteProject(id int) (Project, error)
 }
 
@@ -142,9 +143,10 @@ func (r *repository) CreateProject(p CreateProjectDTO) (Project, error) {
 	tx := r.db.Begin()
 
 	// Create Statistic
+	zero := 0
 	statistic := statistic.Statistic{
-		Likes: 0,
-		Views: 0,
+		Likes: &zero,
+		Views: &zero,
 		Type:  "Project"}
 	err := tx.Create(&statistic).Error
 
@@ -352,6 +354,30 @@ func (r *repository) UpdateProject(p UpdateProjectDTO) (ProjectUpdateResponse, e
 		Summary:       data.Summary,
 		Status:        data.Status,
 		PublishedAt:   publishedAt,
+	}
+
+	return res, nil
+}
+
+func (r *repository) UpdateProjectStatistic(p ProjectStatisticUpdateDTO) (ProjectStatisticUpdateResponse, error) {
+	data := statistic.Statistic{
+		ID:    p.StatisticID,
+		Likes: p.Likes,
+		Views: p.Views,
+		Type:  p.Type,
+	}
+	err := r.db.Where("ID = ?", p.StatisticID).Updates(&data).Error
+	if err != nil {
+		return ProjectStatisticUpdateResponse{}, err
+	}
+
+	res := ProjectStatisticUpdateResponse{
+		ProjectID:    p.ProjectID,
+		ProjectTitle: p.ProjectTitle,
+		StatisticID:  p.StatisticID,
+		Likes:        *data.Likes,
+		Views:        *data.Views,
+		Type:         data.Type,
 	}
 
 	return res, nil

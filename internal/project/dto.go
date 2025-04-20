@@ -122,11 +122,10 @@ type ProjectContentImagesDTO struct {
 }
 
 type ProjectStatisticDTO struct {
-	ID        int    `json:"id"`
-	Likes     int    `json:"likes"`
-	Views     int    `json:"views"`
-	Type      string `json:"type"`
-	CreatedAt string `json:"created_at"`
+	ID    int    `json:"id"`
+	Likes int    `json:"likes"`
+	Views int    `json:"views"`
+	Type  string `json:"type"`
 }
 
 type ProjectUpdateResponse struct {
@@ -139,6 +138,32 @@ type ProjectUpdateResponse struct {
 	Summary       string  `json:"summary"`
 	Status        string  `json:"status"`
 	PublishedAt   *string `json:"published_at"`
+}
+
+type ProjectStatisticUpdateRequest struct {
+	ProjectID   int    `json:"project_id" binding:"required,gt=0"`
+	StatisticID int    `json:"statistic_id" binding:"required,gt=0"`
+	Likes       *int   `json:"likes" binding:"required"`
+	Views       *int   `json:"views" binding:"required"`
+	Type        string `json:"type" binding:"required,oneof=Blog Project"`
+}
+
+type ProjectStatisticUpdateResponse struct {
+	ProjectID    int    `json:"project_id"`
+	StatisticID  int    `json:"statistic_id"`
+	ProjectTitle string `json:"project_title"`
+	Likes        int    `json:"likes"`
+	Views        int    `json:"views"`
+	Type         string `json:"type"`
+}
+
+type ProjectStatisticUpdateDTO struct {
+	ProjectID    int
+	ProjectTitle string
+	StatisticID  int
+	Likes        *int
+	Views        *int
+	Type         string
 }
 
 type ProjectTechUpdatePayload struct {

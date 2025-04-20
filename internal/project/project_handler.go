@@ -136,8 +136,6 @@ func (h *handler) UpdateProject(c *gin.Context) {
 	is_published := c.PostForm("is_published") // Y or N
 	repository_url := c.PostForm("repository_url")
 	summary := c.PostForm("summary")
-	// technology_ids := c.PostFormArray("technology_ids[]")
-	// content_images := c.PostFormArray("content_images[]")
 
 	var technologyIds []ProjectTechUpdatePayload
 	if err := json.Unmarshal([]byte(c.PostForm("technology_ids")), &technologyIds); err != nil {
@@ -150,18 +148,6 @@ func (h *handler) UpdateProject(c *gin.Context) {
 		utils.Error(c, http.StatusBadRequest, "Invalid content_image_ids format", err)
 		return
 	}
-
-	// technology_ids_validated, err := utils.ValidateFormArrayString(technology_ids, "technology_ids", true)
-	// if err != nil {
-	// 	utils.Error(c, http.StatusBadRequest, "invalid technology_ids", err)
-	// 	return
-	// }
-
-	// content_images_validated, err := utils.ValidateFormArrayString(content_images, "content_images", false)
-	// if err != nil {
-	// 	utils.Error(c, http.StatusBadRequest, "invalid content_images", err)
-	// 	return
-	// }
 
 	validationCheck := []string{"extension", "size"}
 	image_file, errors, err := h.ValidateImage(c, validationCheck)
@@ -188,56 +174,23 @@ func (h *handler) UpdateProject(c *gin.Context) {
 		return
 	}
 
-	// project, err := h.service.GetProjectById(id)
-	// if err != nil {
-	// 	utils.Error(c, http.StatusInternalServerError, "Data not found", err)
-	// 	return
-	// }
-
-	// utils.PrintJSON(project)
-
-	// // set oldPath
-	// oldPath := ""
-	// if project.ImageFileName != "" {
-	// 	oldPath = project.ImageFileName
-	// }
-
-	// // 2. Get new file (if uploaded)
-	// _, err = c.FormFile("logo_file")
-	// var newFileURL string
-	// var newFileName string
-
-	// if err == nil {
-	// 	logo_file, errors, err := h.ValidateImage(c)
-	// 	if err != nil {
-	// 		utils.ErrorValidation(c, http.StatusBadRequest, err.Error(), errors)
-	// 		return
-	// 	}
-
-	// 	logoRes, err := utils.HandlUploadFile(logo_file, "technology")
-	// 	if err != nil {
-	// 		utils.Error(c, http.StatusInternalServerError, "failed to upload file", err)
-	// 		return
-	// 	}
-
-	// 	newFileURL = logoRes.FileURL
-	// 	newFileName = logoRes.FileName
-	// } else {
-	// 	newFileURL = technology.LogoUrl // keep existing if not updated
-	// 	newFileName = technology.LogoFileName
-	// }
-
-	// // Validate the struct using validator
-	// payload := UpdateTechnologyDTO{
-	// 	Id:              uint(id),
-	// 	Name:            name,
-	// 	DescriptionHTML: description_html,
-	// 	LogoUrl:         newFileURL,
-	// 	LogoFileName:    newFileName,
-	// 	IsMajor:         is_major,
-	// }
-
 	data, err := h.service.UpdateProject(req)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, "failed to updated data", err)
+		return
+	}
+
+	utils.Success(c, "success updated data", data)
+}
+
+func (h *handler) UpdateProjectStatistic(c *gin.Context) {
+	var req ProjectStatisticUpdateRequest
+
+	if !utils.ValidateStruct(c, &req, c.ShouldBindJSON(&req)) {
+		return
+	}
+
+	data, err := h.service.UpdateProjectStatistic(req)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, "failed to updated data", err)
 		return

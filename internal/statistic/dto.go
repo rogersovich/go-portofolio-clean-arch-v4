@@ -42,8 +42,8 @@ type StatisticDeleteRequest struct {
 func ToStatisticResponse(p Statistic) StatisticResponse {
 	return StatisticResponse{
 		ID:        p.ID,
-		Views:     p.Views,
-		Likes:     p.Likes,
+		Views:     *p.Views,
+		Likes:     *p.Likes,
 		Type:      p.Type,
 		CreatedAt: p.CreatedAt.Format("2006-01-02"),
 	}
@@ -52,8 +52,8 @@ func ToStatisticResponse(p Statistic) StatisticResponse {
 func ToStatisticUpdateResponse(p Statistic) StatisticUpdateResponse {
 	return StatisticUpdateResponse{
 		ID:    p.ID,
-		Views: p.Views,
-		Likes: p.Likes,
+		Views: *p.Views,
+		Likes: *p.Likes,
 		Type:  p.Type,
 	}
 }

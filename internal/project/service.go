@@ -14,6 +14,7 @@ type Service interface {
 	GetProjectById(id int) (ProjectResponse, error)
 	CreateProject(p CreateProjectRequest) (ProjectResponse, error)
 	UpdateProject(p UpdateProjectRequest) (ProjectUpdateResponse, error)
+	UpdateProjectStatistic(p ProjectStatisticUpdateRequest) (ProjectStatisticUpdateResponse, error)
 	DeleteProject(id int) (Project, error)
 }
 
@@ -63,11 +64,10 @@ func (s *service) GetProjectByIdWithRelations(id int) (ProjectRelationResponse, 
 				ID:          projectID,
 				StatisticID: row.StatisticID,
 				Statistic: ProjectStatisticDTO{
-					ID:        row.StatisticID,
-					Views:     row.StatisticViews,
-					Likes:     row.StatisticLikes,
-					Type:      row.StatisticType,
-					CreatedAt: row.CreatedAt.Format("2006-01-02 15:04:05"),
+					ID:    row.StatisticID,
+					Views: row.StatisticViews,
+					Likes: row.StatisticLikes,
+					Type:  row.StatisticType,
 				},
 				Title:         row.Title,
 				Description:   row.Description,
@@ -290,6 +290,28 @@ func (s *service) UpdateProject(p UpdateProjectRequest) (ProjectUpdateResponse, 
 		}
 	}
 
+	return data, nil
+}
+
+func (s *service) UpdateProjectStatistic(p ProjectStatisticUpdateRequest) (ProjectStatisticUpdateResponse, error) {
+	project, err := s.GetProjectById(p.ProjectID)
+	if err != nil {
+		return ProjectStatisticUpdateResponse{}, err
+	}
+
+	payload := ProjectStatisticUpdateDTO{
+		ProjectID:    p.ProjectID,
+		ProjectTitle: project.Title,
+		StatisticID:  p.StatisticID,
+		Likes:        p.Likes,
+		Views:        p.Views,
+		Type:         p.Type,
+	}
+
+	data, err := s.repo.UpdateProjectStatistic(payload)
+	if err != nil {
+		return ProjectStatisticUpdateResponse{}, err
+	}
 	return data, nil
 }
 

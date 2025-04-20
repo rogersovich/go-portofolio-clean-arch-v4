@@ -34,8 +34,8 @@ func (r *repository) FindById(id string) (Statistic, error) {
 
 func (r *repository) CreateStatistic(p CreateStatisticRequest) (Statistic, error) {
 	data := Statistic{
-		Likes: *p.Likes,
-		Views: *p.Views,
+		Likes: p.Likes,
+		Views: p.Views,
 		Type:  p.Type}
 	err := r.db.Create(&data).Error
 	return data, err
@@ -44,8 +44,8 @@ func (r *repository) CreateStatistic(p CreateStatisticRequest) (Statistic, error
 func (r *repository) UpdateStatistic(p UpdateStatisticRequest) (Statistic, error) {
 	data := Statistic{
 		ID:    p.Id,
-		Likes: *p.Likes,
-		Views: *p.Views,
+		Likes: p.Likes,
+		Views: p.Views,
 		Type:  p.Type}
 	err := r.db.Updates(&data).Error
 	return data, err
