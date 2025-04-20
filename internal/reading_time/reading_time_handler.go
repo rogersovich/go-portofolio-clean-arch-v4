@@ -17,6 +17,11 @@ func (h *handler) GetAll(c *gin.Context) {
 }
 
 func (h *handler) GetReadingTimeById(c *gin.Context) {
+	// htmlInput1 := "<p><b>Hello world!</b> This is a simple test.</p><p>Another paragraph.</p>"
+	// stats1 := utils.ExtractHTMLtoStatistics(htmlInput1)
+	// fmt.Printf("Input 1:\n%s\n", htmlInput1)
+	// fmt.Printf("Stats 1: %+v\n\n", stats1)
+
 	id := c.Param("id")
 	data, err := h.service.GetReadingTimeById(id)
 	if err != nil {

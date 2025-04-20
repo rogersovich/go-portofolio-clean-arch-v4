@@ -4,10 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
+	"github.com/microcosm-cc/bluemonday"
 )
 
 func Success(c *gin.Context, message string, data interface{}) {
@@ -133,4 +136,65 @@ func ToInterfaceSlice(arr []interface{}) []interface{} {
 		out[i] = v
 	}
 	return out
+}
+
+type ReadingStats struct {
+	WordCount        int     `json:"word_count"`
+	TextLength       int     `json:"text_length"` // Number of characters (runes)
+	EstimatedSeconds float64 `json:"estimated_seconds"`
+	Minutes          int     `json:"minutes"` // Estimated minutes, rounded up
+}
+
+func RoundToOneDecimal(val float64) float64 {
+	return math.Round(val*10) / 10
+}
+
+func ExtractHTMLtoStatistics(htmlContent string) ReadingStats {
+	// WordsPerMinute is the average reading speed assumption.
+	// Common values range from 200 to 250. Adjust as needed.
+	const WordsPerMinute = 225.0
+
+	// 1. Strip HTML tags to get plain text
+	// Use bluemonday's StrictPolicy which removes all tags.
+	p := bluemonday.StrictPolicy()
+	plainText := p.Sanitize(htmlContent)
+
+	// Trim leading/trailing whitespace for accurate word count
+	plainText = strings.TrimSpace(plainText)
+
+	// 2. Calculate Word Count
+	// strings.Fields splits the string by whitespace into words
+	words := strings.Fields(plainText)
+	wordCount := len(words)
+
+	// 3. Calculate Text Length (using RuneCount for multi-byte character safety)
+	textLength := utf8.RuneCountInString(plainText)
+
+	// 4. Calculate Estimated Reading Time
+	var estimatedMinutesFloat float64
+	if WordsPerMinute > 0 && wordCount > 0 {
+		estimatedMinutesFloat = float64(wordCount) / WordsPerMinute
+	} else {
+		estimatedMinutesFloat = 0.0
+	}
+
+	estimatedSeconds := RoundToOneDecimal(estimatedMinutesFloat * 60.0)
+
+	// Round minutes *up* to the nearest whole number (common practice for reading time)
+	minutes := int(math.Ceil(estimatedMinutesFloat))
+
+	// Handle the edge case where word count is 0 but we don't want 1 minute
+	if wordCount == 0 {
+		minutes = 0
+	}
+
+	// 5. Populate the result struct
+	stats := ReadingStats{
+		WordCount:        wordCount,
+		TextLength:       textLength,
+		EstimatedSeconds: estimatedSeconds,
+		Minutes:          minutes,
+	}
+
+	return stats
 }
