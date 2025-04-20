@@ -29,12 +29,11 @@ func Created(c *gin.Context, message string, data interface{}) {
 	})
 }
 
-func Error(c *gin.Context, statusCode int, message string, err error) {
+func Error(c *gin.Context, statusCode int, message string) {
 	c.JSON(statusCode, gin.H{
 		"data":    nil,
 		"message": message,
 		"status":  "error",
-		"error":   err.Error(),
 	})
 }
 

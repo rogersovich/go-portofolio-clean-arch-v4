@@ -10,7 +10,7 @@ import (
 func (h *handler) GetAll(c *gin.Context) {
 	data, err := h.service.GetAllReadingTimes()
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get all data", data)
@@ -25,7 +25,7 @@ func (h *handler) GetReadingTimeById(c *gin.Context) {
 	id := c.Param("id")
 	data, err := h.service.GetReadingTimeById(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get data", data)
@@ -41,7 +41,7 @@ func (h *handler) CreateReadingTime(c *gin.Context) {
 
 	data, err := h.service.CreateReadingTime(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to created data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to created data")
 		return
 	}
 
@@ -59,7 +59,7 @@ func (h *handler) UpdateReadingTime(c *gin.Context) {
 
 	data, err := h.service.UpdateReadingTime(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to updated data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to updated data")
 		return
 	}
 
@@ -77,7 +77,7 @@ func (h *handler) DeleteReadingTime(c *gin.Context) {
 
 	data, err := h.service.DeleteReadingTime(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to deleted data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to deleted data")
 		return
 	}
 	utils.Success(c, "success deleted data", data)

@@ -14,7 +14,7 @@ import (
 func (h *handler) GetAll(c *gin.Context) {
 	data, err := h.service.GetAllAuthors()
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get all data", data)
@@ -24,7 +24,7 @@ func (h *handler) GetAuthorById(c *gin.Context) {
 	id := c.Param("id")
 	data, err := h.service.GetAuthorById(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get data", data)
@@ -75,7 +75,7 @@ func (h *handler) CreateAuthor(c *gin.Context) {
 
 	avatarRes, err := utils.HandlUploadFile(avatar_file, "author")
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to upload file", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to upload file")
 		return
 	}
 
@@ -93,7 +93,7 @@ func (h *handler) CreateAuthor(c *gin.Context) {
 
 	data, err := h.service.CreateAuthor(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to created data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to created data")
 		return
 	}
 
@@ -119,7 +119,7 @@ func (h *handler) UpdateAuthor(c *gin.Context) {
 
 	author, err := h.service.GetAuthorById(strconv.Itoa(id))
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "Data not found", err)
+		utils.Error(c, http.StatusInternalServerError, "Data not found")
 		return
 	}
 
@@ -143,7 +143,7 @@ func (h *handler) UpdateAuthor(c *gin.Context) {
 
 		avatarRes, err := utils.HandlUploadFile(avatar_file, "author")
 		if err != nil {
-			utils.Error(c, http.StatusInternalServerError, "failed to upload file", err)
+			utils.Error(c, http.StatusInternalServerError, "failed to upload file")
 			return
 		}
 
@@ -164,7 +164,7 @@ func (h *handler) UpdateAuthor(c *gin.Context) {
 
 	data, err := h.service.UpdateAuthor(payload, oldPath, newFileName)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to updated data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to updated data")
 		return
 	}
 
@@ -182,7 +182,7 @@ func (h *handler) DeleteAuthor(c *gin.Context) {
 
 	data, err := h.service.DeleteAuthor(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to deleted data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to deleted data")
 		return
 	}
 	utils.Success(c, "success deleted data", data)

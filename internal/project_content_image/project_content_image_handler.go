@@ -14,7 +14,7 @@ import (
 func (h *handler) GetAll(c *gin.Context) {
 	datas, err := h.service.GetAllProjectContentImages()
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get all data", datas)
@@ -23,13 +23,12 @@ func (h *handler) GetAll(c *gin.Context) {
 func (h *handler) GetProjectContentImageById(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		errMsg := fmt.Errorf("id type is wrong")
-		utils.Error(c, http.StatusBadRequest, "Validation Error", errMsg)
+		utils.Error(c, http.StatusBadRequest, "id type is wrong")
 		return
 	}
 	data, err := h.service.GetProjectContentImageById(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get data", data)
@@ -77,7 +76,7 @@ func (h *handler) CreateProjectContentImage(c *gin.Context) {
 
 	imageRes, err := utils.HandlUploadFile(image_file, "project")
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to upload file", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to upload file")
 		return
 	}
 
@@ -95,7 +94,7 @@ func (h *handler) CreateProjectContentImage(c *gin.Context) {
 
 	data, err := h.service.CreateProjectContentImage(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to created data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to created data")
 		return
 	}
 
@@ -108,14 +107,12 @@ func (h *handler) UpdateProjectContentImage(c *gin.Context) {
 	// Validate the struct using validator
 	id, err := strconv.Atoi(c.PostForm("id"))
 	if err != nil {
-		errMsg := fmt.Errorf("id type is wrong")
-		utils.Error(c, http.StatusBadRequest, "Validation Error", errMsg)
+		utils.Error(c, http.StatusBadRequest, "id type is wrong")
 		return
 	}
 	project_id, err := strconv.Atoi(c.PostForm("project_id"))
 	if err != nil {
-		errMsg := fmt.Errorf("project_id type is wrong")
-		utils.Error(c, http.StatusBadRequest, "Validation Error", errMsg)
+		utils.Error(c, http.StatusBadRequest, "project_id type is wrong")
 		return
 	}
 
@@ -133,7 +130,7 @@ func (h *handler) UpdateProjectContentImage(c *gin.Context) {
 
 	data, err := h.service.GetProjectContentImageById(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "Data not found", err)
+		utils.Error(c, http.StatusInternalServerError, "Data not found")
 		return
 	}
 
@@ -157,7 +154,7 @@ func (h *handler) UpdateProjectContentImage(c *gin.Context) {
 
 		imageRes, err := utils.HandlUploadFile(image_file, "project")
 		if err != nil {
-			utils.Error(c, http.StatusInternalServerError, "failed to upload file", err)
+			utils.Error(c, http.StatusInternalServerError, "failed to upload file")
 			return
 		}
 
@@ -179,7 +176,7 @@ func (h *handler) UpdateProjectContentImage(c *gin.Context) {
 
 	result, err := h.service.UpdateProjectContentImage(payload, oldPath, newFileName)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to updated data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to updated data")
 		return
 	}
 
@@ -197,7 +194,7 @@ func (h *handler) DeleteProjectContentImage(c *gin.Context) {
 
 	data, err := h.service.DeleteProjectContentImage(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to deleted data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to deleted data")
 		return
 	}
 	utils.Success(c, "success deleted data", data)

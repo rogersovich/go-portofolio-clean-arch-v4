@@ -10,7 +10,7 @@ import (
 func (h *handler) GetAll(c *gin.Context) {
 	data, err := h.service.GetAllTopics()
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get all data", data)
@@ -20,7 +20,7 @@ func (h *handler) GetTopicById(c *gin.Context) {
 	id := c.Param("id")
 	data, err := h.service.GetTopicById(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get data", data)
@@ -36,7 +36,7 @@ func (h *handler) CreateTopic(c *gin.Context) {
 
 	data, err := h.service.CreateTopic(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to created data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to created data")
 		return
 	}
 
@@ -54,7 +54,7 @@ func (h *handler) UpdateTopic(c *gin.Context) {
 
 	data, err := h.service.UpdateTopic(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to updated data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to updated data")
 		return
 	}
 
@@ -72,7 +72,7 @@ func (h *handler) DeleteTopic(c *gin.Context) {
 
 	data, err := h.service.DeleteTopic(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to deleted data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to deleted data")
 		return
 	}
 	utils.Success(c, "success deleted data", data)

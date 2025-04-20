@@ -14,7 +14,7 @@ import (
 func (h *handler) GetAll(c *gin.Context) {
 	data, err := h.service.GetAllTechnologies()
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get all data", data)
@@ -24,7 +24,7 @@ func (h *handler) GetTechnologyById(c *gin.Context) {
 	id := c.Param("id")
 	data, err := h.service.GetTechnologyById(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get data", data)
@@ -74,7 +74,7 @@ func (h *handler) CreateTechnology(c *gin.Context) {
 
 	logoRes, err := utils.HandlUploadFile(logo_file, "technology")
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to upload file", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to upload file")
 		return
 	}
 
@@ -94,7 +94,7 @@ func (h *handler) CreateTechnology(c *gin.Context) {
 
 	data, err := h.service.CreateTechnology(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to created data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to created data")
 		return
 	}
 
@@ -124,7 +124,7 @@ func (h *handler) UpdateTechnology(c *gin.Context) {
 
 	technology, err := h.service.GetTechnologyById(strconv.Itoa(id))
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "Data not found", err)
+		utils.Error(c, http.StatusInternalServerError, "Data not found")
 		return
 	}
 
@@ -148,7 +148,7 @@ func (h *handler) UpdateTechnology(c *gin.Context) {
 
 		logoRes, err := utils.HandlUploadFile(logo_file, "technology")
 		if err != nil {
-			utils.Error(c, http.StatusInternalServerError, "failed to upload file", err)
+			utils.Error(c, http.StatusInternalServerError, "failed to upload file")
 			return
 		}
 
@@ -171,7 +171,7 @@ func (h *handler) UpdateTechnology(c *gin.Context) {
 
 	data, err := h.service.UpdateTechnology(payload, oldPath, newFileName)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to updated data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to updated data")
 		return
 	}
 
@@ -189,7 +189,7 @@ func (h *handler) DeleteTechnology(c *gin.Context) {
 
 	data, err := h.service.DeleteTechnology(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to deleted data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to deleted data")
 		return
 	}
 	utils.Success(c, "success deleted data", data)

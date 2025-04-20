@@ -15,7 +15,7 @@ import (
 func (h *handler) GetAll(c *gin.Context) {
 	data, err := h.service.GetAllProjects()
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get all data", data)
@@ -24,12 +24,12 @@ func (h *handler) GetAll(c *gin.Context) {
 func (h *handler) GetProjectByIdWithRelations(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		utils.Error(c, http.StatusBadRequest, "invalid ID", err)
+		utils.Error(c, http.StatusBadRequest, "invalid ID")
 		return
 	}
 	data, err := h.service.GetProjectByIdWithRelations(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get data", data)
@@ -81,13 +81,13 @@ func (h *handler) CreateProject(c *gin.Context) {
 
 	technology_ids_validated, err := utils.ValidateFormArrayString(technology_ids, "technology_ids", true)
 	if err != nil {
-		utils.Error(c, http.StatusBadRequest, "invalid technology_ids", err)
+		utils.Error(c, http.StatusBadRequest, "invalid technology_ids")
 		return
 	}
 
 	content_images_validated, err := utils.ValidateFormArrayString(content_images, "content_images", false)
 	if err != nil {
-		utils.Error(c, http.StatusBadRequest, "invalid content_images", err)
+		utils.Error(c, http.StatusBadRequest, "invalid content_images")
 		return
 	}
 
@@ -116,7 +116,7 @@ func (h *handler) CreateProject(c *gin.Context) {
 
 	data, err := h.service.CreateProject(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to created data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to created data")
 		return
 	}
 
@@ -127,7 +127,7 @@ func (h *handler) UpdateProject(c *gin.Context) {
 	// Validate the struct using validator
 	id, err := strconv.Atoi(c.PostForm("id"))
 	if err != nil {
-		utils.Error(c, http.StatusBadRequest, "invalid ID", err)
+		utils.Error(c, http.StatusBadRequest, "invalid ID")
 		return
 	}
 
@@ -139,13 +139,13 @@ func (h *handler) UpdateProject(c *gin.Context) {
 
 	var technologyIds []ProjectTechUpdatePayload
 	if err := json.Unmarshal([]byte(c.PostForm("technology_ids")), &technologyIds); err != nil {
-		utils.Error(c, http.StatusBadRequest, "Invalid technology_ids format", err)
+		utils.Error(c, http.StatusBadRequest, "Invalid technology_ids format")
 		return
 	}
 
 	var contentImageIds []ProjectImagesUpdatePayload
 	if err := json.Unmarshal([]byte(c.PostForm("content_image_ids")), &contentImageIds); err != nil {
-		utils.Error(c, http.StatusBadRequest, "Invalid content_image_ids format", err)
+		utils.Error(c, http.StatusBadRequest, "Invalid content_image_ids format")
 		return
 	}
 
@@ -176,7 +176,7 @@ func (h *handler) UpdateProject(c *gin.Context) {
 
 	data, err := h.service.UpdateProject(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to updated data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to updated data")
 		return
 	}
 
@@ -192,7 +192,7 @@ func (h *handler) UpdateProjectStatistic(c *gin.Context) {
 
 	data, err := h.service.UpdateProjectStatistic(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to updated data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to updated data")
 		return
 	}
 
@@ -210,7 +210,7 @@ func (h *handler) DeleteProject(c *gin.Context) {
 
 	data, err := h.service.DeleteProject(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to deleted data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to deleted data")
 		return
 	}
 	utils.Success(c, "success deleted data", data)

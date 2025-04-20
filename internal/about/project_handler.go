@@ -14,7 +14,7 @@ import (
 func (h *handler) GetAll(c *gin.Context) {
 	data, err := h.service.GetAllAbouts()
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get all data", data)
@@ -24,7 +24,7 @@ func (h *handler) GetAboutById(c *gin.Context) {
 	id := c.Param("id")
 	data, err := h.service.GetAboutById(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get data", data)
@@ -73,7 +73,7 @@ func (h *handler) CreateAbout(c *gin.Context) {
 
 	avatarRes, err := utils.HandlUploadFile(avatar_file, "about")
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to upload file", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to upload file")
 		return
 	}
 
@@ -92,7 +92,7 @@ func (h *handler) CreateAbout(c *gin.Context) {
 
 	data, err := h.service.CreateAbout(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to created data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to created data")
 		return
 	}
 
@@ -120,7 +120,7 @@ func (h *handler) UpdateAbout(c *gin.Context) {
 
 	about, err := h.service.GetAboutById(strconv.Itoa(id))
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "Data not found", err)
+		utils.Error(c, http.StatusInternalServerError, "Data not found")
 		return
 	}
 
@@ -144,7 +144,7 @@ func (h *handler) UpdateAbout(c *gin.Context) {
 
 		avatarRes, err := utils.HandlUploadFile(avatar_file, "about")
 		if err != nil {
-			utils.Error(c, http.StatusInternalServerError, "failed to upload file", err)
+			utils.Error(c, http.StatusInternalServerError, "failed to upload file")
 			return
 		}
 
@@ -166,7 +166,7 @@ func (h *handler) UpdateAbout(c *gin.Context) {
 
 	data, err := h.service.UpdateAbout(payload, oldPath, newFileName)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to updated data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to updated data")
 		return
 	}
 
@@ -184,7 +184,7 @@ func (h *handler) DeleteAbout(c *gin.Context) {
 
 	data, err := h.service.DeleteAbout(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to deleted data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to deleted data")
 		return
 	}
 	utils.Success(c, "success deleted data", data)

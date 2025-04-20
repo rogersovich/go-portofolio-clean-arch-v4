@@ -13,7 +13,7 @@ import (
 func (h *handler) GetAll(c *gin.Context) {
 	data, err := h.service.GetAllProjectContentTempImgs()
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get all data", data)
@@ -23,7 +23,7 @@ func (h *handler) GetProjectContentTempImgById(c *gin.Context) {
 	id := c.Param("id")
 	data, err := h.service.GetProjectContentTempImgById(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get data", data)
@@ -70,7 +70,7 @@ func (h *handler) CreateProjectContentTempImg(c *gin.Context) {
 	//todo: Upload to minio
 	imageRes, err := utils.HandlUploadFile(image_file, "project")
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to upload file", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to upload file")
 		return
 	}
 
@@ -87,7 +87,7 @@ func (h *handler) CreateProjectContentTempImg(c *gin.Context) {
 
 	data, err := h.service.CreateProjectContentTempImg(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to created data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to created data")
 		return
 	}
 
@@ -103,7 +103,7 @@ func (h *handler) UpdateProjectContentTempImg(c *gin.Context) {
 
 	data, err := h.service.UpdateProjectContentTempImg(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to updated data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to updated data")
 		return
 	}
 
@@ -121,7 +121,7 @@ func (h *handler) DeleteProjectContentTempImg(c *gin.Context) {
 
 	data, err := h.service.DeleteProjectContentTempImg(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to deleted data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to deleted data")
 		return
 	}
 	utils.Success(c, "success deleted data", data)

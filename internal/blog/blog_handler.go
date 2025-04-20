@@ -14,7 +14,7 @@ import (
 func (h *handler) GetAll(c *gin.Context) {
 	data, err := h.service.GetAllBlogs()
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get all data", data)
@@ -65,13 +65,13 @@ func (h *handler) CreateBlog(c *gin.Context) {
 
 	author_id_int, err := strconv.Atoi(author_id)
 	if err != nil {
-		utils.Error(c, http.StatusBadRequest, "invalid author_id", err)
+		utils.Error(c, http.StatusBadRequest, "invalid author_id")
 		return
 	}
 
 	topic_ids_validated, err := utils.ValidateFormArrayString(topic_ids, "topic_ids", true)
 	if err != nil {
-		utils.Error(c, http.StatusBadRequest, "invalid topic_ids", err)
+		utils.Error(c, http.StatusBadRequest, "invalid topic_ids")
 		return
 	}
 

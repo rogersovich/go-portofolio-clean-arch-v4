@@ -10,7 +10,7 @@ import (
 func (h *handler) GetAll(c *gin.Context) {
 	data, err := h.service.GetAllProjectTechnologies()
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get all data", data)
@@ -20,7 +20,7 @@ func (h *handler) GetProjectTechnologyById(c *gin.Context) {
 	id := c.Param("id")
 	data, err := h.service.GetProjectTechnologyById(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
 	utils.Success(c, "success get data", data)
@@ -36,7 +36,7 @@ func (h *handler) CreateProjectTechnology(c *gin.Context) {
 
 	data, err := h.service.CreateProjectTechnology(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to created data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to created data")
 		return
 	}
 
@@ -54,7 +54,7 @@ func (h *handler) UpdateProjectTechnology(c *gin.Context) {
 
 	data, err := h.service.UpdateProjectTechnology(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to updated data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to updated data")
 		return
 	}
 
@@ -72,7 +72,7 @@ func (h *handler) DeleteProjectTechnology(c *gin.Context) {
 
 	data, err := h.service.DeleteProjectTechnology(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to deleted data", err)
+		utils.Error(c, http.StatusInternalServerError, "failed to deleted data")
 		return
 	}
 	utils.Success(c, "success deleted data", data)
