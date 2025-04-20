@@ -151,8 +151,8 @@ func (s *service) CheckCreateProjectImages(ids []string) error {
 	return nil
 }
 
-func (s *service) CheckUpdateProjectImages(project_id int, projectImages []ProjectImagesUpdatePayload) error {
-	total, err := s.repo.CheckUpdateProjectImages(project_id, projectImages)
+func (s *service) CheckUpdateProjectImages(projectImages []ProjectImagesUpdatePayload) error {
+	total, err := s.repo.CheckUpdateProjectImages(projectImages)
 	if err != nil {
 		return err
 	}
@@ -230,11 +230,11 @@ func (s *service) UpdateProject(p UpdateProjectRequest) (ProjectUpdateResponse, 
 	}
 
 	//* Check on Table Temp Project Images
-	// if len(p.ContentImageIds) > 0 {
-	// 	if err := s.CheckUpdateProjectImages(p.Id, p.ContentImageIds); err != nil {
-	// 		return ProjectUpdateResponse{}, err
-	// 	}
-	// }
+	if len(p.ContentImageIds) > 0 {
+		if err := s.CheckUpdateProjectImages(p.ContentImageIds); err != nil {
+			return ProjectUpdateResponse{}, err
+		}
+	}
 
 	var newFileURL string
 	var newFileName string

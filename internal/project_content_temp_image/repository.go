@@ -38,8 +38,7 @@ func (r *repository) FindById(id string) (ProjectContentTempImages, error) {
 func (r *repository) CreateProjectContentTempImg(p CreateProjectContentTempImgRequest) (ProjectContentTempImages, error) {
 	data := ProjectContentTempImages{
 		ImageUrl:      p.ImageUrl,
-		ImageFileName: p.ImageFileName,
-		IsUsed:        p.IsUsed == "Y"}
+		ImageFileName: p.ImageFileName}
 	err := r.db.Create(&data).Error
 	return data, err
 }
@@ -48,8 +47,7 @@ func (r *repository) UpdateProjectContentTempImg(p UpdateProjectContentTempImgRe
 	data := ProjectContentTempImages{
 		ID:            p.Id,
 		ImageUrl:      p.ImageUrl,
-		ImageFileName: p.ImageFileName,
-		IsUsed:        p.IsUsed == "Y"}
+		ImageFileName: p.ImageFileName}
 	err := r.db.Updates(&data).Error
 	return data, err
 }

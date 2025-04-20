@@ -21,7 +21,7 @@ type Repository interface {
 	CheckCreateProjectTechnologies(ids []string) (int, error)
 	CheckUpdateProjectTechnologies(projectTechs []ProjectTechUpdatePayload) (int, error)
 	CheckCreateProjectImages(ids []string) (int, error)
-	CheckUpdateProjectImages(project_id int, projectImages []ProjectImagesUpdatePayload) (int, error)
+	CheckUpdateProjectImages(projectImages []ProjectImagesUpdatePayload) (int, error)
 	UpdateProject(p UpdateProjectDTO) (ProjectUpdateResponse, error)
 	UpdateProjectStatistic(p ProjectStatisticUpdateDTO) (ProjectStatisticUpdateResponse, error)
 	DeleteProject(id int) (Project, error)
@@ -125,17 +125,16 @@ func (r *repository) CheckCreateProjectImages(ids []string) (total int, err erro
 	return total, err
 }
 
-func (r *repository) CheckUpdateProjectImages(project_id int, projectImages []ProjectImagesUpdatePayload) (total int, err error) {
+func (r *repository) CheckUpdateProjectImages(projectImages []ProjectImagesUpdatePayload) (total int, err error) {
 	var image_urls []string
 	for _, v := range projectImages {
 		image_urls = append(image_urls, v.ImageUrl)
 	}
 	err = r.db.Raw(`
-		SELECT COUNT(*) FROM project_content_images 
+		SELECT COUNT(*) FROM project_content_temp_images 
 		WHERE image_url IN ? AND
-		project_id = ? AND
 		deleted_at IS NULL
-	`, image_urls, project_id).Scan(&total).Error
+	`, image_urls).Scan(&total).Error
 	return total, err
 }
 

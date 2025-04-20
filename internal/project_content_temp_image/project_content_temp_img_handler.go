@@ -61,8 +61,6 @@ func (h *handler) ValidateImage(c *gin.Context) (file *multipart.FileHeader, err
 }
 
 func (h *handler) CreateProjectContentTempImg(c *gin.Context) {
-	is_used := "N"
-
 	image_file, errors, err := h.ValidateImage(c)
 	if err != nil {
 		utils.ErrorValidation(c, http.StatusBadRequest, err.Error(), errors)
@@ -80,7 +78,6 @@ func (h *handler) CreateProjectContentTempImg(c *gin.Context) {
 	req := CreateProjectContentTempImgRequest{
 		ImageUrl:      imageRes.FileURL,
 		ImageFileName: imageRes.FileName,
-		IsUsed:        is_used,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {
