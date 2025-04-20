@@ -192,7 +192,10 @@ func (r *repository) CreateProject(p CreateProjectDTO) (Project, error) {
 	// UPDATE to TABLE PROJECT CONTENT IMAGES
 	err = tx.Model(&project_content_image.ProjectContentImage{}).
 		Where("image_url IN ?", p.ProjectContentImages).
-		Update("project_id", data.ID).Error
+		Updates(map[string]interface{}{
+			"project_id": data.ID,
+			"is_used":    true,
+		}).Error
 
 	if err != nil {
 		tx.Rollback()
