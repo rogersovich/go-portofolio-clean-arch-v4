@@ -16,6 +16,7 @@ import (
 
 type Service interface {
 	GetAllBlogs() ([]BlogResponse, error)
+	GetBlogByIdWithRelations(id int) (BlogRelationResponse, error)
 	CreateBlog(p CreateBlogRequest) (BlogResponse, error)
 }
 
@@ -58,6 +59,81 @@ func (s *service) GetAllBlogs() ([]BlogResponse, error) {
 	for _, p := range datas {
 		result = append(result, ToBlogResponse(p))
 	}
+	return result, nil
+}
+
+func (s *service) GetBlogByIdWithRelations(id int) (BlogRelationResponse, error) {
+	data, err := s.blogRepo.FindByIdWithRelations(id)
+
+	if err != nil {
+		return BlogRelationResponse{}, err
+	}
+
+	// Mapping result
+	blogMap := map[int]*BlogRelationResponse{}
+
+	for _, row := range data {
+		blogID := int(row.ID)
+
+		//? "Comma-ok" itu fitur spesial
+		_, exists := blogMap[blogID]
+		if !exists {
+			var publishedAtPointer *string
+			if row.PublishedAt != nil {
+				formattedPublishedAt := row.PublishedAt.Format("2006-01-02 15:04:05")
+				publishedAtPointer = &formattedPublishedAt
+			}
+
+			blogAuthor := BlogAuthorDTO{
+				AuthorID:   row.AuthorID,
+				AuthorName: row.AuthorName,
+			}
+
+			blogReadingTime := BlogReadingTimeDTO{
+				ReadingTimeID:               row.ReadingTimeID,
+				ReadingTimeMinutes:          row.ReadingTimeMinutes,
+				ReadingTimeTextLength:       row.ReadingTimeTextLength,
+				ReadingTimeEstimatedSeconds: row.ReadingTimeEstimatedSeconds,
+				ReadingTimeWordCount:        row.ReadingTimeWordCount,
+				ReadingTimeType:             row.ReadingTimeType,
+			}
+
+			blogStatistic := BlogStatisticDTO{
+				StatisticID:    row.StatisticID,
+				StatisticLikes: row.StatisticLikes,
+				StatisticViews: row.StatisticViews,
+				StatisticType:  row.StatisticType,
+			}
+
+			blogMap[blogID] = &BlogRelationResponse{
+				ID:              blogID,
+				Title:           row.Title,
+				DescriptionHTML: row.DescriptionHTML,
+				BannerUrl:       row.BannerUrl,
+				BannerFileName:  row.BannerFileName,
+				Summary:         row.Summary,
+				Status:          row.Status,
+				PublishedAt:     publishedAtPointer,
+				CreatedAt:       row.CreatedAt.Format("2006-01-02 15:04:05"),
+				Author:          blogAuthor,
+				ReadingTime:     blogReadingTime,
+				Statistic:       blogStatistic,
+			}
+		}
+
+		blogMap[blogID].Topics = append(blogMap[blogID].Topics, BlogTopicDTO{
+			TopicID:   row.TopicID,
+			TopicName: row.TopicName,
+		})
+	}
+
+	// Convert Map to Struct
+	var result BlogRelationResponse
+	for _, v := range blogMap {
+		result = *v
+		break
+	}
+
 	return result, nil
 }
 

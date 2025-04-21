@@ -41,6 +41,74 @@ type BlogResponse struct {
 	CreatedAt       string  `json:"created_at"`
 }
 
+type RawBlogRelationResponse struct {
+	ID                          int        `json:"id"`
+	Title                       string     `json:"title"`
+	DescriptionHTML             string     `json:"description_html"`
+	BannerUrl                   string     `json:"banner_url"`
+	BannerFileName              string     `json:"banner_file_name"`
+	Summary                     string     `json:"summary"`
+	Status                      string     `json:"status"`
+	PublishedAt                 *time.Time `json:"published_at"`
+	CreatedAt                   time.Time  `json:"created_at"`
+	AuthorID                    int        `json:"author_id"`
+	AuthorName                  string     `json:"author_name"`
+	ReadingTimeID               int        `json:"reading_time_id"`
+	ReadingTimeMinutes          int        `json:"reading_time_minutes"`
+	ReadingTimeTextLength       int        `json:"reading_time_text_length"`
+	ReadingTimeEstimatedSeconds float64    `json:"reading_time_estimated_seconds"`
+	ReadingTimeWordCount        int        `json:"reading_time_word_count"`
+	ReadingTimeType             string     `json:"reading_time_type"`
+	StatisticID                 int        `json:"statistic_id"`
+	StatisticLikes              int        `json:"statistic_likes"`
+	StatisticViews              int        `json:"statistic_views"`
+	StatisticType               string     `json:"statistic_type"`
+	TopicID                     int        `json:"topic_id"`
+	TopicName                   string     `json:"topic_name"`
+}
+
+type BlogAuthorDTO struct {
+	AuthorID   int    `json:"id"`
+	AuthorName string `json:"name"`
+}
+
+type BlogReadingTimeDTO struct {
+	ReadingTimeID               int     `json:"id"`
+	ReadingTimeMinutes          int     `json:"minutes"`
+	ReadingTimeTextLength       int     `json:"text_length"`
+	ReadingTimeEstimatedSeconds float64 `json:"estimated_seconds"`
+	ReadingTimeWordCount        int     `json:"word_count"`
+	ReadingTimeType             string  `json:"type"`
+}
+
+type BlogStatisticDTO struct {
+	StatisticID    int    `json:"id"`
+	StatisticLikes int    `json:"likes"`
+	StatisticViews int    `json:"views"`
+	StatisticType  string `json:"type"`
+}
+
+type BlogTopicDTO struct {
+	TopicID   int    `json:"id"`
+	TopicName string `json:"name"`
+}
+
+type BlogRelationResponse struct {
+	ID              int                `json:"id"`
+	Title           string             `json:"title"`
+	DescriptionHTML string             `json:"description_html"`
+	BannerUrl       string             `json:"banner_url"`
+	BannerFileName  string             `json:"banner_file_name"`
+	Summary         string             `json:"summary"`
+	Status          string             `json:"status"`
+	PublishedAt     *string            `json:"published_at"`
+	CreatedAt       string             `json:"created_at"`
+	Author          BlogAuthorDTO      `json:"author"`
+	ReadingTime     BlogReadingTimeDTO `json:"reading_time"`
+	Statistic       BlogStatisticDTO   `json:"statistic"`
+	Topics          []BlogTopicDTO     `json:"topics"`
+}
+
 func ToBlogResponse(p Blog) BlogResponse {
 	var publishedAtPointer *string
 	if p.PublishedAt != nil {

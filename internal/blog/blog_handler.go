@@ -20,6 +20,20 @@ func (h *handler) GetAll(c *gin.Context) {
 	utils.Success(c, "success get all data", data)
 }
 
+func (h *handler) GetBlogByIdWithRelations(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		utils.Error(c, http.StatusBadRequest, "invalid ID")
+		return
+	}
+	data, err := h.service.GetBlogByIdWithRelations(id)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.Success(c, "success get data", data)
+}
+
 func (h *handler) ValidateBanner(c *gin.Context, validationCheck []string) (file *multipart.FileHeader, errors []utils.FieldError, err error) {
 	if len(validationCheck) == 0 {
 		validationCheck = []string{"required", "extension", "size"}

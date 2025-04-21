@@ -4,6 +4,7 @@ import "gorm.io/gorm"
 
 type Repository interface {
 	FindAll() ([]Blog, error)
+	FindByIdWithRelations(id int) ([]RawBlogRelationResponse, error)
 	CreateBlog(p CreateBlogDTO, tx *gorm.DB) (Blog, error)
 }
 
@@ -19,6 +20,55 @@ func (r *repository) FindAll() ([]Blog, error) {
 	var datas []Blog
 	err := r.db.Find(&datas).Error
 	return datas, err
+}
+
+func (r *repository) FindByIdWithRelations(id int) ([]RawBlogRelationResponse, error) {
+	var data []RawBlogRelationResponse
+	err := r.db.Raw(`
+		SELECT 
+			b.id, 
+			b.title,
+			b.description_html,
+			b.summary,
+			b.banner_url,
+			b.banner_file_name,
+			b.published_at,
+			b.status,
+			b.created_at,
+			a.id as author_id,
+			a.name as author_name,
+			rt.id as reading_time_id,
+			rt.minutes as reading_time_minutes,
+			rt.text_length as reading_time_text_length,
+			rt.estimated_seconds as reading_time_estimated_seconds,
+			rt.word_count as reading_time_word_count,
+			rt.type as reading_time_type,
+			s.id as statistic_id,
+			s.likes as statistic_likes,
+			s.views as statistic_views,
+			s.type as statistic_type,
+			t.id as topic_id,
+			t.name as topic_name
+		FROM blogs b
+		JOIN authors a ON a.id = b.author_id
+		JOIN reading_times rt ON rt.id = b.reading_time_id
+		JOIN statistics s ON s.id = b.statistic_id
+		JOIN blog_topics bt ON bt.blog_id = b.id
+		JOIN topics t ON t.id = bt.topic_id
+		WHERE 
+			b.id = ? AND 
+			b.deleted_at IS NULL
+	`, id).Scan(&data).Error
+
+	if err != nil {
+		return nil, err // handle DB or syntax error
+	}
+
+	if len(data) == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
+
+	return data, err
 }
 
 func (r *repository) CreateBlog(p CreateBlogDTO, tx *gorm.DB) (Blog, error) {

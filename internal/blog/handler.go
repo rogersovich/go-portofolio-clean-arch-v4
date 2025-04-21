@@ -42,7 +42,7 @@ func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	blog := r.Group("/blogs")
 	{
 		blog.GET("", h.GetAll)
-		// blog.GET("/:id", h.GetBlogByIdWithRelations)
+		blog.GET("/:id", h.GetBlogByIdWithRelations)
 		blog.POST("/store", h.CreateBlog)
 		// blog.POST("/update", h.UpdateBlog)
 		// blog.POST("/update-statistic", h.UpdateBlogStatistic)
