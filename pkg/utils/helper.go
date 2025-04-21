@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"net/http"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -15,7 +17,29 @@ import (
 )
 
 func Success(c *gin.Context, message string, data interface{}) {
-	c.JSON(200, gin.H{
+	if data == nil {
+		c.JSON(http.StatusOK, gin.H{
+			"data":    []interface{}{}, // default empty array
+			"message": message,
+			"status":  "ok",
+		})
+		return
+	}
+
+	t := reflect.TypeOf(data)
+	v := reflect.ValueOf(data)
+
+	// If it's a slice and nil, return empty array
+	if t.Kind() == reflect.Slice && v.IsNil() {
+		c.JSON(http.StatusOK, gin.H{
+			"data":    []interface{}{}, // empty JSON array
+			"message": message,
+			"status":  "ok",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
 		"data":    data,
 		"message": message,
 		"status":  "ok",
