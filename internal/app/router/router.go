@@ -5,6 +5,7 @@ import (
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/about"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/author"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/blog"
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/blog_content_image"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/blog_topic"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/project"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/project_content_image"
@@ -43,6 +44,7 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	reading_time.RegisterRoutes(api, db)
 	blog.RegisterRoutes(api, db)
 	blog_topic.RegisterRoutes(api, db)
+	blog_content_image.RegisterRoutes(api, db)
 
 	return r
 }
