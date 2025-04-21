@@ -2,8 +2,10 @@ package blog_content_image
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
+	"gorm.io/gorm"
 )
 
 type Service interface {
@@ -12,6 +14,8 @@ type Service interface {
 	CreateBlogContentImage(p CreateBlogContentImageRequest) (BlogContentImageResponse, error)
 	UpdateBlogContentImage(p UpdateBlogContentImageDTO, oldPath string, newFilePath string) (BlogContentImageUpdateResponse, error)
 	DeleteBlogContentImage(id int) (BlogContentImageResponse, error)
+	CheckHasBlogImages(image_urls []string) error
+	MarkImagesUsedByBlog(image_urls []string, blog_id int, tx *gorm.DB) error
 }
 
 type service struct {
@@ -74,4 +78,30 @@ func (s *service) DeleteBlogContentImage(id int) (BlogContentImageResponse, erro
 		return BlogContentImageResponse{}, err
 	}
 	return ToBlogContentImageResponse(data), nil
+}
+
+func (s *service) CheckHasBlogImages(image_urls []string) error {
+	total, err := s.repo.CheckHasBlogImages(image_urls)
+	if err != nil {
+		return err
+	}
+
+	if total != len(image_urls) {
+		err := fmt.Errorf("some project_content_images not found in database")
+		return err
+	}
+	return nil
+}
+
+func (s *service) MarkImagesUsedByBlog(image_urls []string, blog_id int, tx *gorm.DB) error {
+	payload := BlogContentImageBulkUpdateDTO{
+		ImageUrls: image_urls,
+		BlogID:    blog_id,
+	}
+	err := s.repo.MarkImagesUsedByBlog(payload, tx)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

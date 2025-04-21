@@ -76,6 +76,7 @@ func (h *handler) CreateBlog(c *gin.Context) {
 	summary := c.PostForm("summary")
 	author_id := c.PostForm("author_id")
 	topic_ids := c.PostFormArray("topic_ids[]")
+	content_images := c.PostFormArray("content_images[]")
 
 	author_id_int, err := strconv.Atoi(author_id)
 	if err != nil {
@@ -86,6 +87,12 @@ func (h *handler) CreateBlog(c *gin.Context) {
 	topic_ids_validated, err := utils.ValidateFormArrayString(topic_ids, "topic_ids", true)
 	if err != nil {
 		utils.Error(c, http.StatusBadRequest, "invalid topic_ids")
+		return
+	}
+
+	content_images_validated, err := utils.ValidateFormArrayString(content_images, "content_images", false)
+	if err != nil {
+		utils.Error(c, http.StatusBadRequest, "invalid content_images")
 		return
 	}
 
@@ -104,6 +111,7 @@ func (h *handler) CreateBlog(c *gin.Context) {
 		BannerFile:      image_file,
 		Summary:         summary,
 		IsPublished:     is_published,
+		ContentImages:   content_images_validated,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {

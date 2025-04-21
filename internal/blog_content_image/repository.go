@@ -10,6 +10,8 @@ type Repository interface {
 	CreateBlogContentImage(p CreateBlogContentImageRequest) (BlogContentImage, error)
 	UpdateBlogContentImage(p UpdateBlogContentImageDTO) (BlogContentImage, error)
 	DeleteBlogContentImage(id int) (BlogContentImage, error)
+	CheckHasBlogImages(image_urls []string) (total int, err error)
+	MarkImagesUsedByBlog(p BlogContentImageBulkUpdateDTO, tx *gorm.DB) error
 }
 
 type repository struct {
@@ -67,4 +69,37 @@ func (r *repository) DeleteBlogContentImage(id int) (BlogContentImage, error) {
 
 	// Step 3: Return the data
 	return data, nil
+}
+
+func (r *repository) CheckHasBlogImages(image_urls []string) (total int, err error) {
+	err = r.db.Raw(`
+		SELECT COUNT(*) FROM blog_content_images 
+		WHERE image_url IN ? AND
+		blog_id IS NULL AND
+		deleted_at IS NULL
+	`, image_urls).Scan(&total).Error
+	return total, err
+}
+
+func (r *repository) MarkImagesUsedByBlog(p BlogContentImageBulkUpdateDTO, tx *gorm.DB) error {
+	var db *gorm.DB
+	if tx != nil {
+		db = tx
+	} else {
+		db = r.db
+	}
+
+	// UPDATE to TABLE PROJECT CONTENT IMAGES
+	err := db.Model(&BlogContentImage{}).
+		Where("image_url IN ?", p.ImageUrls).
+		Updates(map[string]interface{}{
+			"blog_id": p.BlogID,
+			"is_used": true,
+		}).Error
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

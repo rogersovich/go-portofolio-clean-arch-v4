@@ -43,6 +43,11 @@ type BlogContentImageDeleteRequest struct {
 	ID int `json:"id" binding:"required"`
 }
 
+type BlogContentImageBulkUpdateDTO struct {
+	ImageUrls []string `json:"image_urls"`
+	BlogID    int      `json:"blog_id"`
+}
+
 func ToBlogContentImageResponse(p BlogContentImage) BlogContentImageResponse {
 	return BlogContentImageResponse{
 		ID:            p.ID,

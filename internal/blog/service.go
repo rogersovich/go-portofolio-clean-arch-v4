@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/author"
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/blog_content_image"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/blog_topic"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/reading_time"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/statistic"
@@ -21,13 +22,14 @@ type Service interface {
 }
 
 type service struct {
-	authorService      author.Service
-	topicService       topic.Service
-	statisticService   statistic.Service
-	readingTimeService reading_time.Service
-	blogTopicService   blog_topic.Service
-	blogRepo           Repository
-	db                 *gorm.DB
+	authorService           author.Service
+	topicService            topic.Service
+	statisticService        statistic.Service
+	readingTimeService      reading_time.Service
+	blogTopicService        blog_topic.Service
+	blogContentImageService blog_content_image.Service
+	blogRepo                Repository
+	db                      *gorm.DB
 }
 
 func NewService(
@@ -36,16 +38,18 @@ func NewService(
 	statisticSvc statistic.Service,
 	readingTimeSvc reading_time.Service,
 	blogTopicSvc blog_topic.Service,
+	blogContentImageSvc blog_content_image.Service,
 	r Repository,
 	db *gorm.DB) Service {
 	return &service{
-		authorService:      authorSvc,
-		topicService:       topicSvc,
-		statisticService:   statisticSvc,
-		readingTimeService: readingTimeSvc,
-		blogTopicService:   blogTopicSvc,
-		blogRepo:           r,
-		db:                 db,
+		authorService:           authorSvc,
+		topicService:            topicSvc,
+		statisticService:        statisticSvc,
+		readingTimeService:      readingTimeSvc,
+		blogTopicService:        blogTopicSvc,
+		blogContentImageService: blogContentImageSvc,
+		blogRepo:                r,
+		db:                      db,
 	}
 }
 
@@ -155,6 +159,12 @@ func (s *service) CreateBlog(p CreateBlogRequest) (BlogResponse, error) {
 		return BlogResponse{}, err
 	}
 
+	//todo: Check Content Images
+	err = s.blogContentImageService.CheckHasBlogImages(p.ContentImages)
+	if err != nil {
+		return BlogResponse{}, err
+	}
+
 	var publishedAt *time.Time
 	var status string
 	if p.IsPublished == "Y" {
@@ -234,6 +244,17 @@ func (s *service) CreateBlog(p CreateBlogRequest) (BlogResponse, error) {
 
 	//todo: Create Blog Topic
 	err = s.blogTopicService.BulkCreateBlogTopic(topic_ids, data.ID, tx)
+	if err != nil {
+		tx.Rollback()
+		//? Delete banner image
+		if uploadedImageFilName != "" {
+			_ = utils.DeleteFromMinio(context.Background(), uploadedImageFilName)
+		}
+		return BlogResponse{}, err
+	}
+
+	//todo: Update Blog Content Images
+	err = s.blogContentImageService.MarkImagesUsedByBlog(p.ContentImages, data.ID, tx)
 	if err != nil {
 		tx.Rollback()
 		//? Delete banner image

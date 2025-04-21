@@ -7,6 +7,7 @@ import (
 
 type CreateBlogRequest struct {
 	TopicIds        []string
+	ContentImages   []string
 	AuthorID        int    `validate:"required"`
 	Title           string `validate:"required"`
 	DescriptionHTML string `validate:"required"`
