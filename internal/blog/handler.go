@@ -3,6 +3,8 @@ package blog
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/author"
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/reading_time"
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/statistic"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/topic"
 	"gorm.io/gorm"
 )
@@ -20,8 +22,16 @@ func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	topicRepo := topic.NewRepository(db)
 	topicService := topic.NewService(topicRepo)
 
+	//* Create statistic repo & service
+	statisticRepo := statistic.NewRepository(db)
+	statisticService := statistic.NewService(statisticRepo)
+
+	//* Create readingTime repo & service
+	readingTimeRepo := reading_time.NewRepository(db)
+	readingTimeService := reading_time.NewService(readingTimeRepo)
+
 	blogRepo := NewRepository(db)
-	blogService := NewService(authorService, topicService, blogRepo)
+	blogService := NewService(authorService, topicService, statisticService, readingTimeService, blogRepo, db)
 	h := handler{service: blogService}
 
 	blog := r.Group("/blogs")

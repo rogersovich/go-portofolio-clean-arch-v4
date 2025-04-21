@@ -39,7 +39,7 @@ func (h *handler) CreateReadingTime(c *gin.Context) {
 		return
 	}
 
-	data, err := h.service.CreateReadingTime(req)
+	data, err := h.service.CreateReadingTime(req, nil)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, "failed to created data")
 		return

@@ -8,6 +8,7 @@ type Repository interface {
 	FindAll() ([]Statistic, error)
 	FindById(id string) (Statistic, error)
 	CreateStatistic(p CreateStatisticRequest) (Statistic, error)
+	CreateStatisticWithTx(p CreateStatisticRequest, tx *gorm.DB) (Statistic, error)
 	UpdateStatistic(p UpdateStatisticRequest) (Statistic, error)
 	DeleteStatistic(id int) (Statistic, error)
 }
@@ -38,6 +39,15 @@ func (r *repository) CreateStatistic(p CreateStatisticRequest) (Statistic, error
 		Views: p.Views,
 		Type:  p.Type}
 	err := r.db.Create(&data).Error
+	return data, err
+}
+
+func (r *repository) CreateStatisticWithTx(p CreateStatisticRequest, tx *gorm.DB) (Statistic, error) {
+	data := Statistic{
+		Likes: p.Likes,
+		Views: p.Views,
+		Type:  p.Type}
+	err := tx.Create(&data).Error
 	return data, err
 }
 

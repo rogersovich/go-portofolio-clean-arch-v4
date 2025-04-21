@@ -1,9 +1,11 @@
 package reading_time
 
+import "gorm.io/gorm"
+
 type Service interface {
 	GetAllReadingTimes() ([]ReadingTimeResponse, error)
 	GetReadingTimeById(id string) (ReadingTimeResponse, error)
-	CreateReadingTime(p CreateReadingTimeRequest) (ReadingTimeResponse, error)
+	CreateReadingTime(p CreateReadingTimeRequest, tx *gorm.DB) (ReadingTimeResponse, error)
 	UpdateReadingTime(p UpdateReadingTimeRequest) (ReadingTimeUpdateResponse, error)
 	DeleteReadingTime(id int) (ReadingTime, error)
 }
@@ -37,8 +39,8 @@ func (s *service) GetReadingTimeById(id string) (ReadingTimeResponse, error) {
 	return ToReadingTimeResponse(data), nil
 }
 
-func (s *service) CreateReadingTime(p CreateReadingTimeRequest) (ReadingTimeResponse, error) {
-	data, err := s.repo.CreateReadingTime(p)
+func (s *service) CreateReadingTime(p CreateReadingTimeRequest, tx *gorm.DB) (ReadingTimeResponse, error) {
+	data, err := s.repo.CreateReadingTime(p, tx)
 	if err != nil {
 		return ReadingTimeResponse{}, err
 	}

@@ -16,8 +16,10 @@ type CreateBlogRequest struct {
 }
 
 type CreateBlogDTO struct {
-	Id              int
 	TopicIds        []string
+	AuthorID        int
+	StatisticID     int
+	ReadingTimeID   int
 	Title           string
 	DescriptionHTML string
 	BannerUrl       string
