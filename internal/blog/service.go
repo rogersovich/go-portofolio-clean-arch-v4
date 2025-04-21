@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/author"
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/blog_topic"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/reading_time"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/statistic"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/topic"
@@ -23,16 +24,25 @@ type service struct {
 	topicService       topic.Service
 	statisticService   statistic.Service
 	readingTimeService reading_time.Service
+	blogTopicService   blog_topic.Service
 	blogRepo           Repository
 	db                 *gorm.DB
 }
 
-func NewService(authorSvc author.Service, topicSvc topic.Service, statisticSvc statistic.Service, readingTimeSvc reading_time.Service, r Repository, db *gorm.DB) Service {
+func NewService(
+	authorSvc author.Service,
+	topicSvc topic.Service,
+	statisticSvc statistic.Service,
+	readingTimeSvc reading_time.Service,
+	blogTopicSvc blog_topic.Service,
+	r Repository,
+	db *gorm.DB) Service {
 	return &service{
 		authorService:      authorSvc,
 		topicService:       topicSvc,
 		statisticService:   statisticSvc,
 		readingTimeService: readingTimeSvc,
+		blogTopicService:   blogTopicSvc,
 		blogRepo:           r,
 		db:                 db,
 	}
@@ -139,20 +149,21 @@ func (s *service) CreateBlog(p CreateBlogRequest) (BlogResponse, error) {
 	data, err := s.blogRepo.CreateBlog(payload, tx)
 	if err != nil {
 		tx.Rollback()
+		//? Delete banner image
 		if uploadedImageFilName != "" {
 			_ = utils.DeleteFromMinio(context.Background(), uploadedImageFilName)
 		}
 		return BlogResponse{}, err
 	}
 
-	isFail := true
-
-	if isFail {
+	//todo: Create Blog Topic
+	err = s.blogTopicService.BulkCreateBlogTopic(topic_ids, data.ID, tx)
+	if err != nil {
 		tx.Rollback()
+		//? Delete banner image
 		if uploadedImageFilName != "" {
 			_ = utils.DeleteFromMinio(context.Background(), uploadedImageFilName)
 		}
-		err = fmt.Errorf("test failed create blog")
 		return BlogResponse{}, err
 	}
 

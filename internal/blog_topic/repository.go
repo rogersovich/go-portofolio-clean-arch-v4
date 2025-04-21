@@ -8,6 +8,7 @@ type Repository interface {
 	FindAll() ([]BlogTopic, error)
 	FindById(id string) (BlogTopic, error)
 	CreateBlogTopic(p CreateBlogTopicRequest) (BlogTopic, error)
+	BulkCreateBlogTopic(topic_ids []int, blog_id int, tx *gorm.DB) error
 	UpdateBlogTopic(p UpdateBlogTopicRequest) (BlogTopic, error)
 	DeleteBlogTopic(id int) (BlogTopic, error)
 }
@@ -38,6 +39,30 @@ func (r *repository) CreateBlogTopic(p CreateBlogTopicRequest) (BlogTopic, error
 		TopicID: p.TopicID}
 	err := r.db.Create(&data).Error
 	return data, err
+}
+
+func (r *repository) BulkCreateBlogTopic(topic_ids []int, blog_id int, tx *gorm.DB) error {
+	var db *gorm.DB
+	if tx != nil {
+		db = tx
+	} else {
+		db = r.db
+	}
+
+	var blog_topics []BlogTopic
+
+	for _, topic_id := range topic_ids {
+		blog_topics = append(blog_topics, BlogTopic{
+			BlogID:  blog_id,
+			TopicID: topic_id,
+		})
+	}
+
+	if err := db.Create(&blog_topics).Error; err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *repository) UpdateBlogTopic(p UpdateBlogTopicRequest) (BlogTopic, error) {

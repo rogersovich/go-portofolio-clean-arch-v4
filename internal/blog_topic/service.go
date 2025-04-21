@@ -1,9 +1,12 @@
 package blog_topic
 
+import "gorm.io/gorm"
+
 type Service interface {
 	GetAllBlogTopics() ([]BlogTopicResponse, error)
 	GetBlogTopicById(id string) (BlogTopicResponse, error)
 	CreateBlogTopic(p CreateBlogTopicRequest) (BlogTopicResponse, error)
+	BulkCreateBlogTopic(topic_ids []int, project_id int, tx *gorm.DB) error
 	UpdateBlogTopic(p UpdateBlogTopicRequest) (BlogTopicUpdateResponse, error)
 	DeleteBlogTopic(id int) (BlogTopic, error)
 }
@@ -43,6 +46,14 @@ func (s *service) CreateBlogTopic(p CreateBlogTopicRequest) (BlogTopicResponse, 
 		return BlogTopicResponse{}, err
 	}
 	return ToBlogTopicResponse(data), nil
+}
+
+func (s *service) BulkCreateBlogTopic(topic_ids []int, blog_id int, tx *gorm.DB) error {
+	err := s.repo.BulkCreateBlogTopic(topic_ids, blog_id, tx)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *service) UpdateBlogTopic(p UpdateBlogTopicRequest) (BlogTopicUpdateResponse, error) {
