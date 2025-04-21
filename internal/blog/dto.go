@@ -66,6 +66,9 @@ type RawBlogRelationResponse struct {
 	StatisticType               string     `json:"statistic_type"`
 	TopicID                     int        `json:"topic_id"`
 	TopicName                   string     `json:"topic_name"`
+	BlogContentImageID          int        `json:"blog_content_image_id"`
+	BlogContentImageUrl         string     `json:"blog_content_image_url"`
+	BlogContentImageFileName    string     `json:"blog_content_image_file_name"`
 }
 
 type BlogAuthorDTO struct {
@@ -94,20 +97,27 @@ type BlogTopicDTO struct {
 	TopicName string `json:"name"`
 }
 
+type BlogContentImageDTO struct {
+	BlogContentImageID       int    `json:"id"`
+	BlogContentImageUrl      string `json:"image_url"`
+	BlogContentImageFileName string `json:"image_file_name"`
+}
+
 type BlogRelationResponse struct {
-	ID              int                `json:"id"`
-	Title           string             `json:"title"`
-	DescriptionHTML string             `json:"description_html"`
-	BannerUrl       string             `json:"banner_url"`
-	BannerFileName  string             `json:"banner_file_name"`
-	Summary         string             `json:"summary"`
-	Status          string             `json:"status"`
-	PublishedAt     *string            `json:"published_at"`
-	CreatedAt       string             `json:"created_at"`
-	Author          BlogAuthorDTO      `json:"author"`
-	ReadingTime     BlogReadingTimeDTO `json:"reading_time"`
-	Statistic       BlogStatisticDTO   `json:"statistic"`
-	Topics          []BlogTopicDTO     `json:"topics"`
+	ID              int                   `json:"id"`
+	Title           string                `json:"title"`
+	DescriptionHTML string                `json:"description_html"`
+	BannerUrl       string                `json:"banner_url"`
+	BannerFileName  string                `json:"banner_file_name"`
+	Summary         string                `json:"summary"`
+	Status          string                `json:"status"`
+	PublishedAt     *string               `json:"published_at"`
+	CreatedAt       string                `json:"created_at"`
+	Author          BlogAuthorDTO         `json:"author"`
+	ReadingTime     BlogReadingTimeDTO    `json:"reading_time"`
+	Statistic       BlogStatisticDTO      `json:"statistic"`
+	Topics          []BlogTopicDTO        `json:"topics"`
+	ContentImages   []BlogContentImageDTO `json:"content_image"`
 }
 
 func ToBlogResponse(p Blog) BlogResponse {

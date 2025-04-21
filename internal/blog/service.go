@@ -122,6 +122,8 @@ func (s *service) GetBlogByIdWithRelations(id int) (BlogRelationResponse, error)
 				Author:          blogAuthor,
 				ReadingTime:     blogReadingTime,
 				Statistic:       blogStatistic,
+				ContentImages:   []BlogContentImageDTO{},
+				Topics:          []BlogTopicDTO{},
 			}
 		}
 
@@ -129,6 +131,14 @@ func (s *service) GetBlogByIdWithRelations(id int) (BlogRelationResponse, error)
 			TopicID:   row.TopicID,
 			TopicName: row.TopicName,
 		})
+
+		if row.BlogContentImageID != 0 {
+			blogMap[blogID].ContentImages = append(blogMap[blogID].ContentImages, BlogContentImageDTO{
+				BlogContentImageID:       row.BlogContentImageID,
+				BlogContentImageUrl:      row.BlogContentImageUrl,
+				BlogContentImageFileName: row.BlogContentImageFileName,
+			})
+		}
 	}
 
 	// Convert Map to Struct
