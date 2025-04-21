@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -196,4 +197,16 @@ func ExtractHTMLtoStatistics(htmlContent string) ReadingStats {
 	}
 
 	return stats
+}
+
+func ConvertStringSliceToIntSlice(strs []string) ([]int, error) {
+	ints := make([]int, len(strs))
+	for i, s := range strs {
+		num, err := strconv.Atoi(s)
+		if err != nil {
+			return nil, err // return error if any string is not a valid integer
+		}
+		ints[i] = num
+	}
+	return ints, nil
 }

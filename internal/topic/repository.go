@@ -1,4 +1,4 @@
-package topics
+package topic
 
 import (
 	"gorm.io/gorm"
@@ -10,6 +10,7 @@ type Repository interface {
 	CreateTopic(p CreateTopicRequest) (Topic, error)
 	UpdateTopic(p UpdateTopicRequest) (Topic, error)
 	DeleteTopic(id int) (Topic, error)
+	CheckTopicIds(ids []int) ([]Topic, error)
 }
 
 type repository struct {
@@ -62,4 +63,10 @@ func (r *repository) DeleteTopic(id int) (Topic, error) {
 
 	// Step 3: Return the data
 	return data, nil
+}
+
+func (r *repository) CheckTopicIds(ids []int) ([]Topic, error) {
+	var data []Topic
+	err := r.db.Where("id in (?)", ids).Select("id", "name").Find(&data).Error
+	return data, err
 }

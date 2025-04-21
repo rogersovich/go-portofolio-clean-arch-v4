@@ -88,19 +88,16 @@ func ValidateStruct(c *gin.Context, requestStruct interface{}, bindErr error) bo
 	// Fallback for non-validation binding errors (e.g. malformed JSON)
 	switch err := bindErr.(type) {
 	case *json.SyntaxError:
-		c.JSON(400, gin.H{
-			"error": fmt.Sprintf("Malformed JSON at offset %d", err.Offset),
-		})
+		errSyntax := fmt.Sprintf("Malformed JSON at offset %d", err.Offset)
+		Error(c, 400, errSyntax)
 		return false
 	case *json.UnmarshalTypeError:
-		c.JSON(400, gin.H{
-			"error": fmt.Sprintf("Wrong type for field '%s': %s", err.Field, err.Error()),
-		})
+		errUnmarshal := fmt.Sprintf("Field '%s' expects type %s, but got value '%s'", err.Field, err.Type, err.Value)
+		Error(c, 400, errUnmarshal)
 		return false
 	default:
-		c.JSON(400, gin.H{
-			"error": "Invalid request body: " + bindErr.Error(),
-		})
+		errMessage := "Invalid request body: " + bindErr.Error()
+		Error(c, 400, errMessage)
 		return false
 	}
 }

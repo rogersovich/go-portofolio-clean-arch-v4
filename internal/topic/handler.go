@@ -1,4 +1,4 @@
-package topics
+package topic
 
 import (
 	"github.com/gin-gonic/gin"
@@ -21,5 +21,6 @@ func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
 		topic.POST("/store", h.CreateTopic)
 		topic.POST("/update", h.UpdateTopic)
 		topic.POST("/delete", h.DeleteTopic)
+		topic.POST("/check-has-ids", h.CheckTopicIds)
 	}
 }

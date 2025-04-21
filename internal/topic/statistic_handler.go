@@ -1,4 +1,4 @@
-package topics
+package topic
 
 import (
 	"net/http"
@@ -76,4 +76,19 @@ func (h *handler) DeleteTopic(c *gin.Context) {
 		return
 	}
 	utils.Success(c, "success deleted data", data)
+}
+
+func (h *handler) CheckTopicIds(c *gin.Context) {
+	var req TopicCheckIdsRequest
+
+	if !utils.ValidateStruct(c, &req, c.ShouldBindJSON(&req)) {
+		return
+	}
+
+	data, err := h.service.CheckTopicIds(req.Ids)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.Success(c, "success fetch data", data)
 }

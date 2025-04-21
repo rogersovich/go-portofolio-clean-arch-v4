@@ -1,4 +1,6 @@
-package topics
+package topic
+
+import "fmt"
 
 type Service interface {
 	GetAllTopics() ([]TopicResponse, error)
@@ -6,6 +8,7 @@ type Service interface {
 	CreateTopic(p CreateTopicRequest) (TopicResponse, error)
 	UpdateTopic(p UpdateTopicRequest) (TopicUpdateResponse, error)
 	DeleteTopic(id int) (Topic, error)
+	CheckTopicIds(ids []int) ([]TopicHasCheckResponse, error)
 }
 
 type service struct {
@@ -60,4 +63,26 @@ func (s *service) DeleteTopic(id int) (Topic, error) {
 		return Topic{}, err
 	}
 	return data, nil
+}
+
+func (s *service) CheckTopicIds(ids []int) ([]TopicHasCheckResponse, error) {
+	data, err := s.repo.CheckTopicIds(ids)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(data) != len(ids) {
+		err := fmt.Errorf("some topic_ids not found in database")
+		return nil, err
+	}
+
+	var res []TopicHasCheckResponse
+	for _, p := range data {
+		res = append(res, TopicHasCheckResponse{
+			ID:   p.ID,
+			Name: p.Name,
+		})
+	}
+
+	return res, nil
 }

@@ -1,4 +1,4 @@
-package topics
+package topic
 
 type CreateTopicRequest struct {
 	Name string `json:"name" binding:"required"`
@@ -15,6 +15,11 @@ type TopicResponse struct {
 	CreatedAt string `json:"created_at"`
 }
 
+type TopicHasCheckResponse struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
 type TopicUpdateResponse struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
@@ -22,6 +27,10 @@ type TopicUpdateResponse struct {
 
 type TopicDeleteRequest struct {
 	ID int `json:"id" binding:"required"`
+}
+
+type TopicCheckIdsRequest struct {
+	Ids []int `json:"ids" binding:"required,dive,gt=0"`
 }
 
 func ToTopicResponse(p Topic) TopicResponse {
