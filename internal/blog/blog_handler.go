@@ -1,6 +1,7 @@
 package blog
 
 import (
+	"encoding/json"
 	"fmt"
 	"mime/multipart"
 	"net/http"
@@ -120,6 +121,71 @@ func (h *handler) CreateBlog(c *gin.Context) {
 	}
 
 	data, err := h.service.CreateBlog(req)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.Success(c, "success get data", data)
+}
+
+func (h *handler) UpdateBlog(c *gin.Context) {
+	// Validate the struct using validator
+	id, err := strconv.Atoi(c.PostForm("id"))
+	if err != nil {
+		utils.Error(c, http.StatusBadRequest, "invalid ID")
+		return
+	}
+	// Validate the struct using validator
+	author_id, err := strconv.Atoi(c.PostForm("author_id"))
+	if err != nil {
+		utils.Error(c, http.StatusBadRequest, "invalid Author ID")
+		return
+	}
+
+	title := c.PostForm("title")
+	description := c.PostForm("description")
+	is_published := c.PostForm("is_published") // Y or N
+	summary := c.PostForm("summary")
+
+	var topic_ids []UpdateBlogTopicDTO
+	if err := json.Unmarshal([]byte(c.PostForm("topic_ids")), &topic_ids); err != nil {
+		utils.Error(c, http.StatusBadRequest, "Invalid topic_ids format")
+		return
+	}
+
+	var content_images []UpdateBlogContentImageDTO
+	if err := json.Unmarshal([]byte(c.PostForm("content_images")), &content_images); err != nil {
+		utils.Error(c, http.StatusBadRequest, "Invalid content_images format")
+		return
+	}
+
+	validationCheck := []string{"extension", "size"}
+	banner_file, errors, err := h.ValidateBanner(c, validationCheck)
+	if err != nil {
+		utils.ErrorValidation(c, http.StatusBadRequest, err.Error(), errors)
+		return
+	}
+
+	// Validate the struct using validator
+	req := UpdateBlogRequest{
+		ID:              id,
+		Title:           title,
+		DescriptionHTML: description,
+		BannerFile:      banner_file,
+		Summary:         summary,
+		IsPublished:     is_published,
+		TopicIds:        topic_ids,
+		ContentImages:   content_images,
+		AuthorID:        author_id,
+	}
+
+	if verr := utils.ValidateRequest(&req); verr != nil {
+		utils.ErrorValidation(c, http.StatusBadRequest, "Validation Error", verr)
+		return
+	}
+
+	data, err := h.service.UpdateBlog(req)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return

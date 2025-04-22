@@ -49,8 +49,7 @@ func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
 		blog.GET("", h.GetAll)
 		blog.GET("/:id", h.GetBlogByIdWithRelations)
 		blog.POST("/store", h.CreateBlog)
-		// blog.POST("/update", h.UpdateBlog)
-		// blog.POST("/update-statistic", h.UpdateBlogStatistic)
+		blog.POST("/update", h.UpdateBlog)
 		// blog.POST("/delete", h.DeleteBlog)
 	}
 }

@@ -103,6 +103,43 @@ type BlogContentImageDTO struct {
 	BlogContentImageFileName string `json:"image_file_name"`
 }
 
+type UpdateBlogRequest struct {
+	ID              int                         `validate:"required"`
+	TopicIds        []UpdateBlogTopicDTO        `validate:"required,dive"`
+	ContentImages   []UpdateBlogContentImageDTO `validate:"required,dive"`
+	AuthorID        int                         `validate:"required"`
+	Title           string                      `validate:"required"`
+	DescriptionHTML string                      `validate:"required"`
+	BannerFile      *multipart.FileHeader
+	Summary         string `validate:"required"`
+	IsPublished     string `validate:"required,oneof=Y N"`
+}
+
+type UpdateBlogDTO struct {
+	ID              int
+	TopicIds        []string
+	AuthorID        int
+	StatisticID     int
+	ReadingTimeID   int
+	Title           string
+	DescriptionHTML string
+	BannerUrl       string
+	BannerFileName  string
+	Summary         string
+	Status          string
+	PublishedAt     *time.Time
+}
+
+type UpdateBlogTopicDTO struct {
+	ID      int `json:"id"`
+	TopicID int `json:"topic_id"`
+}
+
+type UpdateBlogContentImageDTO struct {
+	ID       int    `json:"id"`
+	ImageUrl string `json:"image_url"`
+}
+
 type BlogRelationResponse struct {
 	ID              int                   `json:"id"`
 	Title           string                `json:"title"`

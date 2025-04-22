@@ -19,6 +19,7 @@ type Service interface {
 	GetAllBlogs() ([]BlogResponse, error)
 	GetBlogByIdWithRelations(id int) (BlogRelationResponse, error)
 	CreateBlog(p CreateBlogRequest) (BlogResponse, error)
+	UpdateBlog(p UpdateBlogRequest) (BlogResponse, error)
 }
 
 type service struct {
@@ -279,6 +280,9 @@ func (s *service) CreateBlog(p CreateBlogRequest) (BlogResponse, error) {
 		return BlogResponse{}, err
 	}
 
-	// return BlogResponse{}, nil
 	return ToBlogResponse(data), nil
+}
+
+func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogResponse, error) {
+	return BlogResponse{}, nil
 }
