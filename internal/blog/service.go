@@ -284,5 +284,6 @@ func (s *service) CreateBlog(p CreateBlogRequest) (BlogResponse, error) {
 }
 
 func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogResponse, error) {
+	utils.PrintJSON(p)
 	return BlogResponse{}, nil
 }
