@@ -14,8 +14,9 @@ type Service interface {
 	CreateBlogContentImage(p CreateBlogContentImageRequest) (BlogContentImageResponse, error)
 	UpdateBlogContentImage(p UpdateBlogContentImageDTO, oldPath string, newFilePath string) (BlogContentImageUpdateResponse, error)
 	DeleteBlogContentImage(id int) (BlogContentImageResponse, error)
-	CheckHasBlogImages(image_urls []string) error
+	CountUnlinkedImages(image_urls []string) error
 	MarkImagesUsedByBlog(image_urls []string, blog_id int, tx *gorm.DB) error
+	CountImagesLinkedToBlog(image_urls []string, blog_id int) error
 }
 
 type service struct {
@@ -80,14 +81,14 @@ func (s *service) DeleteBlogContentImage(id int) (BlogContentImageResponse, erro
 	return ToBlogContentImageResponse(data), nil
 }
 
-func (s *service) CheckHasBlogImages(image_urls []string) error {
-	total, err := s.repo.CheckHasBlogImages(image_urls)
+func (s *service) CountUnlinkedImages(image_urls []string) error {
+	total, err := s.repo.CountUnlinkedImages(image_urls)
 	if err != nil {
 		return err
 	}
 
 	if total != len(image_urls) {
-		err := fmt.Errorf("some project_content_images not found in database")
+		err := fmt.Errorf("some blog_content_images not found in database")
 		return err
 	}
 	return nil
@@ -103,5 +104,18 @@ func (s *service) MarkImagesUsedByBlog(image_urls []string, blog_id int, tx *gor
 		return err
 	}
 
+	return nil
+}
+
+func (s *service) CountImagesLinkedToBlog(image_urls []string, blog_id int) error {
+	total, err := s.repo.CountImagesLinkedToBlog(image_urls, blog_id)
+	if err != nil {
+		return err
+	}
+
+	if total != len(image_urls) {
+		err := fmt.Errorf("some blog_content_images by blog_id not found in database")
+		return err
+	}
 	return nil
 }

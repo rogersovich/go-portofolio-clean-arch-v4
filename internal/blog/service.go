@@ -7,6 +7,7 @@ import (
 
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/author"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/blog_content_image"
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/blog_content_temp_image"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/blog_topic"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/reading_time"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/statistic"
@@ -18,19 +19,21 @@ import (
 type Service interface {
 	GetAllBlogs() ([]BlogResponse, error)
 	GetBlogByIdWithRelations(id int) (BlogRelationResponse, error)
+	GetBlogById(id int) (BlogResponse, error)
 	CreateBlog(p CreateBlogRequest) (BlogResponse, error)
-	UpdateBlog(p UpdateBlogRequest) (BlogResponse, error)
+	UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error)
 }
 
 type service struct {
-	authorService           author.Service
-	topicService            topic.Service
-	statisticService        statistic.Service
-	readingTimeService      reading_time.Service
-	blogTopicService        blog_topic.Service
-	blogContentImageService blog_content_image.Service
-	blogRepo                Repository
-	db                      *gorm.DB
+	authorService               author.Service
+	topicService                topic.Service
+	statisticService            statistic.Service
+	readingTimeService          reading_time.Service
+	blogTopicService            blog_topic.Service
+	blogContentImageService     blog_content_image.Service
+	blogContentTempImageService blog_content_temp_image.Service
+	blogRepo                    Repository
+	db                          *gorm.DB
 }
 
 func NewService(
@@ -40,17 +43,19 @@ func NewService(
 	readingTimeSvc reading_time.Service,
 	blogTopicSvc blog_topic.Service,
 	blogContentImageSvc blog_content_image.Service,
+	blogContentTempImageSvc blog_content_temp_image.Service,
 	r Repository,
 	db *gorm.DB) Service {
 	return &service{
-		authorService:           authorSvc,
-		topicService:            topicSvc,
-		statisticService:        statisticSvc,
-		readingTimeService:      readingTimeSvc,
-		blogTopicService:        blogTopicSvc,
-		blogContentImageService: blogContentImageSvc,
-		blogRepo:                r,
-		db:                      db,
+		authorService:               authorSvc,
+		topicService:                topicSvc,
+		statisticService:            statisticSvc,
+		readingTimeService:          readingTimeSvc,
+		blogTopicService:            blogTopicSvc,
+		blogContentImageService:     blogContentImageSvc,
+		blogContentTempImageService: blogContentTempImageSvc,
+		blogRepo:                    r,
+		db:                          db,
 	}
 }
 
@@ -65,6 +70,14 @@ func (s *service) GetAllBlogs() ([]BlogResponse, error) {
 		result = append(result, ToBlogResponse(p))
 	}
 	return result, nil
+}
+
+func (s *service) GetBlogById(id int) (BlogResponse, error) {
+	data, err := s.blogRepo.FindById(id)
+	if err != nil {
+		return BlogResponse{}, err
+	}
+	return data, nil
 }
 
 func (s *service) GetBlogByIdWithRelations(id int) (BlogRelationResponse, error) {
@@ -134,11 +147,18 @@ func (s *service) GetBlogByIdWithRelations(id int) (BlogRelationResponse, error)
 		})
 
 		if row.BlogContentImageID != 0 {
-			blogMap[blogID].ContentImages = append(blogMap[blogID].ContentImages, BlogContentImageDTO{
-				BlogContentImageID:       row.BlogContentImageID,
-				BlogContentImageUrl:      row.BlogContentImageUrl,
-				BlogContentImageFileName: row.BlogContentImageFileName,
-			})
+			seen := make(map[int]bool) // Map to check if the ID is already seen
+			for _, img := range blogMap[blogID].ContentImages {
+				seen[img.BlogContentImageID] = true
+			}
+
+			if !seen[row.BlogContentImageID] {
+				blogMap[blogID].ContentImages = append(blogMap[blogID].ContentImages, BlogContentImageDTO{
+					BlogContentImageID:       row.BlogContentImageID,
+					BlogContentImageUrl:      row.BlogContentImageUrl,
+					BlogContentImageFileName: row.BlogContentImageFileName,
+				})
+			}
 		}
 	}
 
@@ -171,7 +191,7 @@ func (s *service) CreateBlog(p CreateBlogRequest) (BlogResponse, error) {
 	}
 
 	//todo: Check Content Images
-	err = s.blogContentImageService.CheckHasBlogImages(p.ContentImages)
+	err = s.blogContentImageService.CountUnlinkedImages(p.ContentImages)
 	if err != nil {
 		return BlogResponse{}, err
 	}
@@ -283,7 +303,128 @@ func (s *service) CreateBlog(p CreateBlogRequest) (BlogResponse, error) {
 	return ToBlogResponse(data), nil
 }
 
-func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogResponse, error) {
-	utils.PrintJSON(p)
-	return BlogResponse{}, nil
+func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
+	blog, err := s.GetBlogById(p.ID)
+	if err != nil {
+		return BlogUpdateResponse{}, err
+	}
+
+	//* set oldFileName
+	oldFileName := ""
+	if blog.BannerFileName != "" {
+		oldFileName = blog.BannerFileName
+	}
+
+	//todo: Check Topic Ids
+	//ex: topic_ids = [1, 2, 3]
+	var topic_ids []int
+	for _, item := range p.TopicIds {
+		topic_ids = append(topic_ids, item.TopicID)
+	}
+	_, err = s.topicService.CheckTopicIds(topic_ids)
+	if err != nil {
+		return BlogUpdateResponse{}, err
+	}
+
+	//todo: Check Author Id
+	_, err = s.authorService.GetAuthorById(p.AuthorID)
+	if err != nil {
+		return BlogUpdateResponse{}, err
+	}
+
+	//todo: Iterate Blog Old & New Content Images
+	var new_content_images []string
+	var old_content_images []string
+	for _, item := range p.ContentImages {
+		if item.IsNew == "Y" {
+			new_content_images = append(new_content_images, item.ImageUrl)
+		} else if item.IsNew == "N" {
+			old_content_images = append(old_content_images, item.ImageUrl)
+		}
+	}
+
+	//todo: Check New Content Images
+	if len(new_content_images) > 0 {
+		err = s.blogContentTempImageService.CheckBlogHasNewContentImages(new_content_images)
+		if err != nil {
+			return BlogUpdateResponse{}, err
+		}
+	}
+
+	//todo: Check Old Content Images
+	if len(old_content_images) > 0 {
+		err = s.blogContentImageService.CountImagesLinkedToBlog(old_content_images, p.ID)
+		if err != nil {
+			return BlogUpdateResponse{}, err
+		}
+	}
+
+	var newFileURL string
+	var newFileName string
+
+	if p.BannerFile != nil {
+		imageRes, err := utils.HandlUploadFile(p.BannerFile, "project")
+		if err != nil {
+			return BlogUpdateResponse{}, err
+		}
+
+		newFileURL = imageRes.FileURL
+		newFileName = imageRes.FileName
+	} else {
+		newFileURL = blog.BannerUrl // keep existing if not updated
+		newFileName = blog.BannerFileName
+	}
+
+	fmt.Println(oldFileName)
+
+	var publishedAt *time.Time
+	var status string
+	if p.IsPublished == "Y" {
+		now := time.Now()
+		publishedAt = &now
+		status = "PUBLISHED"
+	} else if p.IsPublished == "N" {
+		status = "UNPUBLISHED"
+	}
+
+	isUpdateReadingTime := false
+	if p.DescriptionHTML != blog.DescriptionHTML {
+		isUpdateReadingTime = true
+	}
+
+	fmt.Println(isUpdateReadingTime)
+
+	if isUpdateReadingTime {
+		//todo: Update Reading Time
+		readingTimeStats := utils.ExtractHTMLtoStatistics(p.DescriptionHTML)
+		pReadingTime := reading_time.UpdateReadingTimeRequest{
+			ID:               blog.ReadingTimeID,
+			Minutes:          readingTimeStats.Minutes,
+			TextLength:       readingTimeStats.TextLength,
+			EstimatedSeconds: readingTimeStats.EstimatedSeconds,
+			WordCount:        readingTimeStats.WordCount,
+			Type:             "Blog",
+		}
+
+		utils.PrintJSON(pReadingTime)
+	}
+
+	payload := UpdateBlogDTO{
+		ID:              p.ID,
+		TopicIds:        p.TopicIds,
+		AuthorID:        p.AuthorID,
+		StatisticID:     blog.StatisticID,
+		ReadingTimeID:   blog.ReadingTimeID,
+		Title:           p.Title,
+		DescriptionHTML: p.DescriptionHTML,
+		BannerUrl:       newFileURL,
+		BannerFileName:  newFileName,
+		Summary:         p.Summary,
+		Status:          status,
+		PublishedAt:     publishedAt,
+	}
+
+	utils.PrintJSON(payload)
+
+	return BlogUpdateResponse{}, nil
 }

@@ -9,7 +9,7 @@ type CreateReadingTimeRequest struct {
 }
 
 type UpdateReadingTimeRequest struct {
-	Id               int     `json:"id" binding:"required"`
+	ID               int     `json:"id" binding:"required"`
 	Minutes          int     `json:"minutes" binding:"required"`
 	TextLength       int     `json:"text_length" binding:"required"`
 	EstimatedSeconds float64 `json:"estimated_seconds" binding:"required"`

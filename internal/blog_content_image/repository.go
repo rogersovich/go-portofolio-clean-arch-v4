@@ -10,8 +10,9 @@ type Repository interface {
 	CreateBlogContentImage(p CreateBlogContentImageRequest) (BlogContentImage, error)
 	UpdateBlogContentImage(p UpdateBlogContentImageDTO) (BlogContentImage, error)
 	DeleteBlogContentImage(id int) (BlogContentImage, error)
-	CheckHasBlogImages(image_urls []string) (total int, err error)
+	CountUnlinkedImages(image_urls []string) (total int, err error)
 	MarkImagesUsedByBlog(p BlogContentImageBulkUpdateDTO, tx *gorm.DB) error
+	CountImagesLinkedToBlog(image_urls []string, blog_id int) (total int, err error)
 }
 
 type repository struct {
@@ -71,7 +72,7 @@ func (r *repository) DeleteBlogContentImage(id int) (BlogContentImage, error) {
 	return data, nil
 }
 
-func (r *repository) CheckHasBlogImages(image_urls []string) (total int, err error) {
+func (r *repository) CountUnlinkedImages(image_urls []string) (total int, err error) {
 	err = r.db.Raw(`
 		SELECT COUNT(*) FROM blog_content_images 
 		WHERE image_url IN ? AND
@@ -102,4 +103,14 @@ func (r *repository) MarkImagesUsedByBlog(p BlogContentImageBulkUpdateDTO, tx *g
 	}
 
 	return nil
+}
+
+func (r *repository) CountImagesLinkedToBlog(image_urls []string, blog_id int) (total int, err error) {
+	err = r.db.Raw(`
+		SELECT COUNT(*) FROM blog_content_images 
+		WHERE image_url IN ? AND
+		blog_id = ? AND
+		deleted_at IS NULL
+	`, image_urls, blog_id).Scan(&total).Error
+	return total, err
 }

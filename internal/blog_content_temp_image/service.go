@@ -1,11 +1,14 @@
 package blog_content_temp_image
 
+import "fmt"
+
 type Service interface {
 	GetAllBlogContentTempImgs() ([]BlogContentTempImgResponse, error)
 	GetBlogContentTempImgById(id string) (BlogContentTempImgResponse, error)
 	CreateBlogContentTempImg(p CreateBlogContentTempImgRequest) (BlogContentTempImgResponse, error)
 	UpdateBlogContentTempImg(p UpdateBlogContentTempImgRequest) (BlogContentTempImgUpdateResponse, error)
 	DeleteBlogContentTempImg(id int) (BlogContentTempImages, error)
+	CheckBlogHasNewContentImages(ids []string) error
 }
 
 type service struct {
@@ -61,4 +64,17 @@ func (s *service) DeleteBlogContentTempImg(id int) (BlogContentTempImages, error
 	}
 
 	return data, nil
+}
+
+func (s *service) CheckBlogHasNewContentImages(image_urls []string) error {
+	total, err := s.repo.CheckBlogHasContentImages(image_urls)
+	if err != nil {
+		return err
+	}
+
+	if total != len(image_urls) {
+		err := fmt.Errorf("some blog_content_temp_images not found in database")
+		return err
+	}
+	return nil
 }

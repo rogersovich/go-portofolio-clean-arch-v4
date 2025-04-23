@@ -52,7 +52,7 @@ func (r *repository) CreateReadingTime(p CreateReadingTimeRequest, tx *gorm.DB) 
 
 func (r *repository) UpdateReadingTime(p UpdateReadingTimeRequest) (ReadingTime, error) {
 	data := ReadingTime{
-		ID:               p.Id,
+		ID:               p.ID,
 		Minutes:          p.Minutes,
 		TextLength:       p.TextLength,
 		EstimatedSeconds: p.EstimatedSeconds,

@@ -5,6 +5,7 @@ import "gorm.io/gorm"
 type Repository interface {
 	FindAll() ([]Blog, error)
 	FindByIdWithRelations(id int) ([]RawBlogRelationResponse, error)
+	FindById(id int) (BlogResponse, error)
 	CreateBlog(p CreateBlogDTO, tx *gorm.DB) (Blog, error)
 	UpdateBlog(p UpdateBlogDTO, tx *gorm.DB) (Blog, error)
 }
@@ -21,6 +22,15 @@ func (r *repository) FindAll() ([]Blog, error) {
 	var datas []Blog
 	err := r.db.Find(&datas).Error
 	return datas, err
+}
+
+func (r *repository) FindById(id int) (BlogResponse, error) {
+	var data BlogResponse
+	err := r.db.Table("blogs").Where("id = ?", id).Scan(&data).Error
+	if data.ID == 0 {
+		return BlogResponse{}, gorm.ErrRecordNotFound
+	}
+	return data, err
 }
 
 func (r *repository) FindByIdWithRelations(id int) ([]RawBlogRelationResponse, error) {

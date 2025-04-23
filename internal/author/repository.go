@@ -1,6 +1,8 @@
 package author
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 )
 
@@ -27,9 +29,13 @@ func (r *repository) FindAll() ([]Author, error) {
 }
 
 func (r *repository) FindById(id int) (Author, error) {
-	var about Author
-	err := r.db.Where("id = ?", id).First(&about).Error
-	return about, err
+	var data Author
+	err := r.db.Table("authors").Where("id = ?", id).Scan(&data).Error
+	if data.ID == 0 {
+		err = fmt.Errorf("author %s", gorm.ErrRecordNotFound)
+		return Author{}, err
+	}
+	return data, err
 }
 
 func (r *repository) CreateAuthor(p CreateAuthorRequest) (Author, error) {

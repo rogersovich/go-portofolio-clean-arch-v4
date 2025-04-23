@@ -32,6 +32,8 @@ type CreateBlogDTO struct {
 
 type BlogResponse struct {
 	ID              int     `json:"id"`
+	StatisticID     int     `json:"statistic_id"`
+	ReadingTimeID   int     `json:"reading_time_id"`
 	Title           string  `json:"title"`
 	DescriptionHTML string  `json:"description_html"`
 	BannerUrl       string  `json:"banner_url"`
@@ -117,7 +119,7 @@ type UpdateBlogRequest struct {
 
 type UpdateBlogDTO struct {
 	ID              int
-	TopicIds        []string
+	TopicIds        []UpdateBlogTopicDTO
 	AuthorID        int
 	StatisticID     int
 	ReadingTimeID   int
@@ -138,6 +140,7 @@ type UpdateBlogTopicDTO struct {
 type UpdateBlogContentImageDTO struct {
 	ID       int    `json:"id"`
 	ImageUrl string `json:"image_url"`
+	IsNew    string `json:"is_new" validate:"required,oneof=Y N"`
 }
 
 type BlogRelationResponse struct {
@@ -155,6 +158,17 @@ type BlogRelationResponse struct {
 	Statistic       BlogStatisticDTO      `json:"statistic"`
 	Topics          []BlogTopicDTO        `json:"topics"`
 	ContentImages   []BlogContentImageDTO `json:"content_image"`
+}
+
+type BlogUpdateResponse struct {
+	ID              int     `json:"id"`
+	Title           string  `json:"title"`
+	DescriptionHTML string  `json:"description_html"`
+	BannerUrl       string  `json:"banner_url"`
+	BannerFileName  string  `json:"banner_file_name"`
+	Summary         string  `json:"summary"`
+	Status          string  `json:"status"`
+	PublishedAt     *string `json:"published_at"`
 }
 
 func ToBlogResponse(p Blog) BlogResponse {
