@@ -28,6 +28,17 @@ type BlogContentTempImgDeleteRequest struct {
 	ID int `json:"id" binding:"required"`
 }
 
+type CountTempImagesDTO struct {
+	ID       int    `json:"id"`
+	ImageUrl string `json:"image_url"`
+}
+
+type CountTempUpdateImagesDTO struct {
+	ID          int    `json:"id"`
+	ImageUrl    string `json:"image_url"`
+	ImageOldUrl string `json:"image_old_url"`
+}
+
 func ToBlogContentTempImgResponse(p BlogContentTempImages) BlogContentTempImgResponse {
 	return BlogContentTempImgResponse{
 		ID:            p.ID,

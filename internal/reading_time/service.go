@@ -6,7 +6,7 @@ type Service interface {
 	GetAllReadingTimes() ([]ReadingTimeResponse, error)
 	GetReadingTimeById(id string) (ReadingTimeResponse, error)
 	CreateReadingTime(p CreateReadingTimeRequest, tx *gorm.DB) (ReadingTimeResponse, error)
-	UpdateReadingTime(p UpdateReadingTimeRequest) (ReadingTimeUpdateResponse, error)
+	UpdateReadingTime(p UpdateReadingTimeRequest, tx *gorm.DB) (ReadingTimeUpdateResponse, error)
 	DeleteReadingTime(id int) (ReadingTime, error)
 }
 
@@ -47,8 +47,8 @@ func (s *service) CreateReadingTime(p CreateReadingTimeRequest, tx *gorm.DB) (Re
 	return ToReadingTimeResponse(data), nil
 }
 
-func (s *service) UpdateReadingTime(p UpdateReadingTimeRequest) (ReadingTimeUpdateResponse, error) {
-	data, err := s.repo.UpdateReadingTime(p)
+func (s *service) UpdateReadingTime(p UpdateReadingTimeRequest, tx *gorm.DB) (ReadingTimeUpdateResponse, error) {
+	data, err := s.repo.UpdateReadingTime(p, tx)
 	if err != nil {
 		return ReadingTimeUpdateResponse{}, err
 	}

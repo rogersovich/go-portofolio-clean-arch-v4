@@ -13,7 +13,7 @@ type Repository interface {
 	CreateBlogContentTempImg(p CreateBlogContentTempImgRequest) (BlogContentTempImages, error)
 	UpdateBlogContentTempImg(p UpdateBlogContentTempImgRequest) (BlogContentTempImages, error)
 	DeleteBlogContentTempImg(id int) (BlogContentTempImages, error)
-	CheckBlogHasContentImages(image_urls []string) (total int, err error)
+	CountTempImages(tempImages []CountTempImagesDTO) (total int, err error)
 }
 
 type repository struct {
@@ -77,12 +77,24 @@ func (r *repository) DeleteBlogContentTempImg(id int) (BlogContentTempImages, er
 	return data, nil
 }
 
-func (r *repository) CheckBlogHasContentImages(image_urls []string) (total int, err error) {
+func (r *repository) CountTempImages(tempImages []CountTempImagesDTO) (total int, err error) {
+	// Prepare slices for image URLs and IDs
+	var imageUrls []string
+	var ids []int
+
+	// Extract image URLs and IDs from tempImages
+	for _, tempImage := range tempImages {
+		imageUrls = append(imageUrls, tempImage.ImageUrl)
+		ids = append(ids, tempImage.ID)
+	}
+
 	err = r.db.Raw(`
 		SELECT COUNT(*) FROM blog_content_temp_images 
-		WHERE image_url IN ? AND
-		deleted_at IS NULL
-	`, image_urls).Scan(&total).Error
+		WHERE 
+			image_url IN ? AND
+			id IN ? AND
+			deleted_at IS NULL
+	`, imageUrls, ids).Scan(&total).Error
 
 	return total, err
 }

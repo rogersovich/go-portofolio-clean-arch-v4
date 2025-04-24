@@ -8,7 +8,7 @@ type Service interface {
 	CreateBlogContentTempImg(p CreateBlogContentTempImgRequest) (BlogContentTempImgResponse, error)
 	UpdateBlogContentTempImg(p UpdateBlogContentTempImgRequest) (BlogContentTempImgUpdateResponse, error)
 	DeleteBlogContentTempImg(id int) (BlogContentTempImages, error)
-	CheckBlogHasNewContentImages(ids []string) error
+	CountTempImages(tempImages []CountTempImagesDTO) error
 }
 
 type service struct {
@@ -66,13 +66,13 @@ func (s *service) DeleteBlogContentTempImg(id int) (BlogContentTempImages, error
 	return data, nil
 }
 
-func (s *service) CheckBlogHasNewContentImages(image_urls []string) error {
-	total, err := s.repo.CheckBlogHasContentImages(image_urls)
+func (s *service) CountTempImages(tempImages []CountTempImagesDTO) error {
+	total, err := s.repo.CountTempImages(tempImages)
 	if err != nil {
 		return err
 	}
 
-	if total != len(image_urls) {
+	if total != len(tempImages) {
 		err := fmt.Errorf("some blog_content_temp_images not found in database")
 		return err
 	}

@@ -138,9 +138,10 @@ type UpdateBlogTopicDTO struct {
 }
 
 type UpdateBlogContentImageDTO struct {
-	ID       int    `json:"id"`
-	ImageUrl string `json:"image_url"`
-	IsNew    string `json:"is_new" validate:"required,oneof=Y N"`
+	ID          int    `json:"id"`
+	ImageUrl    string `json:"image_url"`
+	ImageOldUrl string `json:"image_old_url"`
+	IsNew       string `json:"is_new" validate:"required,oneof=Y N"`
 }
 
 type BlogRelationResponse struct {

@@ -57,7 +57,7 @@ func (h *handler) UpdateReadingTime(c *gin.Context) {
 		return
 	}
 
-	data, err := h.service.UpdateReadingTime(req)
+	data, err := h.service.UpdateReadingTime(req, nil)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, "failed to updated data")
 		return

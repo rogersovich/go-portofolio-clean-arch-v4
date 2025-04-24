@@ -333,11 +333,32 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 	}
 
 	//todo: Iterate Blog Old & New Content Images
-	var new_content_images []string
+	var new_content_images []blog_content_temp_image.CountTempImagesDTO
+	// Create the map with two keys: slice_images and struct_images
+	update_new_content_images := map[string]interface{}{
+		"check_old_images": []string{},                                     // Slice to hold image URLs
+		"check_new_images": []blog_content_temp_image.CountTempImagesDTO{}, // Slice to hold the structs
+	}
 	var old_content_images []string
 	for _, item := range p.ContentImages {
 		if item.IsNew == "Y" {
-			new_content_images = append(new_content_images, item.ImageUrl)
+			new_content_images = append(
+				new_content_images,
+				blog_content_temp_image.CountTempImagesDTO{
+					ID:       item.ID,
+					ImageUrl: item.ImageUrl,
+				})
+
+			if item.ImageOldUrl != "" {
+				// Append the image URL to the check_old_images slice
+				update_new_content_images["check_old_images"] = append(update_new_content_images["check_old_images"].([]string), item.ImageOldUrl)
+
+				// Append the entire struct to the check_new_images slice
+				update_new_content_images["check_new_images"] = append(update_new_content_images["check_new_images"].([]blog_content_temp_image.CountTempImagesDTO), blog_content_temp_image.CountTempImagesDTO{
+					ID:       item.ID,
+					ImageUrl: item.ImageUrl,
+				})
+			}
 		} else if item.IsNew == "N" {
 			old_content_images = append(old_content_images, item.ImageUrl)
 		}
@@ -345,7 +366,24 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 
 	//todo: Check New Content Images
 	if len(new_content_images) > 0 {
-		err = s.blogContentTempImageService.CheckBlogHasNewContentImages(new_content_images)
+		err = s.blogContentTempImageService.CountTempImages(new_content_images)
+		if err != nil {
+			return BlogUpdateResponse{}, err
+		}
+	}
+
+	//todo: Check Update New Content Images
+	if sliceImages, ok := update_new_content_images["check_old_images"].([]string); ok && len(sliceImages) > 0 {
+		//?: Check to table blog_content_temp_images
+		check_new_images := update_new_content_images["check_new_images"].([]blog_content_temp_image.CountTempImagesDTO)
+		err = s.blogContentTempImageService.CountTempImages(check_new_images)
+		if err != nil {
+			return BlogUpdateResponse{}, err
+		}
+
+		//?: Check to table blog_content_images
+		check_old_images := update_new_content_images["check_old_images"].([]string)
+		err = s.blogContentImageService.CountImagesLinkedToBlog(check_old_images, p.ID)
 		if err != nil {
 			return BlogUpdateResponse{}, err
 		}
@@ -377,6 +415,10 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 
 	fmt.Println(oldFileName)
 
+	//todo: Begin Transaction
+
+	tx := s.db.Begin()
+
 	var publishedAt *time.Time
 	var status string
 	if p.IsPublished == "Y" {
@@ -392,10 +434,8 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 		isUpdateReadingTime = true
 	}
 
-	fmt.Println(isUpdateReadingTime)
-
 	if isUpdateReadingTime {
-		//todo: Update Reading Time
+		//todo: Extract Reading Time
 		readingTimeStats := utils.ExtractHTMLtoStatistics(p.DescriptionHTML)
 		pReadingTime := reading_time.UpdateReadingTimeRequest{
 			ID:               blog.ReadingTimeID,
@@ -406,7 +446,13 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 			Type:             "Blog",
 		}
 
-		utils.PrintJSON(pReadingTime)
+		//todo: Update Reading Time
+		_, err := s.readingTimeService.UpdateReadingTime(pReadingTime, tx)
+
+		if err != nil {
+			tx.Rollback()
+			return BlogUpdateResponse{}, err
+		}
 	}
 
 	payload := UpdateBlogDTO{
