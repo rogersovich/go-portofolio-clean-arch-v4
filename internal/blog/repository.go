@@ -121,9 +121,9 @@ func (r *repository) UpdateBlog(p UpdateBlogDTO, tx *gorm.DB) (Blog, error) {
 
 	data := Blog{
 		ID:              p.ID,
-		AuthorID:        p.AuthorID,
 		StatisticID:     p.StatisticID,
 		ReadingTimeID:   p.ReadingTimeID,
+		AuthorID:        p.AuthorID,
 		Title:           p.Title,
 		DescriptionHTML: p.DescriptionHTML,
 		BannerUrl:       p.BannerUrl,

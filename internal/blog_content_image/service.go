@@ -3,6 +3,8 @@ package blog_content_image
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
 
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
 	"gorm.io/gorm"
@@ -16,7 +18,8 @@ type Service interface {
 	DeleteBlogContentImage(id int) (BlogContentImageResponse, error)
 	CountUnlinkedImages(image_urls []string) error
 	MarkImagesUsedByBlog(image_urls []string, blog_id int, tx *gorm.DB) error
-	CountImagesLinkedToBlog(image_urls []string, blog_id int) error
+	SyncBlogImages(image_urls []string, blog_id int, tx *gorm.DB) (imageNotExist []BlogContentImageExistingResponse, err error)
+	BulkDeleteHardByImageUrls(image_urls []string, tx *gorm.DB) error
 }
 
 type service struct {
@@ -107,15 +110,62 @@ func (s *service) MarkImagesUsedByBlog(image_urls []string, blog_id int, tx *gor
 	return nil
 }
 
-func (s *service) CountImagesLinkedToBlog(image_urls []string, blog_id int) error {
-	total, err := s.repo.CountImagesLinkedToBlog(image_urls, blog_id)
+func (s *service) SyncBlogImages(
+	image_urls []string,
+	blog_id int,
+	tx *gorm.DB) (
+	imageNotExist []BlogContentImageExistingResponse,
+	err error,
+) {
+	// 1. Cek apakah ada image baru di konten yang belum ada di database
+	imageExist, err := s.repo.FindImageExist(image_urls, blog_id)
+	if err != nil {
+		return imageNotExist, err
+	}
+
+	// Buat map untuk cepat cek
+	imageURLMap := make(map[string]*BlogContentImageExistingResponse)
+	for _, img := range imageExist {
+		imageURLMap[img.ImageUrl] = &img
+	}
+
+	var imageIDsToUpdate []int
+	for _, url := range image_urls {
+		img, found := imageURLMap[url]
+		if found && img.BlogID == nil {
+			imageIDsToUpdate = append(imageIDsToUpdate, img.ID)
+		}
+	}
+
+	if len(imageIDsToUpdate) > 0 {
+		if err := s.repo.BatchUpdateBlogIds(imageIDsToUpdate, blog_id, tx); err != nil {
+			return imageNotExist, err
+		}
+	}
+
+	// 4. Hapus image lama yang tidak ada di konten lagi
+	imageNotExist, err = s.repo.FindImageNotExist(image_urls, blog_id)
+	if err != nil {
+		return imageNotExist, err
+	}
+
+	return imageNotExist, nil
+}
+
+func (s *service) BulkDeleteHardByImageUrls(image_urls []string, tx *gorm.DB) error {
+	err := s.repo.BulkDeleteHardByImageUrls(image_urls, tx)
 	if err != nil {
 		return err
 	}
 
-	if total != len(image_urls) {
-		err := fmt.Errorf("some blog_content_images by blog_id not found in database")
-		return err
+	bucketName := os.Getenv("MINIO_BUCKET")
+	images_key, _ := utils.MinioParseURLToImageKey(image_urls, bucketName)
+	batchSize := 3
+
+	err = utils.DeleteBulkImagesInBatches(bucketName, images_key, batchSize)
+	if err != nil {
+		log.Fatalf("Failed to delete images: %v", err)
 	}
+
 	return nil
 }

@@ -154,7 +154,7 @@ func (h *handler) UpdateBlog(c *gin.Context) {
 		return
 	}
 
-	var content_images []UpdateBlogContentImageDTO
+	var content_images []string
 	if err := json.Unmarshal([]byte(c.PostForm("content_images")), &content_images); err != nil {
 		utils.Error(c, http.StatusBadRequest, "Invalid content_images format")
 		return

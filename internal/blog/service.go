@@ -332,92 +332,24 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 		return BlogUpdateResponse{}, err
 	}
 
-	//todo: Iterate Blog Old & New Content Images
-	var new_content_images []blog_content_temp_image.CountTempImagesDTO
-	// Create the map with two keys: slice_images and struct_images
-	update_new_content_images := map[string]interface{}{
-		"check_old_images": []string{},                                     // Slice to hold image URLs
-		"check_new_images": []blog_content_temp_image.CountTempImagesDTO{}, // Slice to hold the structs
-	}
-	var old_content_images []string
-	for _, item := range p.ContentImages {
-		if item.IsNew == "Y" {
-			new_content_images = append(
-				new_content_images,
-				blog_content_temp_image.CountTempImagesDTO{
-					ID:       item.ID,
-					ImageUrl: item.ImageUrl,
-				})
-
-			if item.ImageOldUrl != "" {
-				// Append the image URL to the check_old_images slice
-				update_new_content_images["check_old_images"] = append(update_new_content_images["check_old_images"].([]string), item.ImageOldUrl)
-
-				// Append the entire struct to the check_new_images slice
-				update_new_content_images["check_new_images"] = append(update_new_content_images["check_new_images"].([]blog_content_temp_image.CountTempImagesDTO), blog_content_temp_image.CountTempImagesDTO{
-					ID:       item.ID,
-					ImageUrl: item.ImageUrl,
-				})
-			}
-		} else if item.IsNew == "N" {
-			old_content_images = append(old_content_images, item.ImageUrl)
-		}
-	}
-
-	//todo: Check New Content Images
-	if len(new_content_images) > 0 {
-		err = s.blogContentTempImageService.CountTempImages(new_content_images)
-		if err != nil {
-			return BlogUpdateResponse{}, err
-		}
-	}
-
-	//todo: Check Update New Content Images
-	if sliceImages, ok := update_new_content_images["check_old_images"].([]string); ok && len(sliceImages) > 0 {
-		//?: Check to table blog_content_temp_images
-		check_new_images := update_new_content_images["check_new_images"].([]blog_content_temp_image.CountTempImagesDTO)
-		err = s.blogContentTempImageService.CountTempImages(check_new_images)
-		if err != nil {
-			return BlogUpdateResponse{}, err
-		}
-
-		//?: Check to table blog_content_images
-		check_old_images := update_new_content_images["check_old_images"].([]string)
-		err = s.blogContentImageService.CountImagesLinkedToBlog(check_old_images, p.ID)
-		if err != nil {
-			return BlogUpdateResponse{}, err
-		}
-	}
-
-	//todo: Check Old Content Images
-	if len(old_content_images) > 0 {
-		err = s.blogContentImageService.CountImagesLinkedToBlog(old_content_images, p.ID)
-		if err != nil {
-			return BlogUpdateResponse{}, err
-		}
-	}
-
-	var newFileURL string
-	var newFileName string
-
-	if p.BannerFile != nil {
-		imageRes, err := utils.HandlUploadFile(p.BannerFile, "project")
-		if err != nil {
-			return BlogUpdateResponse{}, err
-		}
-
-		newFileURL = imageRes.FileURL
-		newFileName = imageRes.FileName
-	} else {
-		newFileURL = blog.BannerUrl // keep existing if not updated
-		newFileName = blog.BannerFileName
-	}
-
-	fmt.Println(oldFileName)
-
-	//todo: Begin Transaction
+	//! todo: Begin Transaction
 
 	tx := s.db.Begin()
+
+	// todo: Update Blog Topics
+	err = s.blogTopicService.BatchUpdateBlogTopic(topic_ids, p.ID, tx)
+	if err != nil {
+		tx.Rollback()
+		return BlogUpdateResponse{}, err
+	}
+
+	// todo: Sync Blog Images
+	oldImageBlogs, err := s.blogContentImageService.SyncBlogImages(p.ContentImages, p.ID, tx)
+
+	if err != nil {
+		tx.Rollback()
+		return BlogUpdateResponse{}, err
+	}
 
 	var publishedAt *time.Time
 	var status string
@@ -455,6 +387,23 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 		}
 	}
 
+	//todo: Handle Upload Banner
+	var newFileURL string
+	var newFileName string
+
+	if p.BannerFile != nil {
+		imageRes, err := utils.HandlUploadFile(p.BannerFile, "blog")
+		if err != nil {
+			return BlogUpdateResponse{}, err
+		}
+
+		newFileURL = imageRes.FileURL
+		newFileName = imageRes.FileName
+	} else {
+		newFileURL = blog.BannerUrl // keep existing if not updated
+		newFileName = blog.BannerFileName
+	}
+
 	payload := UpdateBlogDTO{
 		ID:              p.ID,
 		TopicIds:        p.TopicIds,
@@ -470,7 +419,45 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 		PublishedAt:     publishedAt,
 	}
 
-	utils.PrintJSON(payload)
+	//todo: Update Blog
+	_, err = s.blogRepo.UpdateBlog(payload, tx)
+	if err != nil {
+		tx.Rollback()
+		if oldFileName != newFileName {
+			_ = utils.DeleteFromMinio(context.Background(), oldFileName)
+		}
+		return BlogUpdateResponse{}, err
+	}
 
-	return BlogUpdateResponse{}, nil
+	//todo: Delete Old Blog Images
+	if len(oldImageBlogs) > 0 {
+		slice_image_urls := []string{}
+		for _, item := range oldImageBlogs {
+			slice_image_urls = append(slice_image_urls, item.ImageUrl)
+		}
+
+		err = s.blogContentImageService.BulkDeleteHardByImageUrls(slice_image_urls, tx)
+		if err != nil {
+			tx.Rollback()
+			return BlogUpdateResponse{}, err
+		}
+	}
+
+	//todo: Commit Transaction
+	if err := tx.Commit().Error; err != nil {
+		err = fmt.Errorf("error commit transaction")
+		return BlogUpdateResponse{}, err
+	}
+
+	response := BlogUpdateResponse{
+		ID:              p.ID,
+		Title:           p.Title,
+		DescriptionHTML: p.DescriptionHTML,
+		BannerUrl:       newFileURL,
+		BannerFileName:  newFileName,
+		Summary:         p.Summary,
+		Status:          status,
+	}
+
+	return response, nil
 }

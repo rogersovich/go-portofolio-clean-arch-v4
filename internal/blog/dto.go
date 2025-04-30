@@ -106,12 +106,12 @@ type BlogContentImageDTO struct {
 }
 
 type UpdateBlogRequest struct {
-	ID              int                         `validate:"required"`
-	TopicIds        []UpdateBlogTopicDTO        `validate:"required,dive"`
-	ContentImages   []UpdateBlogContentImageDTO `validate:"required,dive"`
-	AuthorID        int                         `validate:"required"`
-	Title           string                      `validate:"required"`
-	DescriptionHTML string                      `validate:"required"`
+	ID              int                  `validate:"required"`
+	TopicIds        []UpdateBlogTopicDTO `validate:"required,dive"`
+	ContentImages   []string             `validate:"required,dive"`
+	AuthorID        int                  `validate:"required"`
+	Title           string               `validate:"required"`
+	DescriptionHTML string               `validate:"required"`
 	BannerFile      *multipart.FileHeader
 	Summary         string `validate:"required"`
 	IsPublished     string `validate:"required,oneof=Y N"`
@@ -133,15 +133,7 @@ type UpdateBlogDTO struct {
 }
 
 type UpdateBlogTopicDTO struct {
-	ID      int `json:"id"`
 	TopicID int `json:"topic_id"`
-}
-
-type UpdateBlogContentImageDTO struct {
-	ID          int    `json:"id"`
-	ImageUrl    string `json:"image_url"`
-	ImageOldUrl string `json:"image_old_url"`
-	IsNew       string `json:"is_new" validate:"required,oneof=Y N"`
 }
 
 type BlogRelationResponse struct {

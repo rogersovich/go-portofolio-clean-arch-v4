@@ -13,6 +13,10 @@ type Repository interface {
 	CountUnlinkedImages(image_urls []string) (total int, err error)
 	MarkImagesUsedByBlog(p BlogContentImageBulkUpdateDTO, tx *gorm.DB) error
 	CountImagesLinkedToBlog(image_urls []string, blog_id int) (total int, err error)
+	FindImageExist(image_urls []string, blog_id int) ([]BlogContentImageExistingResponse, error)
+	FindImageNotExist(image_urls []string, blog_id int) ([]BlogContentImageExistingResponse, error)
+	BatchUpdateBlogIds(ids []int, blog_id int, tx *gorm.DB) error
+	BulkDeleteHardByImageUrls(image_urls []string, tx *gorm.DB) error
 }
 
 type repository struct {
@@ -32,6 +36,24 @@ func (r *repository) FindAll() ([]BlogContentImage, error) {
 func (r *repository) FindById(id int) (BlogContentImage, error) {
 	var data BlogContentImage
 	err := r.db.Where("id = ?", id).First(&data).Error
+	return data, err
+}
+
+func (r *repository) FindImageExist(image_urls []string, blog_id int) ([]BlogContentImageExistingResponse, error) {
+	var data []BlogContentImageExistingResponse
+	err := r.db.Table("blog_content_images").
+		Where("image_url IN ? AND (blog_id = ? OR blog_id IS NULL)", image_urls, blog_id).
+		Select("id, blog_id, image_url").
+		Find(&data).Error
+	return data, err
+}
+
+func (r *repository) FindImageNotExist(image_urls []string, blog_id int) ([]BlogContentImageExistingResponse, error) {
+	var data []BlogContentImageExistingResponse
+	err := r.db.Table("blog_content_images").
+		Where("blog_id = ? AND image_url NOT IN ?", blog_id, image_urls).
+		Select("id, blog_id, image_url").
+		Find(&data).Error
 	return data, err
 }
 
@@ -113,4 +135,37 @@ func (r *repository) CountImagesLinkedToBlog(image_urls []string, blog_id int) (
 		deleted_at IS NULL
 	`, image_urls, blog_id).Scan(&total).Error
 	return total, err
+}
+
+func (r *repository) BatchUpdateBlogIds(ids []int, blog_id int, tx *gorm.DB) error {
+	var db *gorm.DB
+	if tx != nil {
+		db = tx
+	} else {
+		db = r.db
+	}
+
+	err := db.Table("blog_content_images").
+		Where("id IN ?", ids).
+		Update("blog_id", blog_id).Error
+	return err
+}
+
+func (r *repository) BulkDeleteHardByImageUrls(image_urls []string, tx *gorm.DB) error {
+	var db *gorm.DB
+	if tx != nil {
+		db = tx
+	} else {
+		db = r.db
+	}
+
+	// Create a raw SQL query to delete records with IDs in the slice
+	query := "DELETE FROM blog_content_images WHERE image_url IN ?"
+
+	// Execute the raw query
+	if err := db.Exec(query, image_urls).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

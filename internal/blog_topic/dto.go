@@ -24,6 +24,12 @@ type BlogTopicUpdateResponse struct {
 	TopicID int `json:"topic_id"`
 }
 
+type BlogTopicExistingResponse struct {
+	ID      int `json:"id"`
+	BlogID  int `json:"blog_id"`
+	TopicID int `json:"topic_id"`
+}
+
 type BlogTopicDeleteRequest struct {
 	ID int `json:"id" binding:"required"`
 }

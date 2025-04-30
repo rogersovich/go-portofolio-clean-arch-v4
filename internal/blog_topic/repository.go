@@ -11,6 +11,8 @@ type Repository interface {
 	BulkCreateBlogTopic(topic_ids []int, blog_id int, tx *gorm.DB) error
 	UpdateBlogTopic(p UpdateBlogTopicRequest) (BlogTopic, error)
 	DeleteBlogTopic(id int) (BlogTopic, error)
+	BulkDeleteHard(topic_ids []int, tx *gorm.DB) error
+	FindExistingBlogTopics(blog_id int) ([]BlogTopicExistingResponse, error)
 }
 
 type repository struct {
@@ -30,6 +32,15 @@ func (r *repository) FindAll() ([]BlogTopic, error) {
 func (r *repository) FindById(id string) (BlogTopic, error) {
 	var data BlogTopic
 	err := r.db.Where("id = ?", id).First(&data).Error
+	return data, err
+}
+
+func (r *repository) FindExistingBlogTopics(blog_id int) ([]BlogTopicExistingResponse, error) {
+	var data []BlogTopicExistingResponse
+	err := r.db.Table("blog_topics").
+		Where("blog_id = ?", blog_id).
+		Select("id, blog_id, topic_id").
+		Find(&data).Error
 	return data, err
 }
 
@@ -89,4 +100,23 @@ func (r *repository) DeleteBlogTopic(id int) (BlogTopic, error) {
 
 	// Step 3: Return the data
 	return data, nil
+}
+
+func (r *repository) BulkDeleteHard(topic_ids []int, tx *gorm.DB) error {
+	var db *gorm.DB
+	if tx != nil {
+		db = tx
+	} else {
+		db = r.db
+	}
+
+	// Create a raw SQL query to delete records with IDs in the slice
+	query := "DELETE FROM blog_topics WHERE topic_id IN ?"
+
+	// Execute the raw query
+	if err := db.Exec(query, topic_ids).Error; err != nil {
+		return err
+	}
+
+	return nil
 }
