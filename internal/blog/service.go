@@ -7,7 +7,6 @@ import (
 
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/author"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/blog_content_image"
-	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/blog_content_temp_image"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/blog_topic"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/reading_time"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/statistic"
@@ -25,15 +24,14 @@ type Service interface {
 }
 
 type service struct {
-	authorService               author.Service
-	topicService                topic.Service
-	statisticService            statistic.Service
-	readingTimeService          reading_time.Service
-	blogTopicService            blog_topic.Service
-	blogContentImageService     blog_content_image.Service
-	blogContentTempImageService blog_content_temp_image.Service
-	blogRepo                    Repository
-	db                          *gorm.DB
+	authorService           author.Service
+	topicService            topic.Service
+	statisticService        statistic.Service
+	readingTimeService      reading_time.Service
+	blogTopicService        blog_topic.Service
+	blogContentImageService blog_content_image.Service
+	blogRepo                Repository
+	db                      *gorm.DB
 }
 
 func NewService(
@@ -43,19 +41,17 @@ func NewService(
 	readingTimeSvc reading_time.Service,
 	blogTopicSvc blog_topic.Service,
 	blogContentImageSvc blog_content_image.Service,
-	blogContentTempImageSvc blog_content_temp_image.Service,
 	r Repository,
 	db *gorm.DB) Service {
 	return &service{
-		authorService:               authorSvc,
-		topicService:                topicSvc,
-		statisticService:            statisticSvc,
-		readingTimeService:          readingTimeSvc,
-		blogTopicService:            blogTopicSvc,
-		blogContentImageService:     blogContentImageSvc,
-		blogContentTempImageService: blogContentTempImageSvc,
-		blogRepo:                    r,
-		db:                          db,
+		authorService:           authorSvc,
+		topicService:            topicSvc,
+		statisticService:        statisticSvc,
+		readingTimeService:      readingTimeSvc,
+		blogTopicService:        blogTopicSvc,
+		blogContentImageService: blogContentImageSvc,
+		blogRepo:                r,
+		db:                      db,
 	}
 }
 
