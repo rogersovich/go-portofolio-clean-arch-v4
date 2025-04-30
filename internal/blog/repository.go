@@ -1,6 +1,8 @@
 package blog
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Repository interface {
 	FindAll() ([]Blog, error)
@@ -8,6 +10,7 @@ type Repository interface {
 	FindById(id int) (BlogResponse, error)
 	CreateBlog(p CreateBlogDTO, tx *gorm.DB) (Blog, error)
 	UpdateBlog(p UpdateBlogDTO, tx *gorm.DB) (Blog, error)
+	DeleteBlog(id int) (Blog, error)
 }
 
 type repository struct {
@@ -135,4 +138,21 @@ func (r *repository) UpdateBlog(p UpdateBlogDTO, tx *gorm.DB) (Blog, error) {
 
 	err := db.Table("blogs").Where("id = ?", p.ID).Updates(&data).Error
 	return data, err
+}
+
+func (r *repository) DeleteBlog(id int) (Blog, error) {
+	var data Blog
+
+	// Step 1: Find by ID
+	if err := r.db.First(&data, id).Error; err != nil {
+		return Blog{}, err // return if not found or any error
+	}
+
+	// Step 2: Delete
+	if err := r.db.Delete(&data).Error; err != nil {
+		return Blog{}, err
+	}
+
+	// Step 3: Return the data
+	return data, nil
 }

@@ -193,3 +193,20 @@ func (h *handler) UpdateBlog(c *gin.Context) {
 
 	utils.Success(c, "success get data", data)
 }
+
+func (h *handler) DeleteBlog(c *gin.Context) {
+	var req BlogDeleteRequest
+
+	if !utils.ValidateStruct(c, &req, c.ShouldBindJSON(&req)) {
+		return
+	}
+
+	id := req.ID
+
+	data, err := h.service.DeleteBlog(id)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, "failed to deleted data")
+		return
+	}
+	utils.Success(c, "success deleted data", data)
+}

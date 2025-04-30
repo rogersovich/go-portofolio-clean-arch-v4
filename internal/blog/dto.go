@@ -34,6 +34,7 @@ type BlogResponse struct {
 	ID              int     `json:"id"`
 	StatisticID     int     `json:"statistic_id"`
 	ReadingTimeID   int     `json:"reading_time_id"`
+	AuthorID        int     `json:"author_id"`
 	Title           string  `json:"title"`
 	DescriptionHTML string  `json:"description_html"`
 	BannerUrl       string  `json:"banner_url"`
@@ -164,6 +165,10 @@ type BlogUpdateResponse struct {
 	PublishedAt     *string `json:"published_at"`
 }
 
+type BlogDeleteRequest struct {
+	ID int `json:"id" binding:"required"`
+}
+
 func ToBlogResponse(p Blog) BlogResponse {
 	var publishedAtPointer *string
 	if p.PublishedAt != nil {
@@ -172,6 +177,9 @@ func ToBlogResponse(p Blog) BlogResponse {
 	}
 	return BlogResponse{
 		ID:              p.ID,
+		StatisticID:     p.StatisticID,
+		ReadingTimeID:   p.ReadingTimeID,
+		AuthorID:        p.AuthorID,
 		Title:           p.Title,
 		DescriptionHTML: p.DescriptionHTML,
 		BannerUrl:       p.BannerUrl,
