@@ -10,6 +10,7 @@ type Repository interface {
 	CreateProjectTechnology(p CreateProjectTechnologyRequest) (ProjectTechnology, error)
 	UpdateProjectTechnology(p UpdateProjectTechnologyRequest) (ProjectTechnology, error)
 	DeleteProjectTechnology(id int) (ProjectTechnology, error)
+	CountTechnologiesByIDs(ids []int) (total int, err error)
 }
 
 type repository struct {
@@ -64,4 +65,13 @@ func (r *repository) DeleteProjectTechnology(id int) (ProjectTechnology, error) 
 
 	// Step 3: Return the data
 	return data, nil
+}
+
+func (r *repository) CountTechnologiesByIDs(ids []int) (total int, err error) {
+	err = r.db.Raw(`
+		SELECT COUNT(*) FROM technologies 
+		WHERE id IN ? AND
+		deleted_at IS NULL
+	`, ids).Scan(&total).Error
+	return total, err
 }

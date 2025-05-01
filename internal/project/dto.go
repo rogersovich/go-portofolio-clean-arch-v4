@@ -12,7 +12,7 @@ type CreateProjectRequest struct {
 	RepositoryUrl *string
 	Summary       string `validate:"required"`
 	IsPublished   string `validate:"required,oneof=Y N"`
-	TechnologyIds []string
+	TechnologyIds []int
 	ContentImages []string
 }
 
@@ -30,7 +30,7 @@ type UpdateProjectRequest struct {
 
 type CreateProjectDTO struct {
 	Id                   int
-	TechnologyIds        []string
+	TechnologyIds        []int
 	ProjectContentImages []string
 	Title                string
 	Description          string

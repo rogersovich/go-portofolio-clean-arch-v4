@@ -181,7 +181,7 @@ func (s *service) CreateBlog(p CreateBlogRequest) (BlogResponse, error) {
 
 	//todo: Check Topic Ids
 	//ex: topic_ids = [1, 2, 3]
-	topic_ids, _ := utils.ConvertStringSliceToIntSlice(p.TopicIds)
+	topic_ids := p.TopicIds
 	_, err = s.topicService.CheckTopicIds(topic_ids)
 	if err != nil {
 		return BlogResponse{}, err

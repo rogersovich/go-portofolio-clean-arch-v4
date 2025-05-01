@@ -10,6 +10,8 @@ type Repository interface {
 	CreateProjectContentImage(p CreateProjectContentImageRequest) (ProjectContentImage, error)
 	UpdateProjectContentImage(p UpdateProjectContentImageDTO) (ProjectContentImage, error)
 	DeleteProjectContentImage(id int) (ProjectContentImage, error)
+	CountUnusedProjectImages(ids []string) (total int, err error)
+	CountExistingProjectImages(projectImages []ProjectImagesExistingPayload) (total int, err error)
 }
 
 type repository struct {
@@ -67,4 +69,27 @@ func (r *repository) DeleteProjectContentImage(id int) (ProjectContentImage, err
 
 	// Step 3: Return the data
 	return data, nil
+}
+
+func (r *repository) CountUnusedProjectImages(ids []string) (total int, err error) {
+	err = r.db.Raw(`
+		SELECT COUNT(*) FROM project_content_images 
+		WHERE image_url IN ? AND
+		project_id IS NULL AND
+		deleted_at IS NULL
+	`, ids).Scan(&total).Error
+	return total, err
+}
+
+func (r *repository) CountExistingProjectImages(projectImages []ProjectImagesExistingPayload) (total int, err error) {
+	var image_urls []string
+	for _, v := range projectImages {
+		image_urls = append(image_urls, v.ImageUrl)
+	}
+	err = r.db.Raw(`
+		SELECT COUNT(*) FROM project_content_temp_images 
+		WHERE image_url IN ? AND
+		deleted_at IS NULL
+	`, image_urls).Scan(&total).Error
+	return total, err
 }

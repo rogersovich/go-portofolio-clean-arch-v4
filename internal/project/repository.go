@@ -3,7 +3,6 @@ package project
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/project_content_image"
@@ -18,7 +17,7 @@ type Repository interface {
 	FindByIdWithRelations(id int) ([]RawProjectRelationResponse, error)
 	FindById(id int) (ProjectResponse, error)
 	CreateProject(p CreateProjectDTO) (Project, error)
-	CheckCreateProjectTechnologies(ids []string) (int, error)
+	CheckCreateProjectTechnologies(ids []int) (int, error)
 	CheckUpdateProjectTechnologies(projectTechs []ProjectTechUpdatePayload) (int, error)
 	CheckCreateProjectImages(ids []string) (int, error)
 	CheckUpdateProjectImages(projectImages []ProjectImagesUpdatePayload) (int, error)
@@ -106,7 +105,7 @@ func (r *repository) CheckUpdateProjectTechnologies(projectTechs []ProjectTechUp
 	return total, err
 }
 
-func (r *repository) CheckCreateProjectTechnologies(ids []string) (total int, err error) {
+func (r *repository) CheckCreateProjectTechnologies(ids []int) (total int, err error) {
 	err = r.db.Raw(`
 		SELECT COUNT(*) FROM technologies 
 		WHERE id IN ? AND
@@ -176,10 +175,9 @@ func (r *repository) CreateProject(p CreateProjectDTO) (Project, error) {
 	var technologies []project_technology.ProjectTechnology
 
 	for _, technology_id := range p.TechnologyIds {
-		TechnologyId, _ := strconv.Atoi(technology_id)
 		technologies = append(technologies, project_technology.ProjectTechnology{
 			ProjectID:    data.ID,
-			TechnologyID: TechnologyId,
+			TechnologyID: technology_id,
 		})
 	}
 

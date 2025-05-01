@@ -76,18 +76,16 @@ func (h *handler) CreateProject(c *gin.Context) {
 	is_published := c.PostForm("is_published") // Y or N
 	repository_url := c.PostForm("repository_url")
 	summary := c.PostForm("summary")
-	technology_ids := c.PostFormArray("technology_ids[]")
-	content_images := c.PostFormArray("content_images[]")
 
-	technology_ids_validated, err := utils.ValidateFormArrayString(technology_ids, "technology_ids", true)
-	if err != nil {
-		utils.Error(c, http.StatusBadRequest, "invalid technology_ids")
+	var technology_ids []int
+	if err := json.Unmarshal([]byte(c.PostForm("technology_ids")), &technology_ids); err != nil {
+		utils.Error(c, http.StatusBadRequest, "Invalid technology_ids format")
 		return
 	}
 
-	content_images_validated, err := utils.ValidateFormArrayString(content_images, "content_images", false)
-	if err != nil {
-		utils.Error(c, http.StatusBadRequest, "invalid content_images")
+	var project_images []string
+	if err := json.Unmarshal([]byte(c.PostForm("project_images")), &project_images); err != nil {
+		utils.Error(c, http.StatusBadRequest, "Invalid project_images format")
 		return
 	}
 
@@ -105,8 +103,8 @@ func (h *handler) CreateProject(c *gin.Context) {
 		RepositoryUrl: &repository_url,
 		Summary:       summary,
 		IsPublished:   is_published,
-		TechnologyIds: technology_ids_validated,
-		ContentImages: content_images_validated,
+		TechnologyIds: technology_ids,
+		ContentImages: project_images,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {

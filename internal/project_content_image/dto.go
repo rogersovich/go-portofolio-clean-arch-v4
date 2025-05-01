@@ -43,6 +43,12 @@ type ProjectContentImageDeleteRequest struct {
 	ID int `json:"id" binding:"required"`
 }
 
+type ProjectImagesExistingPayload struct {
+	ID            int    `json:"id"`
+	ImageUrl      string `json:"image_url"`
+	ImageFileName string `json:"image_file_name"`
+}
+
 func ToProjectContentImageResponse(p ProjectContentImage) ProjectContentImageResponse {
 	return ProjectContentImageResponse{
 		ID:            p.ID,

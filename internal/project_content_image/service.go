@@ -2,6 +2,7 @@ package project_content_image
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
 )
@@ -12,6 +13,8 @@ type Service interface {
 	CreateProjectContentImage(p CreateProjectContentImageRequest) (ProjectContentImageResponse, error)
 	UpdateProjectContentImage(p UpdateProjectContentImageDTO, oldPath string, newFilePath string) (ProjectContentImageUpdateResponse, error)
 	DeleteProjectContentImage(id int) (ProjectContentImageResponse, error)
+	CountUnusedProjectImages(ids []string) error
+	CountExistingProjectImages(projectImages []ProjectImagesExistingPayload) error
 }
 
 type service struct {
@@ -74,4 +77,30 @@ func (s *service) DeleteProjectContentImage(id int) (ProjectContentImageResponse
 		return ProjectContentImageResponse{}, err
 	}
 	return ToProjectContentImageResponse(data), nil
+}
+
+func (s *service) CountUnusedProjectImages(ids []string) error {
+	total, err := s.repo.CountUnusedProjectImages(ids)
+	if err != nil {
+		return err
+	}
+
+	if total != len(ids) {
+		err := fmt.Errorf("some project_images not found in database")
+		return err
+	}
+	return nil
+}
+
+func (s *service) CountExistingProjectImages(projectImages []ProjectImagesExistingPayload) error {
+	total, err := s.repo.CountExistingProjectImages(projectImages)
+	if err != nil {
+		return err
+	}
+
+	if total != len(projectImages) {
+		err := fmt.Errorf("some project_images not found in database")
+		return err
+	}
+	return nil
 }

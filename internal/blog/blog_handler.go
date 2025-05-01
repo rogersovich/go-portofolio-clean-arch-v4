@@ -76,8 +76,6 @@ func (h *handler) CreateBlog(c *gin.Context) {
 	is_published := c.PostForm("is_published") // Y or N
 	summary := c.PostForm("summary")
 	author_id := c.PostForm("author_id")
-	topic_ids := c.PostFormArray("topic_ids[]")
-	content_images := c.PostFormArray("content_images[]")
 
 	author_id_int, err := strconv.Atoi(author_id)
 	if err != nil {
@@ -85,15 +83,15 @@ func (h *handler) CreateBlog(c *gin.Context) {
 		return
 	}
 
-	topic_ids_validated, err := utils.ValidateFormArrayString(topic_ids, "topic_ids", true)
-	if err != nil {
-		utils.Error(c, http.StatusBadRequest, "invalid topic_ids")
+	var topic_ids []int
+	if err := json.Unmarshal([]byte(c.PostForm("topic_ids")), &topic_ids); err != nil {
+		utils.Error(c, http.StatusBadRequest, "Invalid topic_ids format")
 		return
 	}
 
-	content_images_validated, err := utils.ValidateFormArrayString(content_images, "content_images", false)
-	if err != nil {
-		utils.Error(c, http.StatusBadRequest, "invalid content_images")
+	var content_images []string
+	if err := json.Unmarshal([]byte(c.PostForm("content_images")), &content_images); err != nil {
+		utils.Error(c, http.StatusBadRequest, "Invalid content_images format")
 		return
 	}
 
@@ -105,14 +103,14 @@ func (h *handler) CreateBlog(c *gin.Context) {
 
 	// Validate the struct using validator
 	req := CreateBlogRequest{
-		TopicIds:        topic_ids_validated,
+		TopicIds:        topic_ids,
 		AuthorID:        author_id_int,
 		Title:           title,
 		DescriptionHTML: description,
 		BannerFile:      image_file,
 		Summary:         summary,
 		IsPublished:     is_published,
-		ContentImages:   content_images_validated,
+		ContentImages:   content_images,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {

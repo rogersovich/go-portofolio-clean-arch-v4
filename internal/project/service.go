@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/project_content_image"
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/project_technology"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
 )
 
@@ -19,15 +21,25 @@ type Service interface {
 }
 
 type service struct {
-	repo Repository
+	projectTechService   project_technology.Service
+	projectImagesService project_content_image.Service
+	projectRepo          Repository
 }
 
-func NewService(r Repository) Service {
-	return &service{repo: r}
+func NewService(
+	projectTechSvc project_technology.Service,
+	projctImagesSvc project_content_image.Service,
+	r Repository,
+) Service {
+	return &service{
+		projectTechService:   projectTechSvc,
+		projectImagesService: projctImagesSvc,
+		projectRepo:          r,
+	}
 }
 
 func (s *service) GetAllProjects() ([]ProjectResponse, error) {
-	datas, err := s.repo.FindAll()
+	datas, err := s.projectRepo.FindAll()
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +52,7 @@ func (s *service) GetAllProjects() ([]ProjectResponse, error) {
 }
 
 func (s *service) GetProjectByIdWithRelations(id int) (ProjectRelationResponse, error) {
-	data, err := s.repo.FindByIdWithRelations(id)
+	data, err := s.projectRepo.FindByIdWithRelations(id)
 	if err != nil {
 		return ProjectRelationResponse{}, err
 	}
@@ -105,7 +117,7 @@ func (s *service) GetProjectByIdWithRelations(id int) (ProjectRelationResponse, 
 }
 
 func (s *service) GetProjectById(id int) (ProjectResponse, error) {
-	data, err := s.repo.FindById(id)
+	data, err := s.projectRepo.FindById(id)
 	if err != nil {
 		return ProjectResponse{}, err
 	}
@@ -113,7 +125,7 @@ func (s *service) GetProjectById(id int) (ProjectResponse, error) {
 }
 
 func (s *service) CheckUpdateProjectTechnologies(projectTechs []ProjectTechUpdatePayload) error {
-	total, err := s.repo.CheckUpdateProjectTechnologies(projectTechs)
+	total, err := s.projectRepo.CheckUpdateProjectTechnologies(projectTechs)
 	if err != nil {
 		return err
 	}
@@ -125,34 +137,8 @@ func (s *service) CheckUpdateProjectTechnologies(projectTechs []ProjectTechUpdat
 	return nil
 }
 
-func (s *service) CheckCreateProjectTechnologies(ids []string) error {
-	total, err := s.repo.CheckCreateProjectTechnologies(ids)
-	if err != nil {
-		return err
-	}
-
-	if total != len(ids) {
-		err := fmt.Errorf("some technologies not found in database")
-		return err
-	}
-	return nil
-}
-
-func (s *service) CheckCreateProjectImages(ids []string) error {
-	total, err := s.repo.CheckCreateProjectImages(ids)
-	if err != nil {
-		return err
-	}
-
-	if total != len(ids) {
-		err := fmt.Errorf("some project_content_images not found in database")
-		return err
-	}
-	return nil
-}
-
 func (s *service) CheckUpdateProjectImages(projectImages []ProjectImagesUpdatePayload) error {
-	total, err := s.repo.CheckUpdateProjectImages(projectImages)
+	total, err := s.projectRepo.CheckUpdateProjectImages(projectImages)
 	if err != nil {
 		return err
 	}
@@ -165,12 +151,12 @@ func (s *service) CheckUpdateProjectImages(projectImages []ProjectImagesUpdatePa
 }
 
 func (s *service) CreateProject(p CreateProjectRequest) (ProjectResponse, error) {
-	if err := s.CheckCreateProjectTechnologies(p.TechnologyIds); err != nil {
+	if err := s.projectTechService.CountTechnologiesByIDs(p.TechnologyIds); err != nil {
 		return ProjectResponse{}, err
 	}
 
 	if len(p.ContentImages) > 0 {
-		if err := s.CheckCreateProjectImages(p.ContentImages); err != nil {
+		if err := s.projectImagesService.CountUnusedProjectImages(p.ContentImages); err != nil {
 			return ProjectResponse{}, err
 		}
 	}
@@ -203,7 +189,7 @@ func (s *service) CreateProject(p CreateProjectRequest) (ProjectResponse, error)
 		Status:               status,
 		PublishedAt:          publishedAt,
 	}
-	data, err := s.repo.CreateProject(payload)
+	data, err := s.projectRepo.CreateProject(payload)
 	if err != nil {
 		if uploadedImage != "" {
 			_ = utils.DeleteFromMinio(context.Background(), uploadedImage)
@@ -277,7 +263,7 @@ func (s *service) UpdateProject(p UpdateProjectRequest) (ProjectUpdateResponse, 
 	}
 	_ = payload
 
-	data, err := s.repo.UpdateProject(payload)
+	data, err := s.projectRepo.UpdateProject(payload)
 	if err != nil {
 		return ProjectUpdateResponse{}, err
 	}
@@ -308,7 +294,7 @@ func (s *service) UpdateProjectStatistic(p ProjectStatisticUpdateRequest) (Proje
 		Type:         p.Type,
 	}
 
-	data, err := s.repo.UpdateProjectStatistic(payload)
+	data, err := s.projectRepo.UpdateProjectStatistic(payload)
 	if err != nil {
 		return ProjectStatisticUpdateResponse{}, err
 	}
@@ -316,7 +302,7 @@ func (s *service) UpdateProjectStatistic(p ProjectStatisticUpdateRequest) (Proje
 }
 
 func (s *service) DeleteProject(id int) (Project, error) {
-	data, err := s.repo.DeleteProject(id)
+	data, err := s.projectRepo.DeleteProject(id)
 	if err != nil {
 		return Project{}, err
 	}

@@ -6,7 +6,7 @@ import (
 )
 
 type CreateBlogRequest struct {
-	TopicIds        []string
+	TopicIds        []int
 	ContentImages   []string
 	AuthorID        int    `validate:"required"`
 	Title           string `validate:"required"`
@@ -17,7 +17,7 @@ type CreateBlogRequest struct {
 }
 
 type CreateBlogDTO struct {
-	TopicIds        []string
+	TopicIds        []int
 	AuthorID        int
 	StatisticID     int
 	ReadingTimeID   int

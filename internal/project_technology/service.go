@@ -1,11 +1,14 @@
 package project_technology
 
+import "fmt"
+
 type Service interface {
 	GetAllProjectTechnologies() ([]ProjectTechnologyResponse, error)
 	GetProjectTechnologyById(id string) (ProjectTechnologyResponse, error)
 	CreateProjectTechnology(p CreateProjectTechnologyRequest) (ProjectTechnologyResponse, error)
 	UpdateProjectTechnology(p UpdateProjectTechnologyRequest) (ProjectTechnologyUpdateResponse, error)
 	DeleteProjectTechnology(id int) (ProjectTechnology, error)
+	CountTechnologiesByIDs(ids []int) error
 }
 
 type service struct {
@@ -60,4 +63,17 @@ func (s *service) DeleteProjectTechnology(id int) (ProjectTechnology, error) {
 		return ProjectTechnology{}, err
 	}
 	return data, nil
+}
+
+func (s *service) CountTechnologiesByIDs(ids []int) error {
+	total, err := s.repo.CountTechnologiesByIDs(ids)
+	if err != nil {
+		return err
+	}
+
+	if total != len(ids) {
+		err := fmt.Errorf("some technology_ids not found in database")
+		return err
+	}
+	return nil
 }
