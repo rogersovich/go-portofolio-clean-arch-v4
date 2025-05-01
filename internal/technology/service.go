@@ -8,9 +8,9 @@ import (
 
 type Service interface {
 	GetAllTechnologies() ([]TechnologyResponse, error)
-	GetTechnologyById(id string) (TechnologyResponse, error)
+	GetTechnologyById(id int) (TechnologyResponse, error)
 	CreateTechnology(p CreateTechnologyRequest) (TechnologyResponse, error)
-	UpdateTechnology(p UpdateTechnologyDTO, oldPath string, newFilePath string) (TechnologyUpdateResponse, error)
+	UpdateTechnology(p UpdateTechnologyRequest) error
 	DeleteTechnology(id int) (Technology, error)
 }
 
@@ -23,55 +23,105 @@ func NewService(r Repository) Service {
 }
 
 func (s *service) GetAllTechnologies() ([]TechnologyResponse, error) {
-	technologies, err := s.repo.FindAll()
+	datas, err := s.repo.FindAll()
 	if err != nil {
 		return nil, err
 	}
 
 	var result []TechnologyResponse
-	for _, p := range technologies {
+	for _, p := range datas {
 		result = append(result, ToTechnologyResponse(p))
 	}
 	return result, nil
 }
 
-func (s *service) GetTechnologyById(id string) (TechnologyResponse, error) {
-	technology, err := s.repo.FindById(id)
+func (s *service) GetTechnologyById(id int) (TechnologyResponse, error) {
+	data, err := s.repo.FindById(id)
 	if err != nil {
 		return TechnologyResponse{}, err
 	}
-	return ToTechnologyResponse(technology), nil
+	return ToTechnologyResponse(data), nil
 }
 
 func (s *service) CreateTechnology(p CreateTechnologyRequest) (TechnologyResponse, error) {
-	technology, err := s.repo.CreateTechnology(p)
+	logoRes, err := utils.HandlUploadFile(p.LogoFile, "technology")
 	if err != nil {
 		return TechnologyResponse{}, err
 	}
-	return ToTechnologyResponse(technology), nil
+
+	payload := CreateTechnologyDTO{
+		Name:            p.Name,
+		DescriptionHTML: p.DescriptionHTML,
+		LogoUrl:         logoRes.FileURL,
+		LogoFileName:    logoRes.FileName,
+		IsMajor:         p.IsMajor == "Y",
+	}
+
+	data, err := s.repo.CreateTechnology(payload)
+	if err != nil {
+		_ = utils.DeleteFromMinio(context.Background(), logoRes.FileName)
+		return TechnologyResponse{}, err
+	}
+	return ToTechnologyResponse(data), nil
 }
 
-func (s *service) UpdateTechnology(p UpdateTechnologyDTO, oldPath string, newFilePath string) (TechnologyUpdateResponse, error) {
-	technology, err := s.repo.UpdateTechnology(p)
+func (s *service) UpdateTechnology(p UpdateTechnologyRequest) error {
+	//todo: Get Technology
+	technology, err := s.repo.FindById(p.ID)
 	if err != nil {
-		return TechnologyUpdateResponse{}, err
+		return err
 	}
 
-	// 3. Optional: Delete old file from MinIO
-	if oldPath != newFilePath {
-		err = utils.DeleteFromMinio(context.Background(), oldPath) // ignore error or handle if needed
+	//todo: set oldFileName
+	oldFileName := ""
+	if technology.LogoFileName != "" {
+		oldFileName = technology.LogoFileName
+	}
+
+	var newFileURL string
+	var newFileName string
+
+	//todo: Upload File
+	if p.LogoFile != nil {
+		logoRes, err := utils.HandlUploadFile(p.LogoFile, "technology")
 		if err != nil {
-			utils.Logger.Error(err.Error())
+			return err
 		}
+
+		newFileURL = logoRes.FileURL
+		newFileName = logoRes.FileName
+	} else {
+		newFileURL = technology.LogoUrl
+		newFileName = technology.LogoFileName
 	}
 
-	return ToTechnologyUpdateResponse(technology), nil
+	payload := UpdateTechnologyDTO{
+		ID:              p.ID,
+		Name:            p.Name,
+		DescriptionHTML: p.DescriptionHTML,
+		LogoUrl:         newFileURL,
+		LogoFileName:    newFileName,
+		IsMajor:         p.IsMajor == "Y",
+	}
+
+	err = s.repo.UpdateTechnology(payload)
+	if err != nil {
+		_ = utils.DeleteFromMinio(context.Background(), newFileName)
+		return err
+	}
+
+	//todo: Delete Old Image
+	if oldFileName != newFileName {
+		_ = utils.DeleteFromMinio(context.Background(), oldFileName)
+	}
+
+	return nil
 }
 
 func (s *service) DeleteTechnology(id int) (Technology, error) {
-	technology, err := s.repo.DeleteTechnology(id)
+	data, err := s.repo.DeleteTechnology(id)
 	if err != nil {
 		return Technology{}, err
 	}
-	return technology, nil
+	return data, nil
 }

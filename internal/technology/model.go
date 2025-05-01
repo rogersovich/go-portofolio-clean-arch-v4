@@ -7,7 +7,7 @@ import (
 )
 
 type Technology struct {
-	ID              uint   `json:"id" gorm:"primaryKey"`
+	ID              int    `json:"id" gorm:"primaryKey"`
 	Name            string `json:"name"`
 	DescriptionHTML string `json:"description_html"`
 	LogoUrl         string `json:"logo_url"`

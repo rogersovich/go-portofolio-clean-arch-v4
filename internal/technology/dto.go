@@ -1,33 +1,45 @@
 package technology
 
-import "github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
+import (
+	"mime/multipart"
+
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
+)
 
 type CreateTechnologyRequest struct {
-	Name            string `json:"name" validate:"required"`
-	DescriptionHTML string `json:"description_html" validate:"required"`
-	LogoUrl         string `json:"logo_url" validate:"required"`
-	LogoFileName    string `json:"logo_file_name" validate:"required"`
-	IsMajor         string `json:"is_major" validate:"required,oneof=Y N"`
+	Name            string                `json:"name" validate:"required"`
+	DescriptionHTML string                `json:"description_html" validate:"required"`
+	LogoFile        *multipart.FileHeader `json:"logo_file"`
+	IsMajor         string                `json:"is_major" validate:"required,oneof=Y N"`
 }
 
 type UpdateTechnologyRequest struct {
-	Id              int    `json:"id" validate:"required,numeric,number"`
-	Name            string `json:"name" validate:"required"`
-	DescriptionHTML string `json:"description_html" validate:"required"`
-	IsMajor         string `json:"is_major" validate:"required,oneof=Y N"`
+	ID              int                   `json:"id" validate:"required,numeric,number"`
+	Name            string                `json:"name" validate:"required"`
+	DescriptionHTML string                `json:"description_html" validate:"required"`
+	LogoFile        *multipart.FileHeader `json:"logo_file"`
+	IsMajor         string                `json:"is_major" validate:"required,oneof=Y N"`
 }
 
-type UpdateTechnologyDTO struct {
-	Id              uint
+type CreateTechnologyDTO struct {
 	Name            string
 	DescriptionHTML string
 	LogoUrl         string
 	LogoFileName    string
-	IsMajor         string
+	IsMajor         bool
+}
+
+type UpdateTechnologyDTO struct {
+	ID              int
+	Name            string
+	DescriptionHTML string
+	LogoUrl         string
+	LogoFileName    string
+	IsMajor         bool
 }
 
 type TechnologyResponse struct {
-	ID              uint   `json:"id"`
+	ID              int    `json:"id"`
 	Name            string `json:"name"`
 	DescriptionHTML string `json:"description_html"`
 	LogoUrl         string `json:"logo_url"`
@@ -37,7 +49,7 @@ type TechnologyResponse struct {
 }
 
 type TechnologyUpdateResponse struct {
-	ID              uint   `json:"id"`
+	ID              int    `json:"id"`
 	Name            string `json:"name"`
 	DescriptionHTML string `json:"description_html"`
 	LogoUrl         string `json:"logo_url"`
