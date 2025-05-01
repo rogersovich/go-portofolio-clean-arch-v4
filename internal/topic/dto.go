@@ -5,7 +5,7 @@ type CreateTopicRequest struct {
 }
 
 type UpdateTopicRequest struct {
-	Id   int    `json:"id" binding:"required"`
+	ID   int    `json:"id" binding:"required"`
 	Name string `json:"name" binding:"required"`
 }
 
@@ -16,11 +16,6 @@ type TopicResponse struct {
 }
 
 type TopicHasCheckResponse struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
-type TopicUpdateResponse struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
@@ -38,12 +33,5 @@ func ToTopicResponse(p Topic) TopicResponse {
 		ID:        p.ID,
 		Name:      p.Name,
 		CreatedAt: p.CreatedAt.Format("2006-01-02"),
-	}
-}
-
-func ToTopicUpdateResponse(p Topic) TopicUpdateResponse {
-	return TopicUpdateResponse{
-		ID:   p.ID,
-		Name: p.Name,
 	}
 }

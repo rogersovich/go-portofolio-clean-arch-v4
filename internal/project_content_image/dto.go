@@ -1,17 +1,25 @@
 package project_content_image
 
+import "mime/multipart"
+
 type CreateProjectContentImageRequest struct {
-	ImageUrl      string `json:"image_url" validate:"required"`
-	ImageFileName string `json:"image_file_name" validate:"required"`
+	ImageFile *multipart.FileHeader `json:"image_file" validate:"required"`
 }
 
 type UpdateProjectContentImageRequest struct {
-	Id        int  `json:"id" validate:"required"`
-	ProjectID *int `json:"project_id" validate:"required"`
+	ID        int                   `json:"id" validate:"required"`
+	ProjectID *int                  `json:"project_id" validate:"required"`
+	ImageFile *multipart.FileHeader `json:"image_file" validate:"required"`
+}
+
+type CreateProjectContentImageDTO struct {
+	ProjectID     *int
+	ImageUrl      string
+	ImageFileName string
 }
 
 type UpdateProjectContentImageDTO struct {
-	Id            int
+	ID            int
 	ProjectID     *int
 	ImageUrl      string
 	ImageFileName string

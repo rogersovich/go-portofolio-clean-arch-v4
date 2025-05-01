@@ -6,7 +6,7 @@ type CreateProjectTechnologyRequest struct {
 }
 
 type UpdateProjectTechnologyRequest struct {
-	Id           int `json:"id" binding:"required"`
+	ID           int `json:"id" binding:"required"`
 	ProjectID    int `json:"project_id" binding:"required"`
 	TechnologyID int `json:"technology_id" binding:"required"`
 }

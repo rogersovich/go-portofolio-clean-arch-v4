@@ -7,8 +7,8 @@ import (
 type Repository interface {
 	FindAll() ([]ProjectContentImage, error)
 	FindById(id int) (ProjectContentImage, error)
-	CreateProjectContentImage(p CreateProjectContentImageRequest) (ProjectContentImage, error)
-	UpdateProjectContentImage(p UpdateProjectContentImageDTO) (ProjectContentImage, error)
+	CreateProjectContentImage(p CreateProjectContentImageDTO) (ProjectContentImage, error)
+	UpdateProjectContentImage(p UpdateProjectContentImageDTO) error
 	DeleteProjectContentImage(id int) (ProjectContentImage, error)
 	CountUnusedProjectImages(ids []string) (total int, err error)
 	BatchUpdateProjectImages(projectImages []string, project_id int, tx *gorm.DB) error
@@ -38,7 +38,7 @@ func (r *repository) FindById(id int) (ProjectContentImage, error) {
 	return data, err
 }
 
-func (r *repository) CreateProjectContentImage(p CreateProjectContentImageRequest) (ProjectContentImage, error) {
+func (r *repository) CreateProjectContentImage(p CreateProjectContentImageDTO) (ProjectContentImage, error) {
 	data := ProjectContentImage{
 		ImageUrl:      p.ImageUrl,
 		ImageFileName: p.ImageFileName}
@@ -46,14 +46,14 @@ func (r *repository) CreateProjectContentImage(p CreateProjectContentImageReques
 	return data, err
 }
 
-func (r *repository) UpdateProjectContentImage(p UpdateProjectContentImageDTO) (ProjectContentImage, error) {
+func (r *repository) UpdateProjectContentImage(p UpdateProjectContentImageDTO) error {
 	data := ProjectContentImage{
-		ID:            p.Id,
+		ID:            p.ID,
 		ProjectID:     p.ProjectID,
 		ImageUrl:      p.ImageUrl,
 		ImageFileName: p.ImageFileName}
 	err := r.db.Updates(&data).Error
-	return data, err
+	return err
 }
 
 func (r *repository) DeleteProjectContentImage(id int) (ProjectContentImage, error) {

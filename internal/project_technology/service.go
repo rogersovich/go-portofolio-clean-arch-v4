@@ -9,9 +9,9 @@ import (
 
 type Service interface {
 	GetAllProjectTechnologies() ([]ProjectTechnologyResponse, error)
-	GetProjectTechnologyById(id string) (ProjectTechnologyResponse, error)
+	GetProjectTechnologyById(id int) (ProjectTechnologyResponse, error)
 	CreateProjectTechnology(p CreateProjectTechnologyRequest) (ProjectTechnologyResponse, error)
-	UpdateProjectTechnology(p UpdateProjectTechnologyRequest) (ProjectTechnologyUpdateResponse, error)
+	UpdateProjectTechnology(p UpdateProjectTechnologyRequest) error
 	DeleteProjectTechnology(id int) (ProjectTechnology, error)
 	CountTechnologiesByIDs(ids []int) error
 	BulkCreateTechnologies(tech_ids []int, project_id int, tx *gorm.DB) error
@@ -39,7 +39,7 @@ func (s *service) GetAllProjectTechnologies() ([]ProjectTechnologyResponse, erro
 	return result, nil
 }
 
-func (s *service) GetProjectTechnologyById(id string) (ProjectTechnologyResponse, error) {
+func (s *service) GetProjectTechnologyById(id int) (ProjectTechnologyResponse, error) {
 	data, err := s.repo.FindById(id)
 	if err != nil {
 		return ProjectTechnologyResponse{}, err
@@ -55,13 +55,18 @@ func (s *service) CreateProjectTechnology(p CreateProjectTechnologyRequest) (Pro
 	return ToProjectTechnologyResponse(data), nil
 }
 
-func (s *service) UpdateProjectTechnology(p UpdateProjectTechnologyRequest) (ProjectTechnologyUpdateResponse, error) {
-	data, err := s.repo.UpdateProjectTechnology(p)
+func (s *service) UpdateProjectTechnology(p UpdateProjectTechnologyRequest) error {
+	_, err := s.repo.FindById(p.ID)
 	if err != nil {
-		return ProjectTechnologyUpdateResponse{}, err
+		return err
 	}
 
-	return ToProjectTechnologyUpdateResponse(data), nil
+	err = s.repo.UpdateProjectTechnology(p)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *service) DeleteProjectTechnology(id int) (ProjectTechnology, error) {

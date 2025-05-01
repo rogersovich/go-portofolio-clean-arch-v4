@@ -14,7 +14,7 @@ type Service interface {
 	GetAllProjectContentImages() ([]ProjectContentImageResponse, error)
 	GetProjectContentImageById(id int) (ProjectContentImageResponse, error)
 	CreateProjectContentImage(p CreateProjectContentImageRequest) (ProjectContentImageResponse, error)
-	UpdateProjectContentImage(p UpdateProjectContentImageDTO, oldPath string, newFilePath string) (ProjectContentImageUpdateResponse, error)
+	UpdateProjectContentImage(p UpdateProjectContentImageRequest) error
 	DeleteProjectContentImage(id int) (ProjectContentImageResponse, error)
 	CountUnusedProjectImages(ids []string) error
 	BatchUpdateProjectImages(projectImages []string, project_id int, tx *gorm.DB) error
@@ -52,28 +52,73 @@ func (s *service) GetProjectContentImageById(id int) (ProjectContentImageRespons
 }
 
 func (s *service) CreateProjectContentImage(p CreateProjectContentImageRequest) (ProjectContentImageResponse, error) {
-	data, err := s.repo.CreateProjectContentImage(p)
+	imageRes, err := utils.HandlUploadFile(p.ImageFile, "project")
 	if err != nil {
+		return ProjectContentImageResponse{}, err
+	}
+
+	payload := CreateProjectContentImageDTO{
+		ProjectID:     nil,
+		ImageUrl:      imageRes.FileURL,
+		ImageFileName: imageRes.FileName,
+	}
+
+	data, err := s.repo.CreateProjectContentImage(payload)
+	if err != nil {
+		_ = utils.DeleteFromMinio(context.Background(), imageRes.FileName)
 		return ProjectContentImageResponse{}, err
 	}
 	return ToProjectContentImageResponse(data), nil
 }
 
-func (s *service) UpdateProjectContentImage(p UpdateProjectContentImageDTO, oldPath string, newFilePath string) (ProjectContentImageUpdateResponse, error) {
-	data, err := s.repo.UpdateProjectContentImage(p)
+func (s *service) UpdateProjectContentImage(p UpdateProjectContentImageRequest) error {
+	//todo: Get Data
+	projectImage, err := s.repo.FindById(p.ID)
 	if err != nil {
-		return ProjectContentImageUpdateResponse{}, err
+		return err
 	}
 
-	// 3. Optional: Delete old file from MinIO
-	if oldPath != newFilePath {
-		err = utils.DeleteFromMinio(context.Background(), oldPath) // ignore error or handle if needed
+	//todo: set oldFileName
+	oldFileName := ""
+	if projectImage.ImageFileName != "" {
+		oldFileName = projectImage.ImageFileName
+	}
+
+	var newFileURL string
+	var newFileName string
+
+	//todo: Upload File
+	if p.ImageFile != nil {
+		logoRes, err := utils.HandlUploadFile(p.ImageFile, "project")
 		if err != nil {
-			utils.Logger.Error(err.Error())
+			return err
 		}
+
+		newFileURL = logoRes.FileURL
+		newFileName = logoRes.FileName
+	} else {
+		newFileURL = projectImage.ImageUrl
+		newFileName = projectImage.ImageFileName
 	}
 
-	return ToProjectContentImageUpdateResponse(data), nil
+	payload := UpdateProjectContentImageDTO{
+		ID:            p.ID,
+		ImageUrl:      newFileURL,
+		ImageFileName: newFileName,
+	}
+
+	err = s.repo.UpdateProjectContentImage(payload)
+	if err != nil {
+		_ = utils.DeleteFromMinio(context.Background(), newFileName)
+		return err
+	}
+
+	//todo: Delete Old Image
+	if oldFileName != newFileName {
+		_ = utils.DeleteFromMinio(context.Background(), oldFileName)
+	}
+
+	return nil
 }
 
 func (s *service) DeleteProjectContentImage(id int) (ProjectContentImageResponse, error) {
@@ -81,6 +126,9 @@ func (s *service) DeleteProjectContentImage(id int) (ProjectContentImageResponse
 	if err != nil {
 		return ProjectContentImageResponse{}, err
 	}
+
+	_ = utils.DeleteFromMinio(context.Background(), data.ImageFileName)
+
 	return ToProjectContentImageResponse(data), nil
 }
 

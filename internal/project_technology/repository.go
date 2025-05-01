@@ -6,9 +6,9 @@ import (
 
 type Repository interface {
 	FindAll() ([]ProjectTechnology, error)
-	FindById(id string) (ProjectTechnology, error)
+	FindById(id int) (ProjectTechnology, error)
 	CreateProjectTechnology(p CreateProjectTechnologyRequest) (ProjectTechnology, error)
-	UpdateProjectTechnology(p UpdateProjectTechnologyRequest) (ProjectTechnology, error)
+	UpdateProjectTechnology(p UpdateProjectTechnologyRequest) error
 	DeleteProjectTechnology(id int) (ProjectTechnology, error)
 	CountTechnologiesByIDs(ids []int) (total int, err error)
 	BulkCreateTechnologies(tech_ids []ProjectTechnology, tx *gorm.DB) error
@@ -30,7 +30,7 @@ func (r *repository) FindAll() ([]ProjectTechnology, error) {
 	return datas, err
 }
 
-func (r *repository) FindById(id string) (ProjectTechnology, error) {
+func (r *repository) FindById(id int) (ProjectTechnology, error) {
 	var data ProjectTechnology
 	err := r.db.Where("id = ?", id).First(&data).Error
 	return data, err
@@ -44,13 +44,13 @@ func (r *repository) CreateProjectTechnology(p CreateProjectTechnologyRequest) (
 	return data, err
 }
 
-func (r *repository) UpdateProjectTechnology(p UpdateProjectTechnologyRequest) (ProjectTechnology, error) {
+func (r *repository) UpdateProjectTechnology(p UpdateProjectTechnologyRequest) error {
 	data := ProjectTechnology{
-		ID:           p.Id,
+		ID:           p.ID,
 		ProjectID:    p.ProjectID,
 		TechnologyID: p.TechnologyID}
 	err := r.db.Updates(&data).Error
-	return data, err
+	return err
 }
 
 func (r *repository) DeleteProjectTechnology(id int) (ProjectTechnology, error) {

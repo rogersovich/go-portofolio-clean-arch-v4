@@ -6,9 +6,9 @@ import (
 
 type Repository interface {
 	FindAll() ([]Topic, error)
-	FindById(id string) (Topic, error)
+	FindById(id int) (Topic, error)
 	CreateTopic(p CreateTopicRequest) (Topic, error)
-	UpdateTopic(p UpdateTopicRequest) (Topic, error)
+	UpdateTopic(p UpdateTopicRequest) error
 	DeleteTopic(id int) (Topic, error)
 	CheckTopicIds(ids []int) ([]Topic, error)
 }
@@ -27,7 +27,7 @@ func (r *repository) FindAll() ([]Topic, error) {
 	return datas, err
 }
 
-func (r *repository) FindById(id string) (Topic, error) {
+func (r *repository) FindById(id int) (Topic, error) {
 	var data Topic
 	err := r.db.Where("id = ?", id).First(&data).Error
 	return data, err
@@ -40,12 +40,12 @@ func (r *repository) CreateTopic(p CreateTopicRequest) (Topic, error) {
 	return data, err
 }
 
-func (r *repository) UpdateTopic(p UpdateTopicRequest) (Topic, error) {
+func (r *repository) UpdateTopic(p UpdateTopicRequest) error {
 	data := Topic{
-		ID:   p.Id,
+		ID:   p.ID,
 		Name: p.Name}
 	err := r.db.Updates(&data).Error
-	return data, err
+	return err
 }
 
 func (r *repository) DeleteTopic(id int) (Topic, error) {

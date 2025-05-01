@@ -4,9 +4,9 @@ import "fmt"
 
 type Service interface {
 	GetAllTopics() ([]TopicResponse, error)
-	GetTopicById(id string) (TopicResponse, error)
+	GetTopicById(id int) (TopicResponse, error)
 	CreateTopic(p CreateTopicRequest) (TopicResponse, error)
-	UpdateTopic(p UpdateTopicRequest) (TopicUpdateResponse, error)
+	UpdateTopic(p UpdateTopicRequest) error
 	DeleteTopic(id int) (Topic, error)
 	CheckTopicIds(ids []int) ([]TopicHasCheckResponse, error)
 }
@@ -32,7 +32,7 @@ func (s *service) GetAllTopics() ([]TopicResponse, error) {
 	return result, nil
 }
 
-func (s *service) GetTopicById(id string) (TopicResponse, error) {
+func (s *service) GetTopicById(id int) (TopicResponse, error) {
 	data, err := s.repo.FindById(id)
 	if err != nil {
 		return TopicResponse{}, err
@@ -48,13 +48,13 @@ func (s *service) CreateTopic(p CreateTopicRequest) (TopicResponse, error) {
 	return ToTopicResponse(data), nil
 }
 
-func (s *service) UpdateTopic(p UpdateTopicRequest) (TopicUpdateResponse, error) {
-	data, err := s.repo.UpdateTopic(p)
+func (s *service) UpdateTopic(p UpdateTopicRequest) error {
+	err := s.repo.UpdateTopic(p)
 	if err != nil {
-		return TopicUpdateResponse{}, err
+		return err
 	}
 
-	return ToTopicUpdateResponse(data), nil
+	return nil
 }
 
 func (s *service) DeleteTopic(id int) (Topic, error) {
