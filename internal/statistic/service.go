@@ -4,10 +4,10 @@ import "gorm.io/gorm"
 
 type Service interface {
 	GetAllStatistics() ([]StatisticResponse, error)
-	GetStatisticById(id string) (StatisticResponse, error)
+	GetStatisticById(id int) (StatisticResponse, error)
 	CreateStatistic(p CreateStatisticRequest) (StatisticResponse, error)
 	CreateStatisticWithTx(p CreateStatisticRequest, tx *gorm.DB) (StatisticResponse, error)
-	UpdateStatistic(p UpdateStatisticRequest) (StatisticUpdateResponse, error)
+	UpdateStatistic(p UpdateStatisticRequest) error
 	DeleteStatistic(id int) (Statistic, error)
 }
 
@@ -32,7 +32,7 @@ func (s *service) GetAllStatistics() ([]StatisticResponse, error) {
 	return result, nil
 }
 
-func (s *service) GetStatisticById(id string) (StatisticResponse, error) {
+func (s *service) GetStatisticById(id int) (StatisticResponse, error) {
 	data, err := s.repo.FindById(id)
 	if err != nil {
 		return StatisticResponse{}, err
@@ -56,13 +56,18 @@ func (s *service) CreateStatisticWithTx(p CreateStatisticRequest, tx *gorm.DB) (
 	return ToStatisticResponse(data), nil
 }
 
-func (s *service) UpdateStatistic(p UpdateStatisticRequest) (StatisticUpdateResponse, error) {
-	data, err := s.repo.UpdateStatistic(p)
+func (s *service) UpdateStatistic(p UpdateStatisticRequest) error {
+	_, err := s.repo.FindById(p.ID)
 	if err != nil {
-		return StatisticUpdateResponse{}, err
+		return err
 	}
 
-	return ToStatisticUpdateResponse(data), nil
+	err = s.repo.UpdateStatistic(p)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *service) DeleteStatistic(id int) (Statistic, error) {

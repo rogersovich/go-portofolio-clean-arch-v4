@@ -4,9 +4,9 @@ import "gorm.io/gorm"
 
 type Service interface {
 	GetAllReadingTimes() ([]ReadingTimeResponse, error)
-	GetReadingTimeById(id string) (ReadingTimeResponse, error)
+	GetReadingTimeById(id int) (ReadingTimeResponse, error)
 	CreateReadingTime(p CreateReadingTimeRequest, tx *gorm.DB) (ReadingTimeResponse, error)
-	UpdateReadingTime(p UpdateReadingTimeRequest, tx *gorm.DB) (ReadingTimeUpdateResponse, error)
+	UpdateReadingTime(p UpdateReadingTimeRequest, tx *gorm.DB) error
 	DeleteReadingTime(id int) (ReadingTime, error)
 }
 
@@ -31,7 +31,7 @@ func (s *service) GetAllReadingTimes() ([]ReadingTimeResponse, error) {
 	return result, nil
 }
 
-func (s *service) GetReadingTimeById(id string) (ReadingTimeResponse, error) {
+func (s *service) GetReadingTimeById(id int) (ReadingTimeResponse, error) {
 	data, err := s.repo.FindById(id)
 	if err != nil {
 		return ReadingTimeResponse{}, err
@@ -47,13 +47,18 @@ func (s *service) CreateReadingTime(p CreateReadingTimeRequest, tx *gorm.DB) (Re
 	return ToReadingTimeResponse(data), nil
 }
 
-func (s *service) UpdateReadingTime(p UpdateReadingTimeRequest, tx *gorm.DB) (ReadingTimeUpdateResponse, error) {
-	data, err := s.repo.UpdateReadingTime(p, tx)
+func (s *service) UpdateReadingTime(p UpdateReadingTimeRequest, tx *gorm.DB) error {
+	_, err := s.repo.FindById(p.ID)
 	if err != nil {
-		return ReadingTimeUpdateResponse{}, err
+		return err
 	}
 
-	return ToReadingTimeUpdateResponse(data), nil
+	err = s.repo.UpdateReadingTime(p, tx)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *service) DeleteReadingTime(id int) (ReadingTime, error) {

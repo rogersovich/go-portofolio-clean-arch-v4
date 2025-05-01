@@ -6,9 +6,9 @@ import (
 
 type Repository interface {
 	FindAll() ([]ReadingTime, error)
-	FindById(id string) (ReadingTime, error)
+	FindById(id int) (ReadingTime, error)
 	CreateReadingTime(p CreateReadingTimeRequest, tx *gorm.DB) (ReadingTime, error)
-	UpdateReadingTime(p UpdateReadingTimeRequest, tx *gorm.DB) (ReadingTime, error)
+	UpdateReadingTime(p UpdateReadingTimeRequest, tx *gorm.DB) error
 	DeleteReadingTime(id int) (ReadingTime, error)
 }
 
@@ -26,7 +26,7 @@ func (r *repository) FindAll() ([]ReadingTime, error) {
 	return datas, err
 }
 
-func (r *repository) FindById(id string) (ReadingTime, error) {
+func (r *repository) FindById(id int) (ReadingTime, error) {
 	var data ReadingTime
 	err := r.db.Where("id = ?", id).First(&data).Error
 	return data, err
@@ -50,7 +50,7 @@ func (r *repository) CreateReadingTime(p CreateReadingTimeRequest, tx *gorm.DB) 
 	return data, err
 }
 
-func (r *repository) UpdateReadingTime(p UpdateReadingTimeRequest, tx *gorm.DB) (ReadingTime, error) {
+func (r *repository) UpdateReadingTime(p UpdateReadingTimeRequest, tx *gorm.DB) error {
 	var db *gorm.DB
 	if tx != nil {
 		db = tx
@@ -66,7 +66,7 @@ func (r *repository) UpdateReadingTime(p UpdateReadingTimeRequest, tx *gorm.DB) 
 		WordCount:        p.WordCount,
 		Type:             p.Type}
 	err := db.Updates(&data).Error
-	return data, err
+	return err
 }
 
 func (r *repository) DeleteReadingTime(id int) (ReadingTime, error) {

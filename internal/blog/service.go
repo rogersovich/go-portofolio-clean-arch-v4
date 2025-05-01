@@ -376,7 +376,7 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 		}
 
 		//todo: Update Reading Time
-		_, err := s.readingTimeService.UpdateReadingTime(pReadingTime, tx)
+		err := s.readingTimeService.UpdateReadingTime(pReadingTime, tx)
 
 		if err != nil {
 			tx.Rollback()

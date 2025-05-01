@@ -6,10 +6,10 @@ import (
 
 type Repository interface {
 	FindAll() ([]Statistic, error)
-	FindById(id string) (Statistic, error)
+	FindById(id int) (Statistic, error)
 	CreateStatistic(p CreateStatisticRequest) (Statistic, error)
 	CreateStatisticWithTx(p CreateStatisticRequest, tx *gorm.DB) (Statistic, error)
-	UpdateStatistic(p UpdateStatisticRequest) (Statistic, error)
+	UpdateStatistic(p UpdateStatisticRequest) error
 	DeleteStatistic(id int) (Statistic, error)
 }
 
@@ -27,7 +27,7 @@ func (r *repository) FindAll() ([]Statistic, error) {
 	return datas, err
 }
 
-func (r *repository) FindById(id string) (Statistic, error) {
+func (r *repository) FindById(id int) (Statistic, error) {
 	var data Statistic
 	err := r.db.Where("id = ?", id).First(&data).Error
 	return data, err
@@ -51,14 +51,14 @@ func (r *repository) CreateStatisticWithTx(p CreateStatisticRequest, tx *gorm.DB
 	return data, err
 }
 
-func (r *repository) UpdateStatistic(p UpdateStatisticRequest) (Statistic, error) {
+func (r *repository) UpdateStatistic(p UpdateStatisticRequest) error {
 	data := Statistic{
-		ID:    p.Id,
+		ID:    p.ID,
 		Likes: p.Likes,
 		Views: p.Views,
 		Type:  p.Type}
 	err := r.db.Updates(&data).Error
-	return data, err
+	return err
 }
 
 func (r *repository) DeleteStatistic(id int) (Statistic, error) {
