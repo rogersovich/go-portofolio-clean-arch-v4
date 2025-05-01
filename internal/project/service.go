@@ -144,32 +144,6 @@ func (s *service) GetProjectById(id int) (ProjectResponse, error) {
 	return data, nil
 }
 
-func (s *service) CheckUpdateProjectTechnologies(projectTechs []ProjectTechUpdatePayload) error {
-	total, err := s.projectRepo.CheckUpdateProjectTechnologies(projectTechs)
-	if err != nil {
-		return err
-	}
-
-	if total != len(projectTechs) {
-		err := fmt.Errorf("some technologies not found in database")
-		return err
-	}
-	return nil
-}
-
-func (s *service) CheckUpdateProjectImages(projectImages []ProjectImagesUpdatePayload) error {
-	total, err := s.projectRepo.CheckUpdateProjectImages(projectImages)
-	if err != nil {
-		return err
-	}
-
-	if total != len(projectImages) {
-		err := fmt.Errorf("some project_content_images not found in database")
-		return err
-	}
-	return nil
-}
-
 func (s *service) CreateProject(p CreateProjectRequest) (ProjectResponse, error) {
 	//todo: Check Technology Ids
 	if err := s.projectTechService.CountTechnologiesByIDs(p.TechnologyIds); err != nil {
@@ -271,26 +245,42 @@ func (s *service) CreateProject(p CreateProjectRequest) (ProjectResponse, error)
 }
 
 func (s *service) UpdateProject(p UpdateProjectRequest) (ProjectUpdateResponse, error) {
+	//todo: Get Project
 	project, err := s.GetProjectById(p.Id)
 	if err != nil {
 		return ProjectUpdateResponse{}, err
 	}
 
-	//* set oldFileName
+	//todo: set oldFileName
 	oldFileName := ""
 	if project.ImageFileName != "" {
 		oldFileName = project.ImageFileName
 	}
 
-	if err := s.CheckUpdateProjectTechnologies(p.TechnologyIds); err != nil {
+	//todo: Check Technology Ids
+	var tech_ids []int
+	for _, tech := range p.TechnologyIds {
+		tech_ids = append(tech_ids, tech.TechID)
+	}
+	if err := s.projectTechService.CountTechnologiesByIDs(tech_ids); err != nil {
 		return ProjectUpdateResponse{}, err
 	}
 
-	//* Check on Table Temp Project Images
-	if len(p.ContentImageIds) > 0 {
-		if err := s.CheckUpdateProjectImages(p.ContentImageIds); err != nil {
-			return ProjectUpdateResponse{}, err
-		}
+	tx := s.db.Begin()
+
+	//todo: Batch Update Technologies
+	err = s.projectTechService.BatchUpdateTechnologies(tech_ids, p.Id, tx)
+	if err != nil {
+		tx.Rollback()
+		return ProjectUpdateResponse{}, err
+	}
+
+	// todo: Sync Project Images
+	oldProjectImages, err := s.projectImagesService.SyncProjectImages(p.ProjectImages, p.Id, tx)
+
+	if err != nil {
+		tx.Rollback()
+		return ProjectUpdateResponse{}, err
 	}
 
 	var newFileURL string
@@ -320,34 +310,49 @@ func (s *service) UpdateProject(p UpdateProjectRequest) (ProjectUpdateResponse, 
 	}
 
 	payload := UpdateProjectDTO{
-		Id:              p.Id,
-		ContentImageIds: p.ContentImageIds,
-		TechnologyIds:   p.TechnologyIds,
-		Title:           p.Title,
-		Description:     p.Description,
-		ImageUrl:        newFileURL,
-		ImageFileName:   newFileName,
-		RepositoryUrl:   p.RepositoryUrl,
-		Summary:         p.Summary,
-		Status:          status,
-		PublishedAt:     publishedAt,
+		Id:            p.Id,
+		Title:         p.Title,
+		Description:   p.Description,
+		ImageUrl:      newFileURL,
+		ImageFileName: newFileName,
+		RepositoryUrl: p.RepositoryUrl,
+		Summary:       p.Summary,
+		Status:        status,
+		PublishedAt:   publishedAt,
 	}
-	_ = payload
 
-	data, err := s.projectRepo.UpdateProject(payload)
+	data, err := s.projectRepo.UpdateProject(payload, tx)
 	if err != nil {
+		tx.Rollback()
 		return ProjectUpdateResponse{}, err
 	}
 
-	//* 3. Optional: Delete old file from MinIO
-	if oldFileName != newFileName {
-		err = utils.DeleteFromMinio(context.Background(), oldFileName) // ignore error or handle if needed
+	//todo: Delete Old Project Images
+	if len(oldProjectImages) > 0 {
+		slice_image_urls := []string{}
+		for _, item := range oldProjectImages {
+			slice_image_urls = append(slice_image_urls, item.ImageUrl)
+		}
+
+		err = s.projectImagesService.BulkDeleteHardByImageUrls(slice_image_urls, tx)
 		if err != nil {
-			utils.Logger.Error(err.Error())
+			tx.Rollback()
+			return ProjectUpdateResponse{}, err
 		}
 	}
 
-	return data, nil
+	//todo: Commit Transaction
+	if err := tx.Commit().Error; err != nil {
+		err = fmt.Errorf("error commit transaction")
+		return ProjectUpdateResponse{}, err
+	}
+
+	//todo: Delete Old Image
+	if oldFileName != newFileName {
+		_ = utils.DeleteFromMinio(context.Background(), oldFileName)
+	}
+
+	return ToProjectUpdateResponse(data), nil
 }
 
 func (s *service) UpdateProjectStatistic(p ProjectStatisticUpdateRequest) (ProjectStatisticUpdateResponse, error) {

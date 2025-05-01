@@ -138,7 +138,7 @@ func (s *service) SyncBlogImages(
 	}
 
 	if len(imageIDsToUpdate) > 0 {
-		if err := s.repo.BatchUpdateBlogIds(imageIDsToUpdate, blog_id, tx); err != nil {
+		if err := s.repo.BatchUpdateImagesById(imageIDsToUpdate, blog_id, tx); err != nil {
 			return imageNotExist, err
 		}
 	}

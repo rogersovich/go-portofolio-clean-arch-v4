@@ -15,7 +15,7 @@ type Repository interface {
 	CountImagesLinkedToBlog(image_urls []string, blog_id int) (total int, err error)
 	FindImageExist(image_urls []string, blog_id int) ([]BlogContentImageExistingResponse, error)
 	FindImageNotExist(image_urls []string, blog_id int) ([]BlogContentImageExistingResponse, error)
-	BatchUpdateBlogIds(ids []int, blog_id int, tx *gorm.DB) error
+	BatchUpdateImagesById(ids []int, blog_id int, tx *gorm.DB) error
 	BulkDeleteHardByImageUrls(image_urls []string, tx *gorm.DB) error
 }
 
@@ -137,7 +137,7 @@ func (r *repository) CountImagesLinkedToBlog(image_urls []string, blog_id int) (
 	return total, err
 }
 
-func (r *repository) BatchUpdateBlogIds(ids []int, blog_id int, tx *gorm.DB) error {
+func (r *repository) BatchUpdateImagesById(ids []int, blog_id int, tx *gorm.DB) error {
 	var db *gorm.DB
 	if tx != nil {
 		db = tx

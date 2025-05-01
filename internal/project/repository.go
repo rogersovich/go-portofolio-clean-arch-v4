@@ -1,11 +1,7 @@
 package project
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/statistic"
-	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -14,9 +10,7 @@ type Repository interface {
 	FindByIdWithRelations(id int) ([]RawProjectRelationResponse, error)
 	FindById(id int) (ProjectResponse, error)
 	CreateProject(p CreateProjectDTO, tx *gorm.DB) (Project, error)
-	CheckUpdateProjectTechnologies(projectTechs []ProjectTechUpdatePayload) (int, error)
-	CheckUpdateProjectImages(projectImages []ProjectImagesUpdatePayload) (int, error)
-	UpdateProject(p UpdateProjectDTO) (ProjectUpdateResponse, error)
+	UpdateProject(p UpdateProjectDTO, tx *gorm.DB) (Project, error)
 	UpdateProjectStatistic(p ProjectStatisticUpdateDTO) (ProjectStatisticUpdateResponse, error)
 	DeleteProject(id int) (Project, error)
 }
@@ -87,32 +81,6 @@ func (r *repository) FindById(id int) (ProjectResponse, error) {
 	return data, err
 }
 
-func (r *repository) CheckUpdateProjectTechnologies(projectTechs []ProjectTechUpdatePayload) (total int, err error) {
-	var ids []int
-	for _, v := range projectTechs {
-		ids = append(ids, v.TechID)
-	}
-	err = r.db.Raw(`
-		SELECT COUNT(*) FROM technologies 
-		WHERE id IN ? AND
-		deleted_at IS NULL
-	`, ids).Scan(&total).Error
-	return total, err
-}
-
-func (r *repository) CheckUpdateProjectImages(projectImages []ProjectImagesUpdatePayload) (total int, err error) {
-	var image_urls []string
-	for _, v := range projectImages {
-		image_urls = append(image_urls, v.ImageUrl)
-	}
-	err = r.db.Raw(`
-		SELECT COUNT(*) FROM project_content_temp_images 
-		WHERE image_url IN ? AND
-		deleted_at IS NULL
-	`, image_urls).Scan(&total).Error
-	return total, err
-}
-
 func (r *repository) CreateProject(p CreateProjectDTO, tx *gorm.DB) (Project, error) {
 	var db *gorm.DB
 	if tx != nil {
@@ -142,120 +110,18 @@ func (r *repository) CreateProject(p CreateProjectDTO, tx *gorm.DB) (Project, er
 	return data, err
 }
 
-func (r *repository) BulkUpdateTechIDsByID(payload []ProjectTechUpdatePayload, tx *gorm.DB) error {
-	var ids []interface{}
-	var values []interface{}
-	var caseStmt strings.Builder
-
-	caseStmt.WriteString("CASE id")
-	for _, item := range payload {
-		caseStmt.WriteString(" WHEN ? THEN ?")
-		values = append(values, item.ID, item.TechID)
-		ids = append(ids, item.ID)
-	}
-	caseStmt.WriteString(" END")
-
-	// Construct IN clause
-	inClause := strings.TrimRight(strings.Repeat("?,", len(ids)), ",")
-
-	// Combine all parameters: CASE params + IN list
-	values = append(values, ids...)
-
-	query := fmt.Sprintf(`
-		UPDATE project_technologies 
-		SET technology_id = %s 
-		WHERE id IN (%s)
-	`, caseStmt.String(), inClause)
-
-	//todo: Output
-	// UPDATE project_technologies
-	// SET tech_id = CASE id
-	// 	WHEN 1 THEN 2001
-	// 	WHEN 2 THEN 2002
-	// END
-	// WHERE id IN (1, 2);
-
-	if err := tx.Exec(query, values...).Error; err != nil {
-		return err
+func (r *repository) UpdateProject(p UpdateProjectDTO, tx *gorm.DB) (Project, error) {
+	var db *gorm.DB
+	if tx != nil {
+		db = tx
+	} else {
+		db = r.db
 	}
 
-	return nil
-}
-
-func (r *repository) BulkUpdateContentImgIDsByID(payload []ProjectImagesUpdatePayload, tx *gorm.DB) error {
-	var ids []interface{}
-	var args []interface{}
-	var imgUrlCase, ImgFileNameCase strings.Builder
-
-	imgUrlCase.WriteString("CASE id")
-	ImgFileNameCase.WriteString("CASE id")
-
-	for _, p := range payload {
-		imgUrlCase.WriteString(" WHEN ? THEN ?")
-		args = append(args, p.ID, p.ImageUrl)
-
-		ImgFileNameCase.WriteString(" WHEN ? THEN ?")
-		args = append(args, p.ID, p.ImageFileName)
-
-		ids = append(ids, p.ID)
-	}
-
-	imgUrlCase.WriteString(" END")
-	ImgFileNameCase.WriteString(" END")
-
-	// Add the IDs again for the WHERE clause
-	placeholders := strings.TrimRight(strings.Repeat("?,", len(ids)), ",")
-	args = append(args, utils.ToInterfaceSlice(ids)...)
-
-	query := fmt.Sprintf(`
-		UPDATE project_content_images 
-		SET 
-			image_url = %s,
-			image_file_name = %s
-		WHERE id IN (%s)
-	`, imgUrlCase.String(), ImgFileNameCase.String(), placeholders)
-
-	//todo: Output
-	// UPDATE project_content_images
-	// SET image_url = CASE id
-	// 	WHEN 1 THEN 'https://example.com/image1.jpg'
-	// 	WHEN 2 THEN 'https://example.com/image2.jpg'
-	// END,
-	// image_file_name = CASE id
-	// 	WHEN 1 THEN 'image1.jpg'
-	// 	WHEN 2 THEN 'image2.jpg'
-	// END
-	// WHERE id IN (1, 2);
-
-	if err := tx.Exec(query, args...).Error; err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (r *repository) UpdateProject(p UpdateProjectDTO) (ProjectUpdateResponse, error) {
-	tx := r.db.Begin()
-
-	//todo BEGIN: UPDATE PROJECT TECH
-
-	err := r.BulkUpdateTechIDsByID(p.TechnologyIds, tx)
-	if err != nil {
-		tx.Rollback()
-		return ProjectUpdateResponse{}, err
-	}
-
-	//todo BEGIN: UPDATE PROJECT CONTENT IMAGES
-
-	err = r.BulkUpdateContentImgIDsByID(p.ContentImageIds, tx)
-	if err != nil {
-		tx.Rollback()
-		return ProjectUpdateResponse{}, err
-	}
-
-	//todo BEGIN: UPDATE PROJECT
+	//todo: UPDATE PROJECT
 
 	data := Project{
+		ID:            p.Id,
 		Title:         p.Title,
 		Description:   p.Description,
 		ImageUrl:      p.ImageUrl,
@@ -264,36 +130,14 @@ func (r *repository) UpdateProject(p UpdateProjectDTO) (ProjectUpdateResponse, e
 		Summary:       p.Summary,
 		Status:        p.Status,
 		PublishedAt:   p.PublishedAt}
-	err = tx.Where("ID = ?", p.Id).Updates(&data).Error
+
+	err := db.Where("ID = ?", p.Id).Updates(&data).Error
 
 	if err != nil {
-		tx.Rollback()
-		return ProjectUpdateResponse{}, err
+		return Project{}, err
 	}
 
-	if err := tx.Commit().Error; err != nil {
-		return ProjectUpdateResponse{}, err
-	}
-
-	var publishedAt *string
-
-	if p.PublishedAt != nil {
-		publishedAtFormatted := p.PublishedAt.Format("2006-01-02")
-		publishedAt = &publishedAtFormatted
-	}
-	res := ProjectUpdateResponse{
-		ID:            p.Id,
-		Title:         data.Title,
-		Description:   data.Description,
-		ImageUrl:      data.ImageUrl,
-		ImageFileName: data.ImageFileName,
-		RepositoryUrl: data.RepositoryUrl,
-		Summary:       data.Summary,
-		Status:        data.Status,
-		PublishedAt:   publishedAt,
-	}
-
-	return res, nil
+	return data, nil
 }
 
 func (r *repository) UpdateProjectStatistic(p ProjectStatisticUpdateDTO) (ProjectStatisticUpdateResponse, error) {

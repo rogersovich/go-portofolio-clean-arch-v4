@@ -145,9 +145,9 @@ func (h *handler) UpdateProject(c *gin.Context) {
 		return
 	}
 
-	var contentImageIds []ProjectImagesUpdatePayload
-	if err := json.Unmarshal([]byte(c.PostForm("content_image_ids")), &contentImageIds); err != nil {
-		utils.Error(c, http.StatusBadRequest, "Invalid content_image_ids format")
+	var project_images []string
+	if err := json.Unmarshal([]byte(c.PostForm("project_images")), &project_images); err != nil {
+		utils.Error(c, http.StatusBadRequest, "Invalid project_images format")
 		return
 	}
 
@@ -160,15 +160,15 @@ func (h *handler) UpdateProject(c *gin.Context) {
 
 	// Validate the struct using validator
 	req := UpdateProjectRequest{
-		Id:              id,
-		Title:           title,
-		Description:     description,
-		ImageFile:       image_file,
-		RepositoryUrl:   &repository_url,
-		Summary:         summary,
-		IsPublished:     is_published,
-		TechnologyIds:   technologyIds,
-		ContentImageIds: contentImageIds,
+		Id:            id,
+		Title:         title,
+		Description:   description,
+		ImageFile:     image_file,
+		RepositoryUrl: &repository_url,
+		Summary:       summary,
+		IsPublished:   is_published,
+		TechnologyIds: technologyIds,
+		ProjectImages: project_images,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {

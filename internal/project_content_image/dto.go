@@ -49,6 +49,17 @@ type ProjectImagesExistingPayload struct {
 	ImageFileName string `json:"image_file_name"`
 }
 
+type ProjectImagesFindResponse struct {
+	ID        int    `json:"id"`
+	ProjectID *int   `json:"project_id"`
+	ImageUrl  string `json:"image_url"`
+}
+
+type ProjectImagesBulkUpdateDTO struct {
+	ProjectID int      `json:"project_id"`
+	ImageUrls []string `json:"image_urls"`
+}
+
 func ToProjectContentImageResponse(p ProjectContentImage) ProjectContentImageResponse {
 	return ProjectContentImageResponse{
 		ID:            p.ID,

@@ -417,7 +417,7 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 	}
 
 	//todo: Update Blog
-	_, err = s.blogRepo.UpdateBlog(payload, tx)
+	dataUpdated, err := s.blogRepo.UpdateBlog(payload, tx)
 	if err != nil {
 		tx.Rollback()
 		if oldFileName != newFileName {
@@ -446,17 +446,7 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 		return BlogUpdateResponse{}, err
 	}
 
-	response := BlogUpdateResponse{
-		ID:              p.ID,
-		Title:           p.Title,
-		DescriptionHTML: p.DescriptionHTML,
-		BannerUrl:       newFileURL,
-		BannerFileName:  newFileName,
-		Summary:         p.Summary,
-		Status:          status,
-	}
-
-	return response, nil
+	return ToBlogUpdateResponse(dataUpdated), nil
 }
 
 func (s *service) DeleteBlog(id int) (Blog, error) {

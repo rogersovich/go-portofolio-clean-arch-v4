@@ -28,6 +28,12 @@ type ProjectTechnologyDeleteRequest struct {
 	ID int `json:"id" binding:"required"`
 }
 
+type ProjectTechnologyExistingResponse struct {
+	ID           int `json:"id"`
+	ProjectID    int `json:"project_id"`
+	TechnologyID int `json:"technology_id"`
+}
+
 func ToProjectTechnologyResponse(p ProjectTechnology) ProjectTechnologyResponse {
 	return ProjectTechnologyResponse{
 		ID:           p.ID,

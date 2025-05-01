@@ -13,6 +13,10 @@ type Repository interface {
 	CountUnusedProjectImages(ids []string) (total int, err error)
 	CountExistingProjectImages(projectImages []ProjectImagesExistingPayload) (total int, err error)
 	BatchUpdateProjectImages(projectImages []string, project_id int, tx *gorm.DB) error
+	FindImageExist(image_urls []string, project_id int) ([]ProjectImagesFindResponse, error)
+	FindImageNotExist(image_urls []string, project_id int) ([]ProjectImagesFindResponse, error)
+	BatchUpdateImagesById(ids []int, project_id int, tx *gorm.DB) error
+	BulkDeleteHardByImageUrls(image_urls []string, tx *gorm.DB) error
 }
 
 type repository struct {
@@ -110,6 +114,57 @@ func (r *repository) BatchUpdateProjectImages(projectImages []string, project_id
 		}).Error
 
 	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *repository) BatchUpdateImagesById(ids []int, project_id int, tx *gorm.DB) error {
+	var db *gorm.DB
+	if tx != nil {
+		db = tx
+	} else {
+		db = r.db
+	}
+
+	err := db.Table("project_content_images").
+		Where("id IN ?", ids).
+		Update("project_id", project_id).Error
+	return err
+}
+
+func (r *repository) FindImageExist(image_urls []string, project_id int) ([]ProjectImagesFindResponse, error) {
+	var data []ProjectImagesFindResponse
+	err := r.db.Table("project_content_images").
+		Where("image_url IN ? AND (project_id = ? OR project_id IS NULL)", image_urls, project_id).
+		Select("id, project_id, image_url").
+		Find(&data).Error
+	return data, err
+}
+
+func (r *repository) FindImageNotExist(image_urls []string, project_id int) ([]ProjectImagesFindResponse, error) {
+	var data []ProjectImagesFindResponse
+	err := r.db.Table("project_content_images").
+		Where("project_id = ? AND image_url NOT IN ?", project_id, image_urls).
+		Select("id, project_id, image_url").
+		Find(&data).Error
+	return data, err
+}
+
+func (r *repository) BulkDeleteHardByImageUrls(image_urls []string, tx *gorm.DB) error {
+	var db *gorm.DB
+	if tx != nil {
+		db = tx
+	} else {
+		db = r.db
+	}
+
+	// Create a raw SQL query to delete records with IDs in the slice
+	query := "DELETE FROM project_content_images WHERE image_url IN ?"
+
+	// Execute the raw query
+	if err := db.Exec(query, image_urls).Error; err != nil {
 		return err
 	}
 

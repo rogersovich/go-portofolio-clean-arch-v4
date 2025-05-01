@@ -17,15 +17,15 @@ type CreateProjectRequest struct {
 }
 
 type UpdateProjectRequest struct {
-	Id              int                   `validate:"required"`
-	Title           string                `validate:"required"`
-	Description     string                `validate:"required"`
-	ImageFile       *multipart.FileHeader `validate:"omitempty"`
-	RepositoryUrl   *string
-	Summary         string                       `validate:"required"`
-	IsPublished     string                       `validate:"required,oneof=Y N"`
-	TechnologyIds   []ProjectTechUpdatePayload   `json:"technology_ids" validate:"required,dive"`
-	ContentImageIds []ProjectImagesUpdatePayload `json:"content_image_ids" validate:"required,dive"`
+	Id            int                   `validate:"required"`
+	Title         string                `validate:"required"`
+	Description   string                `validate:"required"`
+	ImageFile     *multipart.FileHeader `validate:"omitempty"`
+	RepositoryUrl *string
+	Summary       string                     `validate:"required"`
+	IsPublished   string                     `validate:"required,oneof=Y N"`
+	TechnologyIds []ProjectTechUpdatePayload `json:"technology_ids" validate:"required,dive"`
+	ProjectImages []string                   `json:"project_images" validate:"required,dive"`
 }
 
 type CreateProjectDTO struct {
@@ -44,17 +44,15 @@ type CreateProjectDTO struct {
 }
 
 type UpdateProjectDTO struct {
-	Id              int
-	Title           string
-	Description     string
-	RepositoryUrl   *string
-	ImageUrl        string
-	ImageFileName   string
-	Summary         string
-	Status          string
-	PublishedAt     *time.Time
-	TechnologyIds   []ProjectTechUpdatePayload
-	ContentImageIds []ProjectImagesUpdatePayload
+	Id            int
+	Title         string
+	Description   string
+	RepositoryUrl *string
+	ImageUrl      string
+	ImageFileName string
+	Summary       string
+	Status        string
+	PublishedAt   *time.Time
 }
 
 type ProjectResponse struct {
@@ -168,7 +166,6 @@ type ProjectStatisticUpdateDTO struct {
 }
 
 type ProjectTechUpdatePayload struct {
-	ID     int `json:"id" validate:"required,gt=0"`
 	TechID int `json:"tech_id" validate:"required,gt=0"`
 }
 
