@@ -6,9 +6,9 @@ import (
 
 type Repository interface {
 	FindAll() ([]About, error)
-	FindById(id string) (About, error)
-	CreateAbout(p CreateAboutRequest) (About, error)
-	UpdateAbout(p UpdateAboutDTO) (About, error)
+	FindById(id int) (About, error)
+	CreateAbout(p CreateAboutDTO) (About, error)
+	UpdateAbout(p UpdateAboutDTO) error
 	DeleteAbout(id int) (About, error)
 }
 
@@ -26,13 +26,13 @@ func (r *repository) FindAll() ([]About, error) {
 	return abouts, err
 }
 
-func (r *repository) FindById(id string) (About, error) {
+func (r *repository) FindById(id int) (About, error) {
 	var about About
 	err := r.db.Where("id = ?", id).First(&about).Error
 	return about, err
 }
 
-func (r *repository) CreateAbout(p CreateAboutRequest) (About, error) {
+func (r *repository) CreateAbout(p CreateAboutDTO) (About, error) {
 	about := About{
 		Title:           p.Title,
 		DescriptionHTML: p.DescriptionHTML,
@@ -42,15 +42,15 @@ func (r *repository) CreateAbout(p CreateAboutRequest) (About, error) {
 	return about, err
 }
 
-func (r *repository) UpdateAbout(p UpdateAboutDTO) (About, error) {
+func (r *repository) UpdateAbout(p UpdateAboutDTO) error {
 	about := About{
-		ID:              p.Id,
+		ID:              p.ID,
 		Title:           p.Title,
 		DescriptionHTML: p.DescriptionHTML,
 		AvatarUrl:       p.AvatarUrl,
 		AvatarFileName:  p.AvatarFileName}
 	err := r.db.Updates(&about).Error
-	return about, err
+	return err
 }
 
 func (r *repository) DeleteAbout(id int) (About, error) {

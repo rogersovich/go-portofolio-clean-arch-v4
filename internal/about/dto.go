@@ -1,20 +1,29 @@
 package about
 
+import "mime/multipart"
+
 type CreateAboutRequest struct {
-	Title           string `json:"title" validate:"required"`
-	DescriptionHTML string `json:"description_html" validate:"required"`
-	AvatarUrl       string `json:"avatar_url" validate:"required"`
-	AvatarFileName  string `json:"avatar_file_name" validate:"required"`
+	Title           string                `json:"title" validate:"required"`
+	DescriptionHTML string                `json:"description_html" validate:"required"`
+	AvatarFile      *multipart.FileHeader `json:"avatar_file"`
 }
 
 type UpdateAboutRequest struct {
-	Id              int    `json:"id" validate:"required,numeric,number"`
-	Title           string `json:"title" validate:"required"`
-	DescriptionHTML string `json:"description_html" validate:"required"`
+	ID              int                   `json:"id" validate:"required,numeric,number"`
+	Title           string                `json:"title" validate:"required"`
+	DescriptionHTML string                `json:"description_html" validate:"required"`
+	AvatarFile      *multipart.FileHeader `json:"avatar_file"`
+}
+
+type CreateAboutDTO struct {
+	Title           string
+	DescriptionHTML string
+	AvatarUrl       string
+	AvatarFileName  string
 }
 
 type UpdateAboutDTO struct {
-	Id              uint
+	ID              int
 	Title           string
 	DescriptionHTML string
 	AvatarUrl       string
@@ -22,7 +31,7 @@ type UpdateAboutDTO struct {
 }
 
 type AboutResponse struct {
-	ID              uint   `json:"id"`
+	ID              int    `json:"id"`
 	Title           string `json:"title"`
 	DescriptionHTML string `json:"description_html" validate:"required"`
 	AvatarUrl       string `json:"avatar_url"`
@@ -31,7 +40,7 @@ type AboutResponse struct {
 }
 
 type AboutUpdateResponse struct {
-	ID              uint   `json:"id"`
+	ID              int    `json:"id"`
 	Title           string `json:"title"`
 	DescriptionHTML string `json:"description_html" validate:"required"`
 	AvatarUrl       string `json:"avatar_url"`

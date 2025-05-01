@@ -7,7 +7,7 @@ import (
 )
 
 type About struct {
-	ID              uint   `json:"id" gorm:"primaryKey"`
+	ID              int    `json:"id" gorm:"primaryKey"`
 	Title           string `json:"title"`
 	DescriptionHTML string `json:"description_html"`
 	AvatarUrl       string `json:"avatar_url"`

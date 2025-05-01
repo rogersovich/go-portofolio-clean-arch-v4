@@ -8,9 +8,9 @@ import (
 
 type Service interface {
 	GetAllAbouts() ([]AboutResponse, error)
-	GetAboutById(id string) (AboutResponse, error)
+	GetAboutById(id int) (AboutResponse, error)
 	CreateAbout(p CreateAboutRequest) (AboutResponse, error)
-	UpdateAbout(p UpdateAboutDTO, oldPath string, newFilePath string) (AboutUpdateResponse, error)
+	UpdateAbout(p UpdateAboutRequest) error
 	DeleteAbout(id int) (About, error)
 }
 
@@ -35,7 +35,7 @@ func (s *service) GetAllAbouts() ([]AboutResponse, error) {
 	return result, nil
 }
 
-func (s *service) GetAboutById(id string) (AboutResponse, error) {
+func (s *service) GetAboutById(id int) (AboutResponse, error) {
 	about, err := s.repo.FindById(id)
 	if err != nil {
 		return AboutResponse{}, err
@@ -44,28 +44,76 @@ func (s *service) GetAboutById(id string) (AboutResponse, error) {
 }
 
 func (s *service) CreateAbout(p CreateAboutRequest) (AboutResponse, error) {
-	about, err := s.repo.CreateAbout(p)
+	avatarRes, err := utils.HandlUploadFile(p.AvatarFile, "about")
 	if err != nil {
+		return AboutResponse{}, err
+	}
+
+	payload := CreateAboutDTO{
+		Title:           p.Title,
+		DescriptionHTML: p.DescriptionHTML,
+		AvatarUrl:       avatarRes.FileURL,
+		AvatarFileName:  avatarRes.FileName,
+	}
+
+	about, err := s.repo.CreateAbout(payload)
+	if err != nil {
+		_ = utils.DeleteFromMinio(context.Background(), avatarRes.FileName)
 		return AboutResponse{}, err
 	}
 	return ToAboutResponse(about), nil
 }
 
-func (s *service) UpdateAbout(p UpdateAboutDTO, oldPath string, newFilePath string) (AboutUpdateResponse, error) {
-	about, err := s.repo.UpdateAbout(p)
+func (s *service) UpdateAbout(p UpdateAboutRequest) error {
+	//todo: Get About
+	about, err := s.repo.FindById(p.ID)
 	if err != nil {
-		return AboutUpdateResponse{}, err
+		return err
 	}
 
-	// 3. Optional: Delete old file from MinIO
-	if oldPath != newFilePath {
-		err = utils.DeleteFromMinio(context.Background(), oldPath) // ignore error or handle if needed
+	//todo: set oldFileName
+	oldFileName := ""
+	if about.AvatarFileName != "" {
+		oldFileName = about.AvatarFileName
+	}
+
+	var newFileURL string
+	var newFileName string
+
+	//todo: Upload File
+	if p.AvatarFile != nil {
+		logoRes, err := utils.HandlUploadFile(p.AvatarFile, "about")
 		if err != nil {
-			utils.Logger.Error(err.Error())
+			return err
 		}
+
+		newFileURL = logoRes.FileURL
+		newFileName = logoRes.FileName
+	} else {
+		newFileURL = about.AvatarUrl
+		newFileName = about.AvatarFileName
 	}
 
-	return ToAboutUpdateResponse(about), nil
+	payload := UpdateAboutDTO{
+		ID:              p.ID,
+		Title:           p.Title,
+		DescriptionHTML: p.DescriptionHTML,
+		AvatarUrl:       newFileURL,
+		AvatarFileName:  newFileName,
+	}
+
+	err = s.repo.UpdateAbout(payload)
+	if err != nil {
+		_ = utils.DeleteFromMinio(context.Background(), newFileName)
+		return err
+	}
+
+	//todo: Delete Old Image
+	if oldFileName != newFileName {
+		_ = utils.DeleteFromMinio(context.Background(), oldFileName)
+	}
+
+	return nil
 }
 
 func (s *service) DeleteAbout(id int) (About, error) {
