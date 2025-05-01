@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
@@ -233,4 +234,28 @@ func ConvertStringSliceToIntSlice(strs []string) ([]int, error) {
 		ints[i] = num
 	}
 	return ints, nil
+}
+
+// ParseStringToTime is a helper function to convert a string to time.Time.
+func ParseStringToTime(dateStr string, layout string) (time.Time, error) {
+	// Parse the time string using the provided layout.
+	t, err := time.Parse(layout, dateStr)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("failed to parse date: %v", err)
+	}
+	return t, nil
+}
+
+func ParseStringPtrToTimePtr(dateStr *string, layout string) (*time.Time, error) {
+	// If the string pointer is nil, return nil time pointer
+	if dateStr == nil {
+		return nil, nil
+	}
+
+	// Parse the time string using the provided layout
+	t, err := time.Parse(layout, *dateStr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse date: %v", err)
+	}
+	return &t, nil
 }

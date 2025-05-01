@@ -132,7 +132,12 @@ func ValidateRequest(data interface{}) []FieldError {
 		message, ok := customMessages[customKey]
 		if !ok {
 			// fallback message
-			message = fmt.Sprintf("%s is not valid (%s)", jsonTag, tag)
+			if fe.Tag() == "oneof" {
+				params := formatTypeOf(fe.Param())
+				message = fmt.Sprintf("%s must be one of '%s'", jsonTag, params)
+			} else {
+				message = fmt.Sprintf("%s is not valid (%s)", jsonTag, tag)
+			}
 		}
 
 		errs = append(errs, FieldError{
