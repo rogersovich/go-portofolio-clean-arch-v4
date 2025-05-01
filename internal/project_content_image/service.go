@@ -17,7 +17,6 @@ type Service interface {
 	UpdateProjectContentImage(p UpdateProjectContentImageDTO, oldPath string, newFilePath string) (ProjectContentImageUpdateResponse, error)
 	DeleteProjectContentImage(id int) (ProjectContentImageResponse, error)
 	CountUnusedProjectImages(ids []string) error
-	CountExistingProjectImages(projectImages []ProjectImagesExistingPayload) error
 	BatchUpdateProjectImages(projectImages []string, project_id int, tx *gorm.DB) error
 	SyncProjectImages(image_urls []string, project_id int, tx *gorm.DB) ([]ProjectImagesFindResponse, error)
 	BulkDeleteHardByImageUrls(image_urls []string, tx *gorm.DB) error
@@ -92,19 +91,6 @@ func (s *service) CountUnusedProjectImages(ids []string) error {
 	}
 
 	if total != len(ids) {
-		err := fmt.Errorf("some project_images not found in database")
-		return err
-	}
-	return nil
-}
-
-func (s *service) CountExistingProjectImages(projectImages []ProjectImagesExistingPayload) error {
-	total, err := s.repo.CountExistingProjectImages(projectImages)
-	if err != nil {
-		return err
-	}
-
-	if total != len(projectImages) {
 		err := fmt.Errorf("some project_images not found in database")
 		return err
 	}

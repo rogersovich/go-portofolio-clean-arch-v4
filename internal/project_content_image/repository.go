@@ -11,7 +11,6 @@ type Repository interface {
 	UpdateProjectContentImage(p UpdateProjectContentImageDTO) (ProjectContentImage, error)
 	DeleteProjectContentImage(id int) (ProjectContentImage, error)
 	CountUnusedProjectImages(ids []string) (total int, err error)
-	CountExistingProjectImages(projectImages []ProjectImagesExistingPayload) (total int, err error)
 	BatchUpdateProjectImages(projectImages []string, project_id int, tx *gorm.DB) error
 	FindImageExist(image_urls []string, project_id int) ([]ProjectImagesFindResponse, error)
 	FindImageNotExist(image_urls []string, project_id int) ([]ProjectImagesFindResponse, error)
@@ -83,19 +82,6 @@ func (r *repository) CountUnusedProjectImages(ids []string) (total int, err erro
 		project_id IS NULL AND
 		deleted_at IS NULL
 	`, ids).Scan(&total).Error
-	return total, err
-}
-
-func (r *repository) CountExistingProjectImages(projectImages []ProjectImagesExistingPayload) (total int, err error) {
-	var image_urls []string
-	for _, v := range projectImages {
-		image_urls = append(image_urls, v.ImageUrl)
-	}
-	err = r.db.Raw(`
-		SELECT COUNT(*) FROM project_content_temp_images 
-		WHERE image_url IN ? AND
-		deleted_at IS NULL
-	`, image_urls).Scan(&total).Error
 	return total, err
 }
 
