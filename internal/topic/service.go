@@ -49,7 +49,12 @@ func (s *service) CreateTopic(p CreateTopicRequest) (TopicResponse, error) {
 }
 
 func (s *service) UpdateTopic(p UpdateTopicRequest) error {
-	err := s.repo.UpdateTopic(p)
+	_, err := s.repo.FindById(p.ID)
+	if err != nil {
+		return err
+	}
+
+	err = s.repo.UpdateTopic(p)
 	if err != nil {
 		return err
 	}
