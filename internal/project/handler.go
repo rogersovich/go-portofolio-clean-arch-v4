@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/project_content_image"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/project_technology"
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/statistic"
 	"gorm.io/gorm"
 )
 
@@ -21,8 +22,12 @@ func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	projectImagesRepo := project_content_image.NewRepository(db)
 	projectImagesService := project_content_image.NewService(projectImagesRepo)
 
+	//* Create statistic repo & service
+	statisticRepo := statistic.NewRepository(db)
+	statisticService := statistic.NewService(statisticRepo)
+
 	projectRepo := NewRepository(db)
-	projectService := NewService(projectTechService, projectImagesService, projectRepo)
+	projectService := NewService(projectTechService, projectImagesService, statisticService, projectRepo, db)
 
 	h := handler{service: projectService}
 

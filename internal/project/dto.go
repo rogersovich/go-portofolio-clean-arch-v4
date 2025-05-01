@@ -30,6 +30,7 @@ type UpdateProjectRequest struct {
 
 type CreateProjectDTO struct {
 	Id                   int
+	StatisticID          int
 	TechnologyIds        []int
 	ProjectContentImages []string
 	Title                string

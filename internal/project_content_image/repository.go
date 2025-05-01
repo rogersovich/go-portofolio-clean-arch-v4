@@ -12,6 +12,7 @@ type Repository interface {
 	DeleteProjectContentImage(id int) (ProjectContentImage, error)
 	CountUnusedProjectImages(ids []string) (total int, err error)
 	CountExistingProjectImages(projectImages []ProjectImagesExistingPayload) (total int, err error)
+	BatchUpdateProjectImages(projectImages []string, project_id int, tx *gorm.DB) error
 }
 
 type repository struct {
@@ -92,4 +93,25 @@ func (r *repository) CountExistingProjectImages(projectImages []ProjectImagesExi
 		deleted_at IS NULL
 	`, image_urls).Scan(&total).Error
 	return total, err
+}
+
+func (r *repository) BatchUpdateProjectImages(projectImages []string, project_id int, tx *gorm.DB) error {
+	var db *gorm.DB
+	if tx != nil {
+		db = tx
+	} else {
+		db = r.db
+	}
+
+	err := db.Model(&ProjectContentImage{}).
+		Where("image_url IN ?", projectImages).
+		Updates(map[string]interface{}{
+			"project_id": project_id,
+		}).Error
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

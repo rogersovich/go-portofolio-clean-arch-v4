@@ -84,9 +84,13 @@ func (h *handler) CreateProject(c *gin.Context) {
 	}
 
 	var project_images []string
-	if err := json.Unmarshal([]byte(c.PostForm("project_images")), &project_images); err != nil {
-		utils.Error(c, http.StatusBadRequest, "Invalid project_images format")
-		return
+	if contentImagesParam := c.PostForm("project_images"); contentImagesParam != "" {
+		if err := json.Unmarshal([]byte(contentImagesParam), &project_images); err != nil {
+			utils.Error(c, http.StatusBadRequest, "Invalid project_images format")
+			return
+		}
+	} else {
+		project_images = []string{}
 	}
 
 	image_file, errors, err := h.ValidateImage(c, nil)
@@ -114,7 +118,7 @@ func (h *handler) CreateProject(c *gin.Context) {
 
 	data, err := h.service.CreateProject(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to created data")
+		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 

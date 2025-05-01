@@ -2,11 +2,8 @@ package project
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
-	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/project_content_image"
-	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/project_technology"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/statistic"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
 	"gorm.io/gorm"
@@ -16,10 +13,8 @@ type Repository interface {
 	FindAll() ([]Project, error)
 	FindByIdWithRelations(id int) ([]RawProjectRelationResponse, error)
 	FindById(id int) (ProjectResponse, error)
-	CreateProject(p CreateProjectDTO) (Project, error)
-	CheckCreateProjectTechnologies(ids []int) (int, error)
+	CreateProject(p CreateProjectDTO, tx *gorm.DB) (Project, error)
 	CheckUpdateProjectTechnologies(projectTechs []ProjectTechUpdatePayload) (int, error)
-	CheckCreateProjectImages(ids []string) (int, error)
 	CheckUpdateProjectImages(projectImages []ProjectImagesUpdatePayload) (int, error)
 	UpdateProject(p UpdateProjectDTO) (ProjectUpdateResponse, error)
 	UpdateProjectStatistic(p ProjectStatisticUpdateDTO) (ProjectStatisticUpdateResponse, error)
@@ -105,25 +100,6 @@ func (r *repository) CheckUpdateProjectTechnologies(projectTechs []ProjectTechUp
 	return total, err
 }
 
-func (r *repository) CheckCreateProjectTechnologies(ids []int) (total int, err error) {
-	err = r.db.Raw(`
-		SELECT COUNT(*) FROM technologies 
-		WHERE id IN ? AND
-		deleted_at IS NULL
-	`, ids).Scan(&total).Error
-	return total, err
-}
-
-func (r *repository) CheckCreateProjectImages(ids []string) (total int, err error) {
-	err = r.db.Raw(`
-		SELECT COUNT(*) FROM project_content_images 
-		WHERE image_url IN ? AND
-		project_id IS NULL AND
-		deleted_at IS NULL
-	`, ids).Scan(&total).Error
-	return total, err
-}
-
 func (r *repository) CheckUpdateProjectImages(projectImages []ProjectImagesUpdatePayload) (total int, err error) {
 	var image_urls []string
 	for _, v := range projectImages {
@@ -137,25 +113,17 @@ func (r *repository) CheckUpdateProjectImages(projectImages []ProjectImagesUpdat
 	return total, err
 }
 
-func (r *repository) CreateProject(p CreateProjectDTO) (Project, error) {
-	tx := r.db.Begin()
-
-	// Create Statistic
-	zero := 0
-	statistic := statistic.Statistic{
-		Likes: &zero,
-		Views: &zero,
-		Type:  "Project"}
-	err := tx.Create(&statistic).Error
-
-	if err != nil {
-		tx.Rollback()
-		return Project{}, err
+func (r *repository) CreateProject(p CreateProjectDTO, tx *gorm.DB) (Project, error) {
+	var db *gorm.DB
+	if tx != nil {
+		db = tx
+	} else {
+		db = r.db
 	}
 
 	// Create Project
 	data := Project{
-		StatisticID:   statistic.ID,
+		StatisticID:   p.StatisticID,
 		Title:         p.Title,
 		Description:   p.Description,
 		ImageUrl:      p.ImageUrl,
@@ -164,44 +132,13 @@ func (r *repository) CreateProject(p CreateProjectDTO) (Project, error) {
 		Summary:       p.Summary,
 		Status:        p.Status,
 		PublishedAt:   p.PublishedAt}
-	err = tx.Create(&data).Error
+
+	err := db.Create(&data).Error
 
 	if err != nil {
-		tx.Rollback()
 		return Project{}, err
 	}
 
-	// Create Project Technologies
-	var technologies []project_technology.ProjectTechnology
-
-	for _, technology_id := range p.TechnologyIds {
-		technologies = append(technologies, project_technology.ProjectTechnology{
-			ProjectID:    data.ID,
-			TechnologyID: technology_id,
-		})
-	}
-
-	if err := tx.Create(&technologies).Error; err != nil {
-		tx.Rollback()
-		return Project{}, err
-	}
-
-	// UPDATE to TABLE PROJECT CONTENT IMAGES
-	err = tx.Model(&project_content_image.ProjectContentImage{}).
-		Where("image_url IN ?", p.ProjectContentImages).
-		Updates(map[string]interface{}{
-			"project_id": data.ID,
-			"is_used":    true,
-		}).Error
-
-	if err != nil {
-		tx.Rollback()
-		return Project{}, err
-	}
-
-	if err := tx.Commit().Error; err != nil {
-		log.Println("Commit failed:", err)
-	}
 	return data, err
 }
 

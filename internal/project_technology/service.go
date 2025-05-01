@@ -1,6 +1,10 @@
 package project_technology
 
-import "fmt"
+import (
+	"fmt"
+
+	"gorm.io/gorm"
+)
 
 type Service interface {
 	GetAllProjectTechnologies() ([]ProjectTechnologyResponse, error)
@@ -9,6 +13,7 @@ type Service interface {
 	UpdateProjectTechnology(p UpdateProjectTechnologyRequest) (ProjectTechnologyUpdateResponse, error)
 	DeleteProjectTechnology(id int) (ProjectTechnology, error)
 	CountTechnologiesByIDs(ids []int) error
+	BulkCreateTechnologies(tech_ids []int, project_id int, tx *gorm.DB) error
 }
 
 type service struct {
@@ -76,4 +81,17 @@ func (s *service) CountTechnologiesByIDs(ids []int) error {
 		return err
 	}
 	return nil
+}
+
+func (s *service) BulkCreateTechnologies(tech_ids []int, project_id int, tx *gorm.DB) error {
+	var technologies []ProjectTechnology
+
+	for _, technology_id := range tech_ids {
+		technologies = append(technologies, ProjectTechnology{
+			ProjectID:    project_id,
+			TechnologyID: technology_id,
+		})
+	}
+
+	return s.repo.BulkCreateTechnologies(technologies, tx)
 }

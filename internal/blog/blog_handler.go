@@ -90,9 +90,17 @@ func (h *handler) CreateBlog(c *gin.Context) {
 	}
 
 	var content_images []string
-	if err := json.Unmarshal([]byte(c.PostForm("content_images")), &content_images); err != nil {
-		utils.Error(c, http.StatusBadRequest, "Invalid content_images format")
-		return
+
+	// Check if "content_images" field is provided in the form
+	if contentImagesParam := c.PostForm("content_images"); contentImagesParam != "" {
+		// Unmarshal if the content_images field is provided
+		if err := json.Unmarshal([]byte(contentImagesParam), &content_images); err != nil {
+			utils.Error(c, http.StatusBadRequest, "Invalid content_images format")
+			return
+		}
+	} else {
+		// If content_images is not provided, assign an empty slice or leave it nil
+		content_images = []string{}
 	}
 
 	image_file, errors, err := h.ValidateBanner(c, nil)

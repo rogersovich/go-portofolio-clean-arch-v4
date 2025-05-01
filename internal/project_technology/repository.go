@@ -11,6 +11,7 @@ type Repository interface {
 	UpdateProjectTechnology(p UpdateProjectTechnologyRequest) (ProjectTechnology, error)
 	DeleteProjectTechnology(id int) (ProjectTechnology, error)
 	CountTechnologiesByIDs(ids []int) (total int, err error)
+	BulkCreateTechnologies(tech_ids []ProjectTechnology, tx *gorm.DB) error
 }
 
 type repository struct {
@@ -74,4 +75,19 @@ func (r *repository) CountTechnologiesByIDs(ids []int) (total int, err error) {
 		deleted_at IS NULL
 	`, ids).Scan(&total).Error
 	return total, err
+}
+
+func (r *repository) BulkCreateTechnologies(tech_ids []ProjectTechnology, tx *gorm.DB) error {
+	var db *gorm.DB
+	if tx != nil {
+		db = tx
+	} else {
+		db = r.db
+	}
+
+	if err := db.Create(&tech_ids).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

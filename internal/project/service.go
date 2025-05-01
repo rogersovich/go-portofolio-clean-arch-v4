@@ -7,7 +7,9 @@ import (
 
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/project_content_image"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/project_technology"
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/statistic"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
+	"gorm.io/gorm"
 )
 
 type Service interface {
@@ -23,18 +25,24 @@ type Service interface {
 type service struct {
 	projectTechService   project_technology.Service
 	projectImagesService project_content_image.Service
+	statisticService     statistic.Service
 	projectRepo          Repository
+	db                   *gorm.DB
 }
 
 func NewService(
 	projectTechSvc project_technology.Service,
 	projctImagesSvc project_content_image.Service,
+	statisticSvc statistic.Service,
 	r Repository,
+	db *gorm.DB,
 ) Service {
 	return &service{
 		projectTechService:   projectTechSvc,
 		projectImagesService: projctImagesSvc,
+		statisticService:     statisticSvc,
 		projectRepo:          r,
+		db:                   db,
 	}
 }
 
@@ -151,16 +159,35 @@ func (s *service) CheckUpdateProjectImages(projectImages []ProjectImagesUpdatePa
 }
 
 func (s *service) CreateProject(p CreateProjectRequest) (ProjectResponse, error) {
+	//todo: Check Technology Ids
 	if err := s.projectTechService.CountTechnologiesByIDs(p.TechnologyIds); err != nil {
 		return ProjectResponse{}, err
 	}
 
+	//todo: Check Project Images
 	if len(p.ContentImages) > 0 {
 		if err := s.projectImagesService.CountUnusedProjectImages(p.ContentImages); err != nil {
 			return ProjectResponse{}, err
 		}
 	}
 
+	tx := s.db.Begin()
+
+	//todo: Create Statistic
+	zero := 0
+	statisticPayload := statistic.CreateStatisticRequest{
+		Likes: &zero,
+		Views: &zero,
+		Type:  "Project"}
+
+	statRes, err := s.statisticService.CreateStatisticWithTx(statisticPayload, tx)
+
+	if err != nil {
+		tx.Rollback()
+		return ProjectResponse{}, err
+	}
+
+	//todo: Upload Image File to minio
 	imageRes, err := utils.HandlUploadFile(p.ImageFile, "project")
 	if err != nil {
 		return ProjectResponse{}, err
@@ -177,7 +204,9 @@ func (s *service) CreateProject(p CreateProjectRequest) (ProjectResponse, error)
 	} else if p.IsPublished == "N" {
 		status = "UNPUBLISHED"
 	}
+
 	payload := CreateProjectDTO{
+		StatisticID:          statRes.ID,
 		ProjectContentImages: p.ContentImages,
 		TechnologyIds:        p.TechnologyIds,
 		Title:                p.Title,
@@ -189,13 +218,43 @@ func (s *service) CreateProject(p CreateProjectRequest) (ProjectResponse, error)
 		Status:               status,
 		PublishedAt:          publishedAt,
 	}
-	data, err := s.projectRepo.CreateProject(payload)
+
+	//todo: Create Project
+	data, err := s.projectRepo.CreateProject(payload, tx)
 	if err != nil {
+		tx.Rollback()
 		if uploadedImage != "" {
 			_ = utils.DeleteFromMinio(context.Background(), uploadedImage)
 		}
 		return ProjectResponse{}, err
 	}
+
+	//todo: Bulk Create Project Technologies
+	err = s.projectTechService.BulkCreateTechnologies(p.TechnologyIds, data.ID, tx)
+	if err != nil {
+		tx.Rollback()
+		if uploadedImage != "" {
+			_ = utils.DeleteFromMinio(context.Background(), uploadedImage)
+		}
+		return ProjectResponse{}, err
+	}
+
+	//todo: Batch Update Project Images
+	err = s.projectImagesService.BatchUpdateProjectImages(p.ContentImages, data.ID, tx)
+	if err != nil {
+		tx.Rollback()
+		if uploadedImage != "" {
+			_ = utils.DeleteFromMinio(context.Background(), uploadedImage)
+		}
+		return ProjectResponse{}, err
+	}
+
+	//todo: Commit Transaction
+	if err := tx.Commit().Error; err != nil {
+		err = fmt.Errorf("error commit transaction")
+		return ProjectResponse{}, err
+	}
+
 	return ToProjectResponse(data), nil
 }
 

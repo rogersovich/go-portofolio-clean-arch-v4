@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
+	"gorm.io/gorm"
 )
 
 type Service interface {
@@ -15,6 +16,7 @@ type Service interface {
 	DeleteProjectContentImage(id int) (ProjectContentImageResponse, error)
 	CountUnusedProjectImages(ids []string) error
 	CountExistingProjectImages(projectImages []ProjectImagesExistingPayload) error
+	BatchUpdateProjectImages(projectImages []string, project_id int, tx *gorm.DB) error
 }
 
 type service struct {
@@ -103,4 +105,8 @@ func (s *service) CountExistingProjectImages(projectImages []ProjectImagesExisti
 		return err
 	}
 	return nil
+}
+
+func (s *service) BatchUpdateProjectImages(projectImages []string, project_id int, tx *gorm.DB) error {
+	return s.repo.BatchUpdateProjectImages(projectImages, project_id, tx)
 }
