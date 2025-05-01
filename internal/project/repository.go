@@ -63,7 +63,7 @@ func (r *repository) FindByIdWithRelations(id int) ([]RawProjectRelationResponse
 		JOIN statistics s ON p.statistic_id = s.id
 		JOIN project_technologies pt ON pt.project_id = p.id
 		JOIN technologies t ON t.id = pt.technology_id
-		JOIN project_content_images pci ON pci.project_id = p.id
+		LEFT JOIN project_content_images pci ON pci.project_id = p.id
 		WHERE p.id = ? AND p.deleted_at IS NULL
 	`, id).Scan(&data).Error
 

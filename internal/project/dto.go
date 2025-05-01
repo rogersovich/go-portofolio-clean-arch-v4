@@ -95,10 +95,6 @@ type RawProjectRelationResponse struct {
 
 type ProjectRelationResponse struct {
 	ID            int                       `json:"id"`
-	StatisticID   int                       `json:"statistic_id"`
-	Statistic     ProjectStatisticDTO       `json:"statistic"`
-	Technologies  []ProjectTechnologiesDTO  `json:"technologies"`
-	ContentImages []ProjectContentImagesDTO `json:"images"`
 	Title         string                    `json:"title"`
 	Description   string                    `json:"description"`
 	ImageUrl      string                    `json:"image_url"`
@@ -108,6 +104,10 @@ type ProjectRelationResponse struct {
 	Status        string                    `json:"status"`
 	PublishedAt   *string                   `json:"published_at"`
 	CreatedAt     string                    `json:"created_at"`
+	StatisticID   int                       `json:"statistic_id"`
+	Statistic     ProjectStatisticDTO       `json:"statistic"`
+	Technologies  []ProjectTechnologiesDTO  `json:"technologies"`
+	ContentImages []ProjectContentImagesDTO `json:"images"`
 }
 
 type ProjectTechnologiesDTO struct {

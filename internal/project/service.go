@@ -81,14 +81,7 @@ func (s *service) GetProjectByIdWithRelations(id int) (ProjectRelationResponse, 
 			}
 
 			projectMap[projectID] = &ProjectRelationResponse{
-				ID:          projectID,
-				StatisticID: row.StatisticID,
-				Statistic: ProjectStatisticDTO{
-					ID:    row.StatisticID,
-					Views: row.StatisticViews,
-					Likes: row.StatisticLikes,
-					Type:  row.StatisticType,
-				},
+				ID:            projectID,
 				Title:         row.Title,
 				Description:   row.Description,
 				ImageUrl:      row.ImageUrl,
@@ -98,6 +91,15 @@ func (s *service) GetProjectByIdWithRelations(id int) (ProjectRelationResponse, 
 				Status:        row.Status,
 				PublishedAt:   publishedAtPointer,
 				CreatedAt:     row.CreatedAt.Format("2006-01-02 15:04:05"),
+				StatisticID:   row.StatisticID,
+				Statistic: ProjectStatisticDTO{
+					ID:    row.StatisticID,
+					Views: row.StatisticViews,
+					Likes: row.StatisticLikes,
+					Type:  row.StatisticType,
+				},
+				Technologies:  []ProjectTechnologiesDTO{},
+				ContentImages: []ProjectContentImagesDTO{},
 			}
 		}
 
@@ -107,11 +109,21 @@ func (s *service) GetProjectByIdWithRelations(id int) (ProjectRelationResponse, 
 			TechName:      row.TechnologyName,
 		})
 
-		projectMap[projectID].ContentImages = append(projectMap[projectID].ContentImages, ProjectContentImagesDTO{
-			ProjectImageID: row.ProjectImgID,
-			ImageFileName:  row.ProjectImgFileName,
-			ImageUrl:       row.ProjectImgUrl,
-		})
+		if row.ProjectImgID != 0 {
+			seen := make(map[int]bool) // Map to check if the ID is already seen
+			for _, img := range projectMap[projectID].ContentImages {
+				seen[img.ProjectImageID] = true
+			}
+
+			if !seen[row.ProjectImgID] {
+				projectMap[projectID].ContentImages = append(projectMap[projectID].ContentImages, ProjectContentImagesDTO{
+					ProjectImageID: row.ProjectImgID,
+					ImageFileName:  row.ProjectImgFileName,
+					ImageUrl:       row.ProjectImgUrl,
+				})
+			}
+		}
+
 	}
 
 	// Convert Map to Struct
