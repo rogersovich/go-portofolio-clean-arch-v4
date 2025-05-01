@@ -14,7 +14,7 @@ type Service interface {
 	GetAllBlogContentImages() ([]BlogContentImageResponse, error)
 	GetBlogContentImageById(id int) (BlogContentImageResponse, error)
 	CreateBlogContentImage(p CreateBlogContentImageRequest) (BlogContentImageResponse, error)
-	UpdateBlogContentImage(p UpdateBlogContentImageDTO, oldPath string, newFilePath string) (BlogContentImageUpdateResponse, error)
+	UpdateBlogContentImage(p UpdateBlogContentImageRequest) error
 	DeleteBlogContentImage(id int) (BlogContentImageResponse, error)
 	CountUnlinkedImages(image_urls []string) error
 	MarkImagesUsedByBlog(image_urls []string, blog_id int, tx *gorm.DB) error
@@ -52,28 +52,74 @@ func (s *service) GetBlogContentImageById(id int) (BlogContentImageResponse, err
 }
 
 func (s *service) CreateBlogContentImage(p CreateBlogContentImageRequest) (BlogContentImageResponse, error) {
-	data, err := s.repo.CreateBlogContentImage(p)
+	imageRes, err := utils.HandlUploadFile(p.ImageFile, "blog")
 	if err != nil {
+		return BlogContentImageResponse{}, err
+	}
+
+	payload := CreateBlogContentImageDTO{
+		BlogID:        nil,
+		ImageUrl:      imageRes.FileURL,
+		ImageFileName: imageRes.FileName,
+	}
+
+	data, err := s.repo.CreateBlogContentImage(payload)
+	if err != nil {
+		_ = utils.DeleteFromMinio(context.Background(), imageRes.FileName)
 		return BlogContentImageResponse{}, err
 	}
 	return ToBlogContentImageResponse(data), nil
 }
 
-func (s *service) UpdateBlogContentImage(p UpdateBlogContentImageDTO, oldPath string, newFilePath string) (BlogContentImageUpdateResponse, error) {
-	data, err := s.repo.UpdateBlogContentImage(p)
+func (s *service) UpdateBlogContentImage(p UpdateBlogContentImageRequest) error {
+	//todo: Get Data
+	blogImage, err := s.repo.FindById(p.ID)
 	if err != nil {
-		return BlogContentImageUpdateResponse{}, err
+		return err
 	}
 
-	// 3. Optional: Delete old file from MinIO
-	if oldPath != newFilePath {
-		err = utils.DeleteFromMinio(context.Background(), oldPath) // ignore error or handle if needed
+	//todo: set oldFileName
+	oldFileName := ""
+	if blogImage.ImageFileName != "" {
+		oldFileName = blogImage.ImageFileName
+	}
+
+	var newFileURL string
+	var newFileName string
+
+	//todo: Upload File
+	if p.ImageFile != nil {
+		imageRes, err := utils.HandlUploadFile(p.ImageFile, "blog")
 		if err != nil {
-			utils.Logger.Error(err.Error())
+			return err
 		}
+
+		newFileURL = imageRes.FileURL
+		newFileName = imageRes.FileName
+	} else {
+		newFileURL = blogImage.ImageUrl
+		newFileName = blogImage.ImageFileName
 	}
 
-	return ToBlogContentImageUpdateResponse(data), nil
+	payload := UpdateBlogContentImageDTO{
+		ID:            p.ID,
+		BlogID:        p.BlogID,
+		ImageUrl:      newFileURL,
+		ImageFileName: newFileName,
+	}
+
+	err = s.repo.UpdateBlogContentImage(payload)
+	if err != nil {
+		_ = utils.DeleteFromMinio(context.Background(), newFileName)
+		return err
+	}
+
+	//todo: Delete Old Image
+	if oldFileName != newFileName {
+		_ = utils.DeleteFromMinio(context.Background(), oldFileName)
+	}
+
+	return nil
 }
 
 func (s *service) DeleteBlogContentImage(id int) (BlogContentImageResponse, error) {
@@ -81,6 +127,9 @@ func (s *service) DeleteBlogContentImage(id int) (BlogContentImageResponse, erro
 	if err != nil {
 		return BlogContentImageResponse{}, err
 	}
+
+	_ = utils.DeleteFromMinio(context.Background(), data.ImageFileName)
+
 	return ToBlogContentImageResponse(data), nil
 }
 

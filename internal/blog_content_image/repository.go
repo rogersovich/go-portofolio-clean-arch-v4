@@ -7,8 +7,8 @@ import (
 type Repository interface {
 	FindAll() ([]BlogContentImage, error)
 	FindById(id int) (BlogContentImage, error)
-	CreateBlogContentImage(p CreateBlogContentImageRequest) (BlogContentImage, error)
-	UpdateBlogContentImage(p UpdateBlogContentImageDTO) (BlogContentImage, error)
+	CreateBlogContentImage(p CreateBlogContentImageDTO) (BlogContentImage, error)
+	UpdateBlogContentImage(p UpdateBlogContentImageDTO) error
 	DeleteBlogContentImage(id int) (BlogContentImage, error)
 	CountUnlinkedImages(image_urls []string) (total int, err error)
 	MarkImagesUsedByBlog(p BlogContentImageBulkUpdateDTO, tx *gorm.DB) error
@@ -57,7 +57,7 @@ func (r *repository) FindImageNotExist(image_urls []string, blog_id int) ([]Blog
 	return data, err
 }
 
-func (r *repository) CreateBlogContentImage(p CreateBlogContentImageRequest) (BlogContentImage, error) {
+func (r *repository) CreateBlogContentImage(p CreateBlogContentImageDTO) (BlogContentImage, error) {
 	data := BlogContentImage{
 		ImageUrl:      p.ImageUrl,
 		ImageFileName: p.ImageFileName}
@@ -65,14 +65,14 @@ func (r *repository) CreateBlogContentImage(p CreateBlogContentImageRequest) (Bl
 	return data, err
 }
 
-func (r *repository) UpdateBlogContentImage(p UpdateBlogContentImageDTO) (BlogContentImage, error) {
+func (r *repository) UpdateBlogContentImage(p UpdateBlogContentImageDTO) error {
 	data := BlogContentImage{
-		ID:            p.Id,
+		ID:            p.ID,
 		BlogID:        p.BlogID,
 		ImageUrl:      p.ImageUrl,
 		ImageFileName: p.ImageFileName}
 	err := r.db.Updates(&data).Error
-	return data, err
+	return err
 }
 
 func (r *repository) DeleteBlogContentImage(id int) (BlogContentImage, error) {

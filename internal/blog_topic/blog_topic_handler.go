@@ -2,6 +2,7 @@ package blog_topic
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
@@ -10,17 +11,21 @@ import (
 func (h *handler) GetAll(c *gin.Context) {
 	data, err := h.service.GetAllBlogTopics()
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data")
+		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	utils.Success(c, "success get all data", data)
 }
 
 func (h *handler) GetBlogTopicById(c *gin.Context) {
-	id := c.Param("id")
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		utils.Error(c, http.StatusBadRequest, "invalid ID")
+		return
+	}
 	data, err := h.service.GetBlogTopicById(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data")
+		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	utils.Success(c, "success get data", data)
@@ -36,11 +41,9 @@ func (h *handler) CreateBlogTopic(c *gin.Context) {
 
 	data, err := h.service.CreateBlogTopic(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to created data")
+		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	utils.PrintJSON(data)
 
 	utils.Success(c, "success get data", data)
 }
@@ -52,13 +55,13 @@ func (h *handler) UpdateBlogTopic(c *gin.Context) {
 		return
 	}
 
-	data, err := h.service.UpdateBlogTopic(req)
+	err := h.service.UpdateBlogTopic(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to updated data")
+		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	utils.Success(c, "success updated data", data)
+	utils.Success(c, "success updated data", nil)
 }
 
 func (h *handler) DeleteBlogTopic(c *gin.Context) {
@@ -72,7 +75,7 @@ func (h *handler) DeleteBlogTopic(c *gin.Context) {
 
 	data, err := h.service.DeleteBlogTopic(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to deleted data")
+		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	utils.Success(c, "success deleted data", data)

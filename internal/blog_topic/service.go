@@ -8,10 +8,10 @@ import (
 
 type Service interface {
 	GetAllBlogTopics() ([]BlogTopicResponse, error)
-	GetBlogTopicById(id string) (BlogTopicResponse, error)
+	GetBlogTopicById(id int) (BlogTopicResponse, error)
 	CreateBlogTopic(p CreateBlogTopicRequest) (BlogTopicResponse, error)
 	BulkCreateBlogTopic(topic_ids []int, project_id int, tx *gorm.DB) error
-	UpdateBlogTopic(p UpdateBlogTopicRequest) (BlogTopicUpdateResponse, error)
+	UpdateBlogTopic(p UpdateBlogTopicRequest) error
 	DeleteBlogTopic(id int) (BlogTopic, error)
 	BatchUpdateBlogTopic(topic_ids []int, blog_id int, tx *gorm.DB) error
 }
@@ -37,7 +37,7 @@ func (s *service) GetAllBlogTopics() ([]BlogTopicResponse, error) {
 	return result, nil
 }
 
-func (s *service) GetBlogTopicById(id string) (BlogTopicResponse, error) {
+func (s *service) GetBlogTopicById(id int) (BlogTopicResponse, error) {
 	data, err := s.repo.FindById(id)
 	if err != nil {
 		return BlogTopicResponse{}, err
@@ -61,13 +61,18 @@ func (s *service) BulkCreateBlogTopic(topic_ids []int, blog_id int, tx *gorm.DB)
 	return nil
 }
 
-func (s *service) UpdateBlogTopic(p UpdateBlogTopicRequest) (BlogTopicUpdateResponse, error) {
-	data, err := s.repo.UpdateBlogTopic(p)
+func (s *service) UpdateBlogTopic(p UpdateBlogTopicRequest) error {
+	_, err := s.repo.FindById(p.ID)
 	if err != nil {
-		return BlogTopicUpdateResponse{}, err
+		return err
 	}
 
-	return ToBlogTopicUpdateResponse(data), nil
+	err = s.repo.UpdateBlogTopic(p)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *service) DeleteBlogTopic(id int) (BlogTopic, error) {

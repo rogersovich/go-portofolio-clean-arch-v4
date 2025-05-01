@@ -1,17 +1,25 @@
 package blog_content_image
 
+import "mime/multipart"
+
 type CreateBlogContentImageRequest struct {
-	ImageUrl      string `json:"image_url" validate:"required"`
-	ImageFileName string `json:"image_file_name" validate:"required"`
+	ImageFile *multipart.FileHeader `json:"image_file" validate:"required"`
 }
 
 type UpdateBlogContentImageRequest struct {
-	Id     int  `json:"id" validate:"required"`
-	BlogID *int `json:"blog_id" validate:"required"`
+	ID        int                   `json:"id" validate:"required"`
+	BlogID    *int                  `json:"blog_id" validate:"required"`
+	ImageFile *multipart.FileHeader `json:"image_file" validate:"required"`
+}
+
+type CreateBlogContentImageDTO struct {
+	BlogID        *int
+	ImageUrl      string
+	ImageFileName string
 }
 
 type UpdateBlogContentImageDTO struct {
-	Id            int
+	ID            int
 	BlogID        *int
 	ImageUrl      string
 	ImageFileName string

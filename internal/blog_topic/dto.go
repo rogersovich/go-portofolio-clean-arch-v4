@@ -6,7 +6,7 @@ type CreateBlogTopicRequest struct {
 }
 
 type UpdateBlogTopicRequest struct {
-	Id      int `json:"id" binding:"required"`
+	ID      int `json:"id" binding:"required"`
 	BlogID  int `json:"blog_id" binding:"required"`
 	TopicID int `json:"topic_id" binding:"required"`
 }

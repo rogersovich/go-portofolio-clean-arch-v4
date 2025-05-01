@@ -89,13 +89,13 @@ func (s *service) UpdateProjectContentImage(p UpdateProjectContentImageRequest) 
 
 	//todo: Upload File
 	if p.ImageFile != nil {
-		logoRes, err := utils.HandlUploadFile(p.ImageFile, "project")
+		imageRes, err := utils.HandlUploadFile(p.ImageFile, "project")
 		if err != nil {
 			return err
 		}
 
-		newFileURL = logoRes.FileURL
-		newFileName = logoRes.FileName
+		newFileURL = imageRes.FileURL
+		newFileName = imageRes.FileName
 	} else {
 		newFileURL = projectImage.ImageUrl
 		newFileName = projectImage.ImageFileName
@@ -103,6 +103,7 @@ func (s *service) UpdateProjectContentImage(p UpdateProjectContentImageRequest) 
 
 	payload := UpdateProjectContentImageDTO{
 		ID:            p.ID,
+		ProjectID:     p.ProjectID,
 		ImageUrl:      newFileURL,
 		ImageFileName: newFileName,
 	}

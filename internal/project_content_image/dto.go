@@ -33,13 +33,6 @@ type ProjectContentImageResponse struct {
 	CreatedAt     string `json:"created_at"`
 }
 
-type ProjectContentImageUpdateResponse struct {
-	ID            int    `json:"id"`
-	ProjectID     *int   `json:"project_id"`
-	ImageUrl      string `json:"image_url"`
-	ImageFileName string `json:"image_file_name"`
-}
-
 type ProjectContentImageDeleteRequest struct {
 	ID int `json:"id" binding:"required"`
 }
@@ -68,14 +61,5 @@ func ToProjectContentImageResponse(p ProjectContentImage) ProjectContentImageRes
 		ImageUrl:      p.ImageUrl,
 		ImageFileName: p.ImageFileName,
 		CreatedAt:     p.CreatedAt.Format("2006-01-02"),
-	}
-}
-
-func ToProjectContentImageUpdateResponse(p ProjectContentImage) ProjectContentImageUpdateResponse {
-	return ProjectContentImageUpdateResponse{
-		ID:            p.ID,
-		ProjectID:     p.ProjectID,
-		ImageUrl:      p.ImageUrl,
-		ImageFileName: p.ImageFileName,
 	}
 }

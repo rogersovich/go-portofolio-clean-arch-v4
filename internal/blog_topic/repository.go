@@ -6,10 +6,10 @@ import (
 
 type Repository interface {
 	FindAll() ([]BlogTopic, error)
-	FindById(id string) (BlogTopic, error)
+	FindById(id int) (BlogTopic, error)
 	CreateBlogTopic(p CreateBlogTopicRequest) (BlogTopic, error)
 	BulkCreateBlogTopic(topic_ids []int, blog_id int, tx *gorm.DB) error
-	UpdateBlogTopic(p UpdateBlogTopicRequest) (BlogTopic, error)
+	UpdateBlogTopic(p UpdateBlogTopicRequest) error
 	DeleteBlogTopic(id int) (BlogTopic, error)
 	BulkDeleteHard(topic_ids []int, tx *gorm.DB) error
 	FindExistingBlogTopics(blog_id int) ([]BlogTopicExistingResponse, error)
@@ -29,7 +29,7 @@ func (r *repository) FindAll() ([]BlogTopic, error) {
 	return datas, err
 }
 
-func (r *repository) FindById(id string) (BlogTopic, error) {
+func (r *repository) FindById(id int) (BlogTopic, error) {
 	var data BlogTopic
 	err := r.db.Where("id = ?", id).First(&data).Error
 	return data, err
@@ -76,13 +76,13 @@ func (r *repository) BulkCreateBlogTopic(topic_ids []int, blog_id int, tx *gorm.
 	return nil
 }
 
-func (r *repository) UpdateBlogTopic(p UpdateBlogTopicRequest) (BlogTopic, error) {
+func (r *repository) UpdateBlogTopic(p UpdateBlogTopicRequest) error {
 	data := BlogTopic{
-		ID:      p.Id,
+		ID:      p.ID,
 		BlogID:  p.BlogID,
 		TopicID: p.TopicID}
 	err := r.db.Updates(&data).Error
-	return data, err
+	return err
 }
 
 func (r *repository) DeleteBlogTopic(id int) (BlogTopic, error) {
