@@ -1,16 +1,14 @@
 package author
 
 import (
-	"fmt"
-
 	"gorm.io/gorm"
 )
 
 type Repository interface {
 	FindAll() ([]Author, error)
 	FindById(id int) (Author, error)
-	CreateAuthor(p CreateAuthorRequest) (Author, error)
-	UpdateAuthor(p UpdateAuthorDTO) (Author, error)
+	CreateAuthor(p CreateAuthorDTO) (Author, error)
+	UpdateAuthor(p UpdateAuthorDTO) error
 	DeleteAuthor(id int) (Author, error)
 }
 
@@ -30,15 +28,14 @@ func (r *repository) FindAll() ([]Author, error) {
 
 func (r *repository) FindById(id int) (Author, error) {
 	var data Author
-	err := r.db.Table("authors").Where("id = ?", id).Scan(&data).Error
+	err := r.db.Where("id = ?", id).First(&data).Error
 	if data.ID == 0 {
-		err = fmt.Errorf("author %s", gorm.ErrRecordNotFound)
-		return Author{}, err
+		return Author{}, gorm.ErrRecordNotFound
 	}
 	return data, err
 }
 
-func (r *repository) CreateAuthor(p CreateAuthorRequest) (Author, error) {
+func (r *repository) CreateAuthor(p CreateAuthorDTO) (Author, error) {
 	about := Author{
 		Name:           p.Name,
 		AvatarUrl:      p.AvatarUrl,
@@ -47,14 +44,14 @@ func (r *repository) CreateAuthor(p CreateAuthorRequest) (Author, error) {
 	return about, err
 }
 
-func (r *repository) UpdateAuthor(p UpdateAuthorDTO) (Author, error) {
+func (r *repository) UpdateAuthor(p UpdateAuthorDTO) error {
 	author := Author{
-		ID:             p.Id,
+		ID:             p.ID,
 		Name:           p.Name,
 		AvatarUrl:      p.AvatarUrl,
 		AvatarFileName: p.AvatarFileName}
 	err := r.db.Updates(&author).Error
-	return author, err
+	return err
 }
 
 func (r *repository) DeleteAuthor(id int) (Author, error) {

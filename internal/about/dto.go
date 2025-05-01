@@ -39,14 +39,6 @@ type AboutResponse struct {
 	CreatedAt       string `json:"created_at"`
 }
 
-type AboutUpdateResponse struct {
-	ID              int    `json:"id"`
-	Title           string `json:"title"`
-	DescriptionHTML string `json:"description_html" validate:"required"`
-	AvatarUrl       string `json:"avatar_url"`
-	AvatarFileName  string `json:"avatar_file_name"`
-}
-
 type AboutDeleteRequest struct {
 	ID int `json:"id" binding:"required"`
 }
@@ -59,15 +51,5 @@ func ToAboutResponse(p About) AboutResponse {
 		AvatarUrl:       p.AvatarUrl,
 		AvatarFileName:  p.AvatarFileName,
 		CreatedAt:       p.CreatedAt.Format("2006-01-02"),
-	}
-}
-
-func ToAboutUpdateResponse(p About) AboutUpdateResponse {
-	return AboutUpdateResponse{
-		ID:              p.ID,
-		Title:           p.Title,
-		DescriptionHTML: p.DescriptionHTML,
-		AvatarUrl:       p.AvatarUrl,
-		AvatarFileName:  p.AvatarFileName,
 	}
 }

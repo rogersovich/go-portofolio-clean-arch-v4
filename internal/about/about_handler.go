@@ -21,7 +21,11 @@ func (h *handler) GetAll(c *gin.Context) {
 }
 
 func (h *handler) GetAboutById(c *gin.Context) {
-	id, _ := strconv.Atoi(c.Param("id"))
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		utils.Error(c, http.StatusBadRequest, "invalid ID")
+		return
+	}
 	data, err := h.service.GetAboutById(id)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())

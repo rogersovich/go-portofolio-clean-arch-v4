@@ -14,7 +14,7 @@ import (
 func (h *handler) GetAll(c *gin.Context) {
 	data, err := h.service.GetAllAuthors()
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data")
+		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	utils.Success(c, "success get all data", data)
@@ -28,14 +28,16 @@ func (h *handler) GetAuthorById(c *gin.Context) {
 	}
 	data, err := h.service.GetAuthorById(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data")
+		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	utils.Success(c, "success get data", data)
 }
 
-func (h *handler) ValidateAvatar(c *gin.Context) (file *multipart.FileHeader, errors []utils.FieldError, err error) {
-	validationCheck := []string{"required", "extension", "size"}
+func (h *handler) ValidateAvatar(c *gin.Context, validationCheck []string) (file *multipart.FileHeader, errors []utils.FieldError, err error) {
+	if len(validationCheck) == 0 {
+		validationCheck = []string{"required", "extension", "size"}
+	}
 	var maxSize int64 = 2 * 1024 * 1024
 	allowedExtensions := []string{".jpg", ".jpeg", ".png", ".webp"}
 
@@ -48,21 +50,23 @@ func (h *handler) ValidateAvatar(c *gin.Context) (file *multipart.FileHeader, er
 		return nil, errors, err
 	}
 
-	// Step 2: Validate extension
-	errExt := utils.ValidateExtension(avatar_file.Filename, allowedExtensions)
-	if errExt != nil && slices.Contains(validationCheck, "extension") {
-		err = fmt.Errorf("validation Error")
-		// utils.ErrorValidation(c, http.StatusBadRequest, "Validation Error", errExt)
-		return nil, errExt, err
-	}
+	if slices.Contains(validationCheck, "required") {
+		// Step 2: Validate extension
+		errExt := utils.ValidateExtension(avatar_file.Filename, allowedExtensions)
+		if errExt != nil && slices.Contains(validationCheck, "extension") {
+			err = fmt.Errorf("validation Error")
+			// utils.ErrorValidation(c, http.StatusBadRequest, "Validation Error", errExt)
+			return nil, errExt, err
+		}
 
-	// Step 3: Validate size
-	if avatar_file.Size > maxSize && slices.Contains(validationCheck, "size") {
-		err = fmt.Errorf("validation Error")
-		err_name := fmt.Sprintf("%s exceeds max size", "avatar_file")
-		errors := utils.GenerateFieldErrorResponse("avatar_file", err_name)
-		// utils.ErrorValidation(c, http.StatusBadRequest, "Validation Error", errors)
-		return nil, errors, err
+		// Step 3: Validate size
+		if avatar_file.Size > maxSize && slices.Contains(validationCheck, "size") {
+			err = fmt.Errorf("validation Error")
+			err_name := fmt.Sprintf("%s exceeds max size", "avatar_file")
+			errors := utils.GenerateFieldErrorResponse("avatar_file", err_name)
+			// utils.ErrorValidation(c, http.StatusBadRequest, "Validation Error", errors)
+			return nil, errors, err
+		}
 	}
 
 	return avatar_file, nil, nil
@@ -71,23 +75,16 @@ func (h *handler) ValidateAvatar(c *gin.Context) (file *multipart.FileHeader, er
 func (h *handler) CreateAuthor(c *gin.Context) {
 	name := c.PostForm("name")
 
-	avatar_file, errors, err := h.ValidateAvatar(c)
+	avatar_file, errors, err := h.ValidateAvatar(c, nil)
 	if err != nil {
 		utils.ErrorValidation(c, http.StatusBadRequest, err.Error(), errors)
 		return
 	}
 
-	avatarRes, err := utils.HandlUploadFile(avatar_file, "author")
-	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to upload file")
-		return
-	}
-
 	// Validate the struct using validator
 	req := CreateAuthorRequest{
-		Name:           name,
-		AvatarUrl:      avatarRes.FileURL,
-		AvatarFileName: avatarRes.FileName,
+		Name:       name,
+		AvatarFile: avatar_file,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {
@@ -97,11 +94,9 @@ func (h *handler) CreateAuthor(c *gin.Context) {
 
 	data, err := h.service.CreateAuthor(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to created data")
+		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	utils.PrintJSON(data)
 
 	utils.Success(c, "success get data", data)
 }
@@ -111,9 +106,18 @@ func (h *handler) UpdateAuthor(c *gin.Context) {
 	id, _ := strconv.Atoi(c.PostForm("id"))
 
 	name := c.PostForm("name")
+
+	validationCheck := []string{"extension", "size"}
+	avatar_file, errors, err := h.ValidateAvatar(c, validationCheck)
+	if err != nil {
+		utils.ErrorValidation(c, http.StatusBadRequest, err.Error(), errors)
+		return
+	}
+
 	req := UpdateAuthorRequest{
-		Id:   id,
-		Name: name,
+		ID:         id,
+		Name:       name,
+		AvatarFile: avatar_file,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {
@@ -121,58 +125,13 @@ func (h *handler) UpdateAuthor(c *gin.Context) {
 		return
 	}
 
-	author, err := h.service.GetAuthorById(id)
+	err = h.service.UpdateAuthor(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "Data not found")
+		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	// set oldPath
-	oldPath := ""
-	if author.AvatarFileName != "" {
-		oldPath = author.AvatarFileName
-	}
-
-	// 2. Get new file (if uploaded)
-	_, err = c.FormFile("avatar_file")
-	var newFileURL string
-	var newFileName string
-
-	if err == nil {
-		avatar_file, errors, err := h.ValidateAvatar(c)
-		if err != nil {
-			utils.ErrorValidation(c, http.StatusBadRequest, err.Error(), errors)
-			return
-		}
-
-		avatarRes, err := utils.HandlUploadFile(avatar_file, "author")
-		if err != nil {
-			utils.Error(c, http.StatusInternalServerError, "failed to upload file")
-			return
-		}
-
-		newFileURL = avatarRes.FileURL
-		newFileName = avatarRes.FileName
-	} else {
-		newFileURL = author.AvatarUrl // keep existing if not updated
-		newFileName = author.AvatarFileName
-	}
-
-	// Validate the struct using validator
-	payload := UpdateAuthorDTO{
-		Id:             uint(id),
-		Name:           name,
-		AvatarUrl:      newFileURL,
-		AvatarFileName: newFileName,
-	}
-
-	data, err := h.service.UpdateAuthor(payload, oldPath, newFileName)
-	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to updated data")
-		return
-	}
-
-	utils.Success(c, "success updated data", data)
+	utils.Success(c, "success updated data", nil)
 }
 
 func (h *handler) DeleteAuthor(c *gin.Context) {
@@ -186,7 +145,7 @@ func (h *handler) DeleteAuthor(c *gin.Context) {
 
 	data, err := h.service.DeleteAuthor(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to deleted data")
+		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	utils.Success(c, "success deleted data", data)

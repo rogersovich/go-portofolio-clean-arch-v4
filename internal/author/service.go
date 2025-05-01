@@ -10,7 +10,7 @@ type Service interface {
 	GetAllAuthors() ([]AuthorResponse, error)
 	GetAuthorById(id int) (AuthorResponse, error)
 	CreateAuthor(p CreateAuthorRequest) (AuthorResponse, error)
-	UpdateAuthor(p UpdateAuthorDTO, oldPath string, newFilePath string) (AuthorUpdateResponse, error)
+	UpdateAuthor(p UpdateAuthorRequest) error
 	DeleteAuthor(id int) (Author, error)
 }
 
@@ -44,28 +44,74 @@ func (s *service) GetAuthorById(id int) (AuthorResponse, error) {
 }
 
 func (s *service) CreateAuthor(p CreateAuthorRequest) (AuthorResponse, error) {
-	author, err := s.repo.CreateAuthor(p)
+	avatarRes, err := utils.HandlUploadFile(p.AvatarFile, "author")
 	if err != nil {
+		return AuthorResponse{}, err
+	}
+
+	payload := CreateAuthorDTO{
+		Name:           p.Name,
+		AvatarUrl:      avatarRes.FileURL,
+		AvatarFileName: avatarRes.FileName,
+	}
+
+	author, err := s.repo.CreateAuthor(payload)
+	if err != nil {
+		_ = utils.DeleteFromMinio(context.Background(), avatarRes.FileName)
 		return AuthorResponse{}, err
 	}
 	return ToAuthorResponse(author), nil
 }
 
-func (s *service) UpdateAuthor(p UpdateAuthorDTO, oldPath string, newFilePath string) (AuthorUpdateResponse, error) {
-	author, err := s.repo.UpdateAuthor(p)
+func (s *service) UpdateAuthor(p UpdateAuthorRequest) error {
+	//todo: Get Author
+	author, err := s.repo.FindById(p.ID)
 	if err != nil {
-		return AuthorUpdateResponse{}, err
+		return err
 	}
 
-	// 3. Optional: Delete old file from MinIO
-	if oldPath != newFilePath {
-		err = utils.DeleteFromMinio(context.Background(), oldPath) // ignore error or handle if needed
+	//todo: set oldFileName
+	oldFileName := ""
+	if author.AvatarFileName != "" {
+		oldFileName = author.AvatarFileName
+	}
+
+	var newFileURL string
+	var newFileName string
+
+	//todo: Upload File
+	if p.AvatarFile != nil {
+		logoRes, err := utils.HandlUploadFile(p.AvatarFile, "author")
 		if err != nil {
-			utils.Logger.Error(err.Error())
+			return err
 		}
+
+		newFileURL = logoRes.FileURL
+		newFileName = logoRes.FileName
+	} else {
+		newFileURL = author.AvatarUrl
+		newFileName = author.AvatarFileName
 	}
 
-	return ToAuthorUpdateResponse(author), nil
+	payload := UpdateAuthorDTO{
+		ID:             p.ID,
+		Name:           p.Name,
+		AvatarUrl:      newFileURL,
+		AvatarFileName: newFileName,
+	}
+
+	err = s.repo.UpdateAuthor(payload)
+	if err != nil {
+		_ = utils.DeleteFromMinio(context.Background(), newFileName)
+		return err
+	}
+
+	//todo: Delete Old Image
+	if oldFileName != newFileName {
+		_ = utils.DeleteFromMinio(context.Background(), oldFileName)
+	}
+
+	return nil
 }
 
 func (s *service) DeleteAuthor(id int) (Author, error) {
