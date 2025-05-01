@@ -1,17 +1,13 @@
 package project_content_image
 
-import "github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
-
 type CreateProjectContentImageRequest struct {
 	ImageUrl      string `json:"image_url" validate:"required"`
 	ImageFileName string `json:"image_file_name" validate:"required"`
-	IsUsed        string `json:"is_used"`
 }
 
 type UpdateProjectContentImageRequest struct {
-	Id        int    `json:"id" validate:"required"`
-	ProjectID *int   `json:"project_id" validate:"required"`
-	IsUsed    string `json:"is_used"`
+	Id        int  `json:"id" validate:"required"`
+	ProjectID *int `json:"project_id" validate:"required"`
 }
 
 type UpdateProjectContentImageDTO struct {
@@ -19,7 +15,6 @@ type UpdateProjectContentImageDTO struct {
 	ProjectID     *int
 	ImageUrl      string
 	ImageFileName string
-	IsUsed        string
 }
 
 type ProjectContentImageResponse struct {
@@ -27,7 +22,6 @@ type ProjectContentImageResponse struct {
 	ProjectID     *int   `json:"project_id"`
 	ImageUrl      string `json:"image_url"`
 	ImageFileName string `json:"image_file_name"`
-	IsUsed        string `json:"is_used"`
 	CreatedAt     string `json:"created_at"`
 }
 
@@ -36,7 +30,6 @@ type ProjectContentImageUpdateResponse struct {
 	ProjectID     *int   `json:"project_id"`
 	ImageUrl      string `json:"image_url"`
 	ImageFileName string `json:"image_file_name"`
-	IsUsed        string `json:"is_used"`
 }
 
 type ProjectContentImageDeleteRequest struct {
@@ -66,7 +59,6 @@ func ToProjectContentImageResponse(p ProjectContentImage) ProjectContentImageRes
 		ProjectID:     p.ProjectID,
 		ImageUrl:      p.ImageUrl,
 		ImageFileName: p.ImageFileName,
-		IsUsed:        utils.BoolToYN(p.IsUsed),
 		CreatedAt:     p.CreatedAt.Format("2006-01-02"),
 	}
 }
@@ -77,6 +69,5 @@ func ToProjectContentImageUpdateResponse(p ProjectContentImage) ProjectContentIm
 		ProjectID:     p.ProjectID,
 		ImageUrl:      p.ImageUrl,
 		ImageFileName: p.ImageFileName,
-		IsUsed:        utils.BoolToYN(p.IsUsed),
 	}
 }

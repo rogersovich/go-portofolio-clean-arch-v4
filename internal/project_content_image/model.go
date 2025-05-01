@@ -11,7 +11,6 @@ type ProjectContentImage struct {
 	ProjectID     *int   `json:"project_id"`
 	ImageUrl      string `json:"image_url"`
 	ImageFileName string `json:"image_file_name"`
-	IsUsed        bool   `json:"is_used"`
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	DeletedAt     gorm.DeletedAt `json:"deleted_at" gorm:"index"`

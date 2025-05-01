@@ -60,8 +60,7 @@ func (r *repository) FindImageNotExist(image_urls []string, blog_id int) ([]Blog
 func (r *repository) CreateBlogContentImage(p CreateBlogContentImageRequest) (BlogContentImage, error) {
 	data := BlogContentImage{
 		ImageUrl:      p.ImageUrl,
-		ImageFileName: p.ImageFileName,
-		IsUsed:        p.IsUsed == "Y"}
+		ImageFileName: p.ImageFileName}
 	err := r.db.Create(&data).Error
 	return data, err
 }
@@ -71,8 +70,7 @@ func (r *repository) UpdateBlogContentImage(p UpdateBlogContentImageDTO) (BlogCo
 		ID:            p.Id,
 		BlogID:        p.BlogID,
 		ImageUrl:      p.ImageUrl,
-		ImageFileName: p.ImageFileName,
-		IsUsed:        p.IsUsed == "Y"}
+		ImageFileName: p.ImageFileName}
 	err := r.db.Updates(&data).Error
 	return data, err
 }
@@ -117,7 +115,6 @@ func (r *repository) MarkImagesUsedByBlog(p BlogContentImageBulkUpdateDTO, tx *g
 		Where("image_url IN ?", p.ImageUrls).
 		Updates(map[string]interface{}{
 			"blog_id": p.BlogID,
-			"is_used": true,
 		}).Error
 
 	if err != nil {

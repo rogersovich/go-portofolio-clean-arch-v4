@@ -66,8 +66,6 @@ func (h *handler) ValidateImage(c *gin.Context) (file *multipart.FileHeader, err
 }
 
 func (h *handler) CreateProjectContentImage(c *gin.Context) {
-	is_used := "N"
-
 	image_file, errors, err := h.ValidateImage(c)
 	if err != nil {
 		utils.ErrorValidation(c, http.StatusBadRequest, err.Error(), errors)
@@ -84,7 +82,6 @@ func (h *handler) CreateProjectContentImage(c *gin.Context) {
 	req := CreateProjectContentImageRequest{
 		ImageUrl:      imageRes.FileURL,
 		ImageFileName: imageRes.FileName,
-		IsUsed:        is_used,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {
@@ -116,11 +113,9 @@ func (h *handler) UpdateProjectContentImage(c *gin.Context) {
 		return
 	}
 
-	is_used := "Y"
 	req := UpdateProjectContentImageRequest{
 		Id:        id,
 		ProjectID: &project_id,
-		IsUsed:    is_used,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {
@@ -171,7 +166,6 @@ func (h *handler) UpdateProjectContentImage(c *gin.Context) {
 		ProjectID:     &project_id,
 		ImageUrl:      newFileURL,
 		ImageFileName: newFileName,
-		IsUsed:        is_used,
 	}
 
 	result, err := h.service.UpdateProjectContentImage(payload, oldPath, newFileName)

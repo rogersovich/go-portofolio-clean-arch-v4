@@ -1,17 +1,13 @@
 package blog_content_image
 
-import "github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
-
 type CreateBlogContentImageRequest struct {
 	ImageUrl      string `json:"image_url" validate:"required"`
 	ImageFileName string `json:"image_file_name" validate:"required"`
-	IsUsed        string `json:"is_used"`
 }
 
 type UpdateBlogContentImageRequest struct {
-	Id     int    `json:"id" validate:"required"`
-	BlogID *int   `json:"blog_id" validate:"required"`
-	IsUsed string `json:"is_used"`
+	Id     int  `json:"id" validate:"required"`
+	BlogID *int `json:"blog_id" validate:"required"`
 }
 
 type UpdateBlogContentImageDTO struct {
@@ -19,7 +15,6 @@ type UpdateBlogContentImageDTO struct {
 	BlogID        *int
 	ImageUrl      string
 	ImageFileName string
-	IsUsed        string
 }
 
 type BlogContentImageResponse struct {
@@ -27,7 +22,6 @@ type BlogContentImageResponse struct {
 	BlogID        *int   `json:"blog_id"`
 	ImageUrl      string `json:"image_url"`
 	ImageFileName string `json:"image_file_name"`
-	IsUsed        string `json:"is_used"`
 	CreatedAt     string `json:"created_at"`
 }
 
@@ -36,7 +30,6 @@ type BlogContentImageUpdateResponse struct {
 	BlogID        *int   `json:"blog_id"`
 	ImageUrl      string `json:"image_url"`
 	ImageFileName string `json:"image_file_name"`
-	IsUsed        string `json:"is_used"`
 }
 
 type BlogContentImageDeleteRequest struct {
@@ -60,7 +53,6 @@ func ToBlogContentImageResponse(p BlogContentImage) BlogContentImageResponse {
 		BlogID:        p.BlogID,
 		ImageUrl:      p.ImageUrl,
 		ImageFileName: p.ImageFileName,
-		IsUsed:        utils.BoolToYN(p.IsUsed),
 		CreatedAt:     p.CreatedAt.Format("2006-01-02"),
 	}
 }
@@ -71,6 +63,5 @@ func ToBlogContentImageUpdateResponse(p BlogContentImage) BlogContentImageUpdate
 		BlogID:        p.BlogID,
 		ImageUrl:      p.ImageUrl,
 		ImageFileName: p.ImageFileName,
-		IsUsed:        utils.BoolToYN(p.IsUsed),
 	}
 }
