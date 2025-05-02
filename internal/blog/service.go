@@ -22,6 +22,7 @@ type Service interface {
 	CreateBlog(p CreateBlogRequest) (BlogResponse, error)
 	UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error)
 	DeleteBlog(id int) (Blog, error)
+	ChangeStatusBlog(req BlogChangeStatusRequest) (BlogChangeStatusResponse, error)
 }
 
 type service struct {
@@ -471,6 +472,19 @@ func (s *service) DeleteBlog(id int) (Blog, error) {
 	data, err := s.blogRepo.DeleteBlog(id)
 	if err != nil {
 		return Blog{}, err
+	}
+	return data, nil
+}
+
+func (s *service) ChangeStatusBlog(req BlogChangeStatusRequest) (BlogChangeStatusResponse, error) {
+	blog, err := s.GetBlogById(req.ID)
+	if err != nil {
+		return BlogChangeStatusResponse{}, err
+	}
+
+	data, err := s.blogRepo.ChangeStatusBlog(req.ID, req.Status, blog)
+	if err != nil {
+		return BlogChangeStatusResponse{}, err
 	}
 	return data, nil
 }

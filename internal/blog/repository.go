@@ -1,6 +1,8 @@
 package blog
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -11,6 +13,7 @@ type Repository interface {
 	CreateBlog(p CreateBlogDTO, tx *gorm.DB) (Blog, error)
 	UpdateBlog(p UpdateBlogDTO, tx *gorm.DB) (Blog, error)
 	DeleteBlog(id int) (Blog, error)
+	ChangeStatusBlog(id int, status string, blog BlogResponse) (BlogChangeStatusResponse, error)
 }
 
 type repository struct {
@@ -155,4 +158,33 @@ func (r *repository) DeleteBlog(id int) (Blog, error) {
 
 	// Step 3: Return the data
 	return data, nil
+}
+
+func (r *repository) ChangeStatusBlog(id int, status string, blog BlogResponse) (BlogChangeStatusResponse, error) {
+	now := time.Now()
+	var updateMap = make(map[string]interface{})
+	updateMap["status"] = status
+	if status == "Published" {
+		updateMap["published_at"] = now
+	}
+	err := r.db.Model(&Blog{}).Where("id = ?", id).Updates(updateMap).Error
+
+	if err != nil {
+		return BlogChangeStatusResponse{}, err
+	}
+
+	// Return the updated data
+	var publishedAtStringPtr *string
+	if status == "Published" {
+		publishedAtString := now.Format("2006-01-02 15:04:05")
+		publishedAtStringPtr = &publishedAtString
+	}
+	updatedData := BlogChangeStatusResponse{
+		ID:          id,
+		Title:       blog.Title,
+		Status:      status,
+		PublishedAt: publishedAtStringPtr,
+	}
+
+	return updatedData, nil
 }

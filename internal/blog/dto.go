@@ -214,3 +214,15 @@ func ToBlogUpdateResponse(p Blog) BlogUpdateResponse {
 		AuthorID:        p.AuthorID,
 	}
 }
+
+type BlogChangeStatusRequest struct {
+	ID     int    `json:"id" binding:"required"`
+	Status string `json:"status" binding:"required,oneof=Published Unpublished"`
+}
+
+type BlogChangeStatusResponse struct {
+	ID          int     `json:"id"`
+	Title       string  `json:"title"`
+	Status      string  `json:"status"`
+	PublishedAt *string `json:"published_at"`
+}

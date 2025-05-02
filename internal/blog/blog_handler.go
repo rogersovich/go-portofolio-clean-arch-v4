@@ -216,3 +216,18 @@ func (h *handler) DeleteBlog(c *gin.Context) {
 	}
 	utils.Success(c, "success deleted data", data)
 }
+
+func (h *handler) ChangeStatusBlog(c *gin.Context) {
+	var req BlogChangeStatusRequest
+
+	if !utils.ValidateStruct(c, &req, c.ShouldBindJSON(&req)) {
+		return
+	}
+
+	data, err := h.service.ChangeStatusBlog(req)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.Success(c, "success change status", data)
+}
