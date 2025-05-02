@@ -80,6 +80,15 @@ func (s *service) GetProjectByIdWithRelations(id int) (ProjectRelationResponse, 
 				publishedAtPointer = &formattedPublishedAt
 			}
 
+			var projectStatistic *ProjectStatisticDTO
+			if row.StatisticID != 0 {
+				projectStatistic = &ProjectStatisticDTO{
+					ID:    row.StatisticID,
+					Views: row.StatisticViews,
+					Likes: row.StatisticLikes,
+					Type:  row.StatisticType,
+				}
+			}
 			projectMap[projectID] = &ProjectRelationResponse{
 				ID:            projectID,
 				Title:         row.Title,
@@ -92,25 +101,29 @@ func (s *service) GetProjectByIdWithRelations(id int) (ProjectRelationResponse, 
 				PublishedAt:   publishedAtPointer,
 				CreatedAt:     row.CreatedAt.Format("2006-01-02 15:04:05"),
 				StatisticID:   row.StatisticID,
-				Statistic: ProjectStatisticDTO{
-					ID:    row.StatisticID,
-					Views: row.StatisticViews,
-					Likes: row.StatisticLikes,
-					Type:  row.StatisticType,
-				},
+				Statistic:     projectStatistic,
 				Technologies:  []ProjectTechnologiesDTO{},
 				ContentImages: []ProjectContentImagesDTO{},
 			}
 		}
 
-		projectMap[projectID].Technologies = append(projectMap[projectID].Technologies, ProjectTechnologiesDTO{
-			ProjectTechID: row.ProjectTechnologyID,
-			TechID:        row.TechnologyID,
-			TechName:      row.TechnologyName,
-		})
+		if row.ProjectTechnologyID != 0 {
+			seen := make(map[int]bool)
+			for _, tech := range projectMap[projectID].Technologies {
+				seen[tech.ProjectTechID] = true
+			}
+
+			if !seen[row.ProjectTechnologyID] {
+				projectMap[projectID].Technologies = append(projectMap[projectID].Technologies, ProjectTechnologiesDTO{
+					ProjectTechID: row.ProjectTechnologyID,
+					TechID:        row.TechnologyID,
+					TechName:      row.TechnologyName,
+				})
+			}
+		}
 
 		if row.ProjectImgID != 0 {
-			seen := make(map[int]bool) // Map to check if the ID is already seen
+			seen := make(map[int]bool)
 			for _, img := range projectMap[projectID].ContentImages {
 				seen[img.ProjectImageID] = true
 			}

@@ -143,10 +143,10 @@ func (h *handler) DeleteAuthor(c *gin.Context) {
 
 	id := req.ID
 
-	data, err := h.service.DeleteAuthor(id)
+	err := h.service.DeleteAuthor(id)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.Success(c, "success deleted data", data)
+	utils.Success(c, "success deleted data", nil)
 }

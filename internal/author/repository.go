@@ -9,7 +9,7 @@ type Repository interface {
 	FindById(id int) (Author, error)
 	CreateAuthor(p CreateAuthorDTO) (Author, error)
 	UpdateAuthor(p UpdateAuthorDTO) error
-	DeleteAuthor(id int) (Author, error)
+	DeleteAuthor(id int) error
 }
 
 type repository struct {
@@ -29,9 +29,6 @@ func (r *repository) FindAll() ([]Author, error) {
 func (r *repository) FindById(id int) (Author, error) {
 	var data Author
 	err := r.db.Where("id = ?", id).First(&data).Error
-	if data.ID == 0 {
-		return Author{}, gorm.ErrRecordNotFound
-	}
 	return data, err
 }
 
@@ -54,19 +51,12 @@ func (r *repository) UpdateAuthor(p UpdateAuthorDTO) error {
 	return err
 }
 
-func (r *repository) DeleteAuthor(id int) (Author, error) {
-	var author Author
-
-	// Step 1: Find the author by ID
-	if err := r.db.First(&author, id).Error; err != nil {
-		return Author{}, err // return if not found or any error
+func (r *repository) DeleteAuthor(id int) error {
+	// Hard Delete
+	if err := r.db.Unscoped().Where("id = ?", id).Delete(&Author{}).Error; err != nil {
+		return err
 	}
 
-	// Step 2: Delete the found author
-	if err := r.db.Delete(&author).Error; err != nil {
-		return Author{}, err
-	}
-
-	// Step 3: Return the deleted author's data
-	return author, nil
+	// Return the data
+	return nil
 }

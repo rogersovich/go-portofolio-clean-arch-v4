@@ -67,11 +67,11 @@ func (r *repository) FindByIdWithRelations(id int) ([]RawBlogRelationResponse, e
 			bct.image_file_name as blog_content_image_file_name,
 			bct.image_url as blog_content_image_url
 		FROM blogs b
-		JOIN authors a ON a.id = b.author_id
-		JOIN reading_times rt ON rt.id = b.reading_time_id
-		JOIN statistics s ON s.id = b.statistic_id
+		LEFT JOIN authors a ON a.id = b.author_id
+		LEFT JOIN reading_times rt ON rt.id = b.reading_time_id
+		LEFT JOIN statistics s ON s.id = b.statistic_id
 		LEFT JOIN blog_topics bt ON bt.blog_id = b.id
-		JOIN topics t ON t.id = bt.topic_id
+		LEFT JOIN topics t ON t.id = bt.topic_id
 		LEFT JOIN blog_content_images bct ON bct.blog_id = b.id
 		WHERE 
 			b.id = ? AND 

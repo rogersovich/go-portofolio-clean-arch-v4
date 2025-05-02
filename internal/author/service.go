@@ -11,7 +11,7 @@ type Service interface {
 	GetAuthorById(id int) (AuthorResponse, error)
 	CreateAuthor(p CreateAuthorRequest) (AuthorResponse, error)
 	UpdateAuthor(p UpdateAuthorRequest) error
-	DeleteAuthor(id int) (Author, error)
+	DeleteAuthor(id int) error
 }
 
 type service struct {
@@ -114,10 +114,19 @@ func (s *service) UpdateAuthor(p UpdateAuthorRequest) error {
 	return nil
 }
 
-func (s *service) DeleteAuthor(id int) (Author, error) {
-	author, err := s.repo.DeleteAuthor(id)
+func (s *service) DeleteAuthor(id int) error {
+	author, err := s.repo.FindById(id)
 	if err != nil {
-		return Author{}, err
+		return err
 	}
-	return author, nil
+
+	err = s.repo.DeleteAuthor(id)
+	if err != nil {
+		return err
+	}
+
+	//todo: Delete Old Image
+	_ = utils.DeleteFromMinio(context.Background(), author.AvatarFileName)
+
+	return nil
 }

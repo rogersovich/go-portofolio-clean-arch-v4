@@ -56,7 +56,6 @@ func (r *repository) UpdateAbout(p UpdateAboutDTO) error {
 }
 
 func (r *repository) DeleteAbout(id int) error {
-
 	// Hard Delete
 	if err := r.db.Unscoped().Where("id = ?", id).Delete(&About{}).Error; err != nil {
 		return err

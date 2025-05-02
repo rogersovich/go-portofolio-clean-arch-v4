@@ -103,7 +103,7 @@ type ProjectRelationResponse struct {
 	PublishedAt   *string                   `json:"published_at"`
 	CreatedAt     string                    `json:"created_at"`
 	StatisticID   int                       `json:"statistic_id"`
-	Statistic     ProjectStatisticDTO       `json:"statistic"`
+	Statistic     *ProjectStatisticDTO      `json:"statistic"`
 	Technologies  []ProjectTechnologiesDTO  `json:"technologies"`
 	ContentImages []ProjectContentImagesDTO `json:"images"`
 }

@@ -99,25 +99,34 @@ func (s *service) GetBlogByIdWithRelations(id int) (BlogRelationResponse, error)
 				publishedAtPointer = &formattedPublishedAt
 			}
 
-			blogAuthor := BlogAuthorDTO{
-				AuthorID:   row.AuthorID,
-				AuthorName: row.AuthorName,
+			var blogAuthor *BlogAuthorDTO
+			if row.AuthorID != 0 {
+				blogAuthor = &BlogAuthorDTO{
+					AuthorID:   row.AuthorID,
+					AuthorName: row.AuthorName,
+				}
 			}
 
-			blogReadingTime := BlogReadingTimeDTO{
-				ReadingTimeID:               row.ReadingTimeID,
-				ReadingTimeMinutes:          row.ReadingTimeMinutes,
-				ReadingTimeTextLength:       row.ReadingTimeTextLength,
-				ReadingTimeEstimatedSeconds: row.ReadingTimeEstimatedSeconds,
-				ReadingTimeWordCount:        row.ReadingTimeWordCount,
-				ReadingTimeType:             row.ReadingTimeType,
+			var blogReadingTime *BlogReadingTimeDTO
+			if row.ReadingTimeID != 0 {
+				blogReadingTime = &BlogReadingTimeDTO{
+					ReadingTimeID:               row.ReadingTimeID,
+					ReadingTimeMinutes:          row.ReadingTimeMinutes,
+					ReadingTimeTextLength:       row.ReadingTimeTextLength,
+					ReadingTimeEstimatedSeconds: row.ReadingTimeEstimatedSeconds,
+					ReadingTimeWordCount:        row.ReadingTimeWordCount,
+					ReadingTimeType:             row.ReadingTimeType,
+				}
 			}
 
-			blogStatistic := BlogStatisticDTO{
-				StatisticID:    row.StatisticID,
-				StatisticLikes: row.StatisticLikes,
-				StatisticViews: row.StatisticViews,
-				StatisticType:  row.StatisticType,
+			var blogStatistic *BlogStatisticDTO
+			if row.StatisticID != 0 {
+				blogStatistic = &BlogStatisticDTO{
+					StatisticID:    row.StatisticID,
+					StatisticLikes: row.StatisticLikes,
+					StatisticViews: row.StatisticViews,
+					StatisticType:  row.StatisticType,
+				}
 			}
 
 			blogMap[blogID] = &BlogRelationResponse{
@@ -138,13 +147,22 @@ func (s *service) GetBlogByIdWithRelations(id int) (BlogRelationResponse, error)
 			}
 		}
 
-		blogMap[blogID].Topics = append(blogMap[blogID].Topics, BlogTopicDTO{
-			TopicID:   row.TopicID,
-			TopicName: row.TopicName,
-		})
+		if row.TopicID != 0 {
+			seen := make(map[int]bool)
+			for _, topic := range blogMap[blogID].Topics {
+				seen[topic.TopicID] = true
+			}
+
+			if !seen[row.TopicID] {
+				blogMap[blogID].Topics = append(blogMap[blogID].Topics, BlogTopicDTO{
+					TopicID:   row.TopicID,
+					TopicName: row.TopicName,
+				})
+			}
+		}
 
 		if row.BlogContentImageID != 0 {
-			seen := make(map[int]bool) // Map to check if the ID is already seen
+			seen := make(map[int]bool)
 			for _, img := range blogMap[blogID].ContentImages {
 				seen[img.BlogContentImageID] = true
 			}

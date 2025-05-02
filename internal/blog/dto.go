@@ -147,9 +147,9 @@ type BlogRelationResponse struct {
 	Status          string                `json:"status"`
 	PublishedAt     *string               `json:"published_at"`
 	CreatedAt       string                `json:"created_at"`
-	Author          BlogAuthorDTO         `json:"author"`
-	ReadingTime     BlogReadingTimeDTO    `json:"reading_time"`
-	Statistic       BlogStatisticDTO      `json:"statistic"`
+	Author          *BlogAuthorDTO        `json:"author"`
+	ReadingTime     *BlogReadingTimeDTO   `json:"reading_time"`
+	Statistic       *BlogStatisticDTO     `json:"statistic"`
 	Topics          []BlogTopicDTO        `json:"topics"`
 	ContentImages   []BlogContentImageDTO `json:"content_image"`
 }
