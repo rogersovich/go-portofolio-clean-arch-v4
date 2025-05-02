@@ -1,6 +1,10 @@
 package about
 
-import "mime/multipart"
+import (
+	"mime/multipart"
+
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
+)
 
 type CreateAboutRequest struct {
 	Title           string                `json:"title" validate:"required"`
@@ -13,6 +17,7 @@ type UpdateAboutRequest struct {
 	Title           string                `json:"title" validate:"required"`
 	DescriptionHTML string                `json:"description_html" validate:"required"`
 	AvatarFile      *multipart.FileHeader `json:"avatar_file"`
+	IsUsed          string                `json:"is_used" validate:"required,oneof=Y N"`
 }
 
 type CreateAboutDTO struct {
@@ -20,6 +25,7 @@ type CreateAboutDTO struct {
 	DescriptionHTML string
 	AvatarUrl       string
 	AvatarFileName  string
+	IsUsed          bool
 }
 
 type UpdateAboutDTO struct {
@@ -28,6 +34,7 @@ type UpdateAboutDTO struct {
 	DescriptionHTML string
 	AvatarUrl       string
 	AvatarFileName  string
+	IsUsed          bool
 }
 
 type AboutResponse struct {
@@ -36,6 +43,7 @@ type AboutResponse struct {
 	DescriptionHTML string `json:"description_html" validate:"required"`
 	AvatarUrl       string `json:"avatar_url"`
 	AvatarFileName  string `json:"avatar_file_name"`
+	IsUsed          string `json:"is_used"`
 	CreatedAt       string `json:"created_at"`
 }
 
@@ -50,6 +58,7 @@ func ToAboutResponse(p About) AboutResponse {
 		DescriptionHTML: p.DescriptionHTML,
 		AvatarUrl:       p.AvatarUrl,
 		AvatarFileName:  p.AvatarFileName,
+		IsUsed:          utils.BoolToYN(p.IsUsed),
 		CreatedAt:       p.CreatedAt.Format("2006-01-02"),
 	}
 }

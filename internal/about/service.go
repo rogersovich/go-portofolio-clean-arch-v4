@@ -11,7 +11,7 @@ type Service interface {
 	GetAboutById(id int) (AboutResponse, error)
 	CreateAbout(p CreateAboutRequest) (AboutResponse, error)
 	UpdateAbout(p UpdateAboutRequest) error
-	DeleteAbout(id int) (About, error)
+	DeleteAbout(id int) error
 }
 
 type service struct {
@@ -54,6 +54,7 @@ func (s *service) CreateAbout(p CreateAboutRequest) (AboutResponse, error) {
 		DescriptionHTML: p.DescriptionHTML,
 		AvatarUrl:       avatarRes.FileURL,
 		AvatarFileName:  avatarRes.FileName,
+		IsUsed:          false,
 	}
 
 	about, err := s.repo.CreateAbout(payload)
@@ -100,6 +101,7 @@ func (s *service) UpdateAbout(p UpdateAboutRequest) error {
 		DescriptionHTML: p.DescriptionHTML,
 		AvatarUrl:       newFileURL,
 		AvatarFileName:  newFileName,
+		IsUsed:          p.IsUsed == "Y",
 	}
 
 	err = s.repo.UpdateAbout(payload)
@@ -116,10 +118,20 @@ func (s *service) UpdateAbout(p UpdateAboutRequest) error {
 	return nil
 }
 
-func (s *service) DeleteAbout(id int) (About, error) {
-	about, err := s.repo.DeleteAbout(id)
+func (s *service) DeleteAbout(id int) error {
+	//todo: Get About
+	about, err := s.repo.FindById(id)
 	if err != nil {
-		return About{}, err
+		return err
 	}
-	return about, nil
+
+	err = s.repo.DeleteAbout(id)
+	if err != nil {
+		return err
+	}
+
+	//todo: Delete Old Image
+	_ = utils.DeleteFromMinio(context.Background(), about.AvatarFileName)
+
+	return nil
 }

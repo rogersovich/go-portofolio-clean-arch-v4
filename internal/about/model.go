@@ -12,6 +12,7 @@ type About struct {
 	DescriptionHTML string `json:"description_html"`
 	AvatarUrl       string `json:"avatar_url"`
 	AvatarFileName  string `json:"avatar_file_name"`
+	IsUsed          bool   `json:"is_used"`
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	DeletedAt       gorm.DeletedAt `gorm:"index"`

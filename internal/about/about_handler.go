@@ -106,6 +106,7 @@ func (h *handler) UpdateAbout(c *gin.Context) {
 
 	title := c.PostForm("title")
 	description_html := c.PostForm("description_html")
+	is_used := c.PostForm("is_used")
 
 	validationCheck := []string{"extension", "size"}
 	avatar_file, errors, err := h.ValidateAvatar(c, validationCheck)
@@ -119,6 +120,7 @@ func (h *handler) UpdateAbout(c *gin.Context) {
 		Title:           title,
 		DescriptionHTML: description_html,
 		AvatarFile:      avatar_file,
+		IsUsed:          is_used,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {
@@ -144,10 +146,10 @@ func (h *handler) DeleteAbout(c *gin.Context) {
 
 	id := req.ID
 
-	data, err := h.service.DeleteAbout(id)
+	err := h.service.DeleteAbout(id)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.Success(c, "success deleted data", data)
+	utils.Success(c, "success deleted data", nil)
 }

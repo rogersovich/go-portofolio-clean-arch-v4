@@ -9,7 +9,7 @@ type Repository interface {
 	FindById(id int) (About, error)
 	CreateAbout(p CreateAboutDTO) (About, error)
 	UpdateAbout(p UpdateAboutDTO) error
-	DeleteAbout(id int) (About, error)
+	DeleteAbout(id int) error
 }
 
 type repository struct {
@@ -43,29 +43,25 @@ func (r *repository) CreateAbout(p CreateAboutDTO) (About, error) {
 }
 
 func (r *repository) UpdateAbout(p UpdateAboutDTO) error {
-	about := About{
-		ID:              p.ID,
-		Title:           p.Title,
-		DescriptionHTML: p.DescriptionHTML,
-		AvatarUrl:       p.AvatarUrl,
-		AvatarFileName:  p.AvatarFileName}
-	err := r.db.Updates(&about).Error
+	updateMap := map[string]interface{}{
+		"id":               p.ID,
+		"title":            p.Title,
+		"description_html": p.DescriptionHTML,
+		"avatar_url":       p.AvatarUrl,
+		"avatar_file_name": p.AvatarFileName,
+		"is_used":          p.IsUsed,
+	}
+	err := r.db.Table("abouts").Where("id = ?", p.ID).Updates(updateMap).Error
 	return err
 }
 
-func (r *repository) DeleteAbout(id int) (About, error) {
-	var about About
+func (r *repository) DeleteAbout(id int) error {
 
-	// Step 1: Find by ID
-	if err := r.db.First(&about, id).Error; err != nil {
-		return About{}, err // return if not found or any error
+	// Hard Delete
+	if err := r.db.Unscoped().Where("id = ?", id).Delete(&About{}).Error; err != nil {
+		return err
 	}
 
-	// Step 2: Delete
-	if err := r.db.Delete(&about).Error; err != nil {
-		return About{}, err
-	}
-
-	// Step 3: Return the data
-	return about, nil
+	// Return the data
+	return nil
 }
