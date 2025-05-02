@@ -3,7 +3,7 @@ package public
 import "github.com/rogersovich/go-portofolio-clean-arch-v4/internal/author"
 
 type Service interface {
-	GetAllPublicAuthors() ([]AuthorPublicResponse, error)
+	GetAllPublicAuthors(params AuthorPublicParams) ([]AuthorPublicResponse, error)
 }
 
 type service struct {
@@ -18,8 +18,8 @@ func NewService(authorSvc author.Service, r Repository) Service {
 	}
 }
 
-func (s *service) GetAllPublicAuthors() ([]AuthorPublicResponse, error) {
-	data, err := s.repo.FindAllAuthors()
+func (s *service) GetAllPublicAuthors(params AuthorPublicParams) ([]AuthorPublicResponse, error) {
+	data, err := s.repo.FindAllAuthors(params)
 	if err != nil {
 		return nil, err
 	}

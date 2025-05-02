@@ -259,3 +259,17 @@ func ParseStringPtrToTimePtr(dateStr *string, layout string) (*time.Time, error)
 	}
 	return &t, nil
 }
+
+// GetQueryParamInt safely retrieves an integer query parameter or defaults to a provided value
+func GetQueryParamInt(c *gin.Context, key string, defaultValue int) int {
+	param := c.DefaultQuery(key, "")
+	if param == "" {
+		return defaultValue
+	}
+
+	value, err := strconv.Atoi(param)
+	if err != nil {
+		return defaultValue
+	}
+	return value
+}

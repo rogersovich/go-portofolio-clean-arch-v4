@@ -8,7 +8,23 @@ import (
 )
 
 func (h *handler) GetAllPublicAuthors(c *gin.Context) {
-	data, err := h.service.GetAllPublicAuthors()
+	// Retrieve query parameters from the request
+	page := utils.GetQueryParamInt(c, "page", 1)    // Default to page 1
+	limit := utils.GetQueryParamInt(c, "limit", 10) // Default to 10 items per page
+	sort := c.DefaultQuery("sort", "id")            // Default to sorting by "id"
+	order := c.DefaultQuery("order", "ASC")         // Default to ascending order
+	name := c.DefaultQuery("name", "")
+
+	// Call the GetAllPublicAuthors method of the service layer
+	params := AuthorPublicParams{
+		Page:  page,
+		Limit: limit,
+		Sort:  sort,
+		Order: order,
+		Name:  name,
+	}
+
+	data, err := h.service.GetAllPublicAuthors(params)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return

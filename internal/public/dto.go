@@ -7,3 +7,11 @@ type AuthorPublicResponse struct {
 	AvatarFileName string `json:"avatar_file_name"`
 	CreatedAt      string `json:"created_at"`
 }
+
+type AuthorPublicParams struct {
+	Page  int
+	Limit int
+	Sort  string
+	Order string
+	Name  string
+}
