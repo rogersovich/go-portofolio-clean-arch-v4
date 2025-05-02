@@ -11,6 +11,7 @@ import (
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/project"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/project_content_image"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/project_technology"
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/public"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/reading_time"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/statistic"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/technology"
@@ -33,20 +34,28 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	})
 
 	api := r.Group("/api")
-	author.RegisterRoutes(api, db)
-	about.RegisterRoutes(api, db)
-	technology.RegisterRoutes(api, db)
-	statistic.RegisterRoutes(api, db)
-	project_content_image.RegisterRoutes(api, db)
-	project_technology.RegisterRoutes(api, db)
-	project.RegisterRoutes(api, db)
-	topic.RegisterRoutes(api, db)
-	reading_time.RegisterRoutes(api, db)
-	blog.RegisterRoutes(api, db)
-	blog_topic.RegisterRoutes(api, db)
-	blog_content_image.RegisterRoutes(api, db)
-	experience.RegisterRoutes(api, db)
-	testimonial.RegisterRoutes(api, db)
+	{
+		author.RegisterRoutes(api, db)
+		about.RegisterRoutes(api, db)
+		technology.RegisterRoutes(api, db)
+		statistic.RegisterRoutes(api, db)
+		project_content_image.RegisterRoutes(api, db)
+		project_technology.RegisterRoutes(api, db)
+		project.RegisterRoutes(api, db)
+		topic.RegisterRoutes(api, db)
+		reading_time.RegisterRoutes(api, db)
+		blog.RegisterRoutes(api, db)
+		blog_topic.RegisterRoutes(api, db)
+		blog_content_image.RegisterRoutes(api, db)
+		experience.RegisterRoutes(api, db)
+		testimonial.RegisterRoutes(api, db)
+	}
+
+	// Define the public API group
+	apiPublic := r.Group("/api-public")
+	{
+		public.RegisterRoutes(apiPublic, db)
+	}
 
 	return r
 }
