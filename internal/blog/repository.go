@@ -14,6 +14,7 @@ type Repository interface {
 	UpdateBlog(p UpdateBlogDTO, tx *gorm.DB) (Blog, error)
 	DeleteBlog(id int) (Blog, error)
 	ChangeStatusBlog(id int, status string, blog BlogResponse) (BlogChangeStatusResponse, error)
+	CheckUniqueSlug(slug string) (bool, error)
 }
 
 type repository struct {
@@ -51,6 +52,7 @@ func (r *repository) FindByIdWithRelations(id int) ([]RawBlogRelationResponse, e
 			b.banner_file_name,
 			b.published_at,
 			b.status,
+			b.slug,
 			b.created_at,
 			a.id as author_id,
 			a.name as author_name,
@@ -110,6 +112,7 @@ func (r *repository) CreateBlog(p CreateBlogDTO, tx *gorm.DB) (Blog, error) {
 		BannerFileName:  p.BannerFileName,
 		Summary:         p.Summary,
 		Status:          p.Status,
+		Slug:            p.Slug,
 		PublishedAt:     p.PublishedAt,
 	}
 
@@ -136,6 +139,7 @@ func (r *repository) UpdateBlog(p UpdateBlogDTO, tx *gorm.DB) (Blog, error) {
 		BannerFileName:  p.BannerFileName,
 		Summary:         p.Summary,
 		Status:          p.Status,
+		Slug:            p.Slug,
 		PublishedAt:     p.PublishedAt,
 	}
 
@@ -187,4 +191,20 @@ func (r *repository) ChangeStatusBlog(id int, status string, blog BlogResponse) 
 	}
 
 	return updatedData, nil
+}
+
+func (r *repository) CheckUniqueSlug(slug string) (bool, error) {
+	var data BlogResponse
+
+	err := r.db.Table("blogs").Where("slug = ?", slug).Scan(&data).Error
+
+	if err != nil {
+		return false, err // handle DB or syntax error
+	}
+
+	if data.ID == 0 {
+		return true, nil
+	}
+
+	return false, nil
 }

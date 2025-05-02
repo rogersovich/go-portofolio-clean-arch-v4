@@ -196,6 +196,7 @@ func (s *service) MapBlogRawToResponse(raw BlogPublicRaw, blogTopics []BlogTopic
 		BannerFileName: raw.BannerFileName,
 		Summary:        raw.Summary,
 		Status:         raw.Status,
+		Slug:           raw.Slug,
 		PublishedAt:    raw.PublishedAt,
 	}
 

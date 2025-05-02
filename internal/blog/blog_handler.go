@@ -76,6 +76,7 @@ func (h *handler) CreateBlog(c *gin.Context) {
 	is_published := c.PostForm("is_published") // Y or N
 	summary := c.PostForm("summary")
 	author_id := c.PostForm("author_id")
+	slug := c.PostForm("slug")
 
 	author_id_int, err := strconv.Atoi(author_id)
 	if err != nil {
@@ -119,6 +120,7 @@ func (h *handler) CreateBlog(c *gin.Context) {
 		Summary:         summary,
 		IsPublished:     is_published,
 		ContentImages:   content_images,
+		Slug:            slug,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {
@@ -153,6 +155,7 @@ func (h *handler) UpdateBlog(c *gin.Context) {
 	description := c.PostForm("description")
 	is_published := c.PostForm("is_published") // Y or N
 	summary := c.PostForm("summary")
+	slug := c.PostForm("slug")
 
 	var topic_ids []UpdateBlogTopicDTO
 	if err := json.Unmarshal([]byte(c.PostForm("topic_ids")), &topic_ids); err != nil {
@@ -184,6 +187,7 @@ func (h *handler) UpdateBlog(c *gin.Context) {
 		TopicIds:        topic_ids,
 		ContentImages:   content_images,
 		AuthorID:        author_id,
+		Slug:            slug,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {

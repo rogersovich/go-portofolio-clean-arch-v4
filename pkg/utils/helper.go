@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -282,4 +283,43 @@ func SliceIntToPlaceholder(ids []int) string {
 	}
 	// Join the placeholders with commas
 	return strings.Join(placeholders, ", ")
+}
+
+// StringToSlug converts a string to a URL-friendly slug.
+func StringToSlug(s string) string {
+	// Convert to lowercase
+	s = strings.ToLower(s)
+
+	// Replace spaces with hyphens
+	s = strings.ReplaceAll(s, " ", "-")
+
+	// Remove non-alphanumeric characters except hyphens
+	reg := regexp.MustCompile("[^a-z0-9-]")
+	s = reg.ReplaceAllString(s, "")
+
+	// Trim any leading/trailing hyphens
+	s = strings.Trim(s, "-")
+
+	return s
+}
+
+// SlugToString converts a slug back to a human-readable string.
+func SlugToString(slug string) string {
+	// Replace hyphens with spaces
+	s := strings.ReplaceAll(slug, "-", " ")
+
+	// Capitalize the first letter of each word
+	s = capitalizeWords(s)
+
+	return s
+}
+
+// capitalizeWords capitalizes the first letter of each word in a string.
+func capitalizeWords(s string) string {
+	words := strings.Fields(s)
+	for i, word := range words {
+		// Capitalize the first letter and make the rest lowercase
+		words[i] = strings.ToUpper(string(word[0])) + strings.ToLower(word[1:])
+	}
+	return strings.Join(words, " ")
 }

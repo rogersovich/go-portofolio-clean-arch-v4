@@ -121,6 +121,7 @@ func (r *repository) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicRaw, e
 			b.banner_file_name,
 			b.published_at,
 			b.status,
+			b.slug,
 			a.id as author_id,
 			a.name as author_name,
 			rt.id as reading_time_id,

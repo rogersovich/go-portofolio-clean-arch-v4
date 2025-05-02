@@ -14,6 +14,7 @@ type CreateBlogRequest struct {
 	BannerFile      *multipart.FileHeader
 	Summary         string `validate:"required"`
 	IsPublished     string `validate:"required,oneof=Y N"`
+	Slug            string `validate:"required"`
 }
 
 type CreateBlogDTO struct {
@@ -28,6 +29,7 @@ type CreateBlogDTO struct {
 	Summary         string
 	Status          string
 	PublishedAt     *time.Time
+	Slug            string
 }
 
 type BlogResponse struct {
@@ -41,6 +43,7 @@ type BlogResponse struct {
 	BannerFileName  string  `json:"banner_file_name"`
 	Summary         string  `json:"summary"`
 	Status          string  `json:"status"`
+	Slug            string  `json:"slug"`
 	PublishedAt     *string `json:"published_at"`
 	CreatedAt       string  `json:"created_at"`
 }
@@ -53,6 +56,7 @@ type RawBlogRelationResponse struct {
 	BannerFileName              string     `json:"banner_file_name"`
 	Summary                     string     `json:"summary"`
 	Status                      string     `json:"status"`
+	Slug                        string     `json:"slug"`
 	PublishedAt                 *time.Time `json:"published_at"`
 	CreatedAt                   time.Time  `json:"created_at"`
 	AuthorID                    int        `json:"author_id"`
@@ -116,6 +120,7 @@ type UpdateBlogRequest struct {
 	BannerFile      *multipart.FileHeader
 	Summary         string `validate:"required"`
 	IsPublished     string `validate:"required,oneof=Y N"`
+	Slug            string `validate:"required"`
 }
 
 type UpdateBlogDTO struct {
@@ -130,6 +135,7 @@ type UpdateBlogDTO struct {
 	BannerFileName  string
 	Summary         string
 	Status          string
+	Slug            string
 	PublishedAt     *time.Time
 }
 
@@ -145,6 +151,7 @@ type BlogRelationResponse struct {
 	BannerFileName  string                `json:"banner_file_name"`
 	Summary         string                `json:"summary"`
 	Status          string                `json:"status"`
+	Slug            string                `json:"slug"`
 	PublishedAt     *string               `json:"published_at"`
 	CreatedAt       string                `json:"created_at"`
 	Author          *BlogAuthorDTO        `json:"author"`
@@ -162,6 +169,7 @@ type BlogUpdateResponse struct {
 	BannerFileName  string `json:"banner_file_name"`
 	Summary         string `json:"summary"`
 	Status          string `json:"status"`
+	Slug            string `json:"slug"`
 	StatisticID     int    `json:"statistic_id"`
 	ReadingTimeID   int    `json:"reading_time_id"`
 	AuthorID        int    `json:"author_id"`
@@ -188,6 +196,7 @@ func ToBlogResponse(p Blog) BlogResponse {
 		BannerFileName:  p.BannerFileName,
 		Summary:         p.Summary,
 		Status:          p.Status,
+		Slug:            p.Slug,
 		PublishedAt:     publishedAtPointer,
 		CreatedAt:       p.CreatedAt.Format("2006-01-02"),
 	}
@@ -202,6 +211,7 @@ func ToBlogUpdateResponse(p Blog) BlogUpdateResponse {
 		BannerFileName:  p.BannerFileName,
 		Summary:         p.Summary,
 		Status:          p.Status,
+		Slug:            p.Slug,
 		StatisticID:     p.StatisticID,
 		ReadingTimeID:   p.ReadingTimeID,
 		AuthorID:        p.AuthorID,

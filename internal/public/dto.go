@@ -79,6 +79,7 @@ type BlogPublicRaw struct {
 	BannerFileName              string     `json:"banner_file_name"`
 	Summary                     string     `json:"summary"`
 	Status                      string     `json:"status"`
+	Slug                        string     `json:"slug"`
 	PublishedAt                 *time.Time `json:"published_at"`
 	AuthorID                    int        `json:"author_id"`
 	AuthorName                  string     `json:"author_name"`
@@ -139,6 +140,7 @@ type BlogPublicResponse struct {
 	BannerFileName string                         `json:"banner_file_name"`
 	Summary        string                         `json:"summary"`
 	Status         string                         `json:"status"`
+	Slug           string                         `json:"slug"`
 	PublishedAt    *time.Time                     `json:"published_at"`
 	Author         *BlogPublicAuthorResponse      `json:"author"`
 	ReadingTime    *BlogPublicReadingTimeResponse `json:"reading_time"`

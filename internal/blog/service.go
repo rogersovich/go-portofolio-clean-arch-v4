@@ -138,6 +138,7 @@ func (s *service) GetBlogByIdWithRelations(id int) (BlogRelationResponse, error)
 				BannerFileName:  row.BannerFileName,
 				Summary:         row.Summary,
 				Status:          row.Status,
+				Slug:            row.Slug,
 				PublishedAt:     publishedAtPointer,
 				CreatedAt:       row.CreatedAt.Format("2006-01-02 15:04:05"),
 				Author:          blogAuthor,
@@ -198,6 +199,17 @@ func (s *service) CreateBlog(p CreateBlogRequest) (BlogResponse, error) {
 		return BlogResponse{}, err
 	}
 
+	//todo: Check Is Unique Slug
+	slugVal := utils.StringToSlug(p.Slug)
+	is_unique_slug, err := s.blogRepo.CheckUniqueSlug(slugVal)
+	if err != nil {
+		return BlogResponse{}, err
+	}
+	if !is_unique_slug {
+		err = fmt.Errorf("slug %s already exists", slugVal)
+		return BlogResponse{}, err
+	}
+
 	//todo: Check Topic Ids
 	//ex: topic_ids = [1, 2, 3]
 	topic_ids := p.TopicIds
@@ -210,16 +222,6 @@ func (s *service) CreateBlog(p CreateBlogRequest) (BlogResponse, error) {
 	err = s.blogContentImageService.CountUnlinkedImages(p.ContentImages)
 	if err != nil {
 		return BlogResponse{}, err
-	}
-
-	var publishedAt *time.Time
-	var status string
-	if p.IsPublished == "Y" {
-		now := time.Now()
-		publishedAt = &now
-		status = "PUBLISHED"
-	} else if p.IsPublished == "N" {
-		status = "UNPUBLISHED"
 	}
 
 	tx := s.db.Begin()
@@ -265,6 +267,17 @@ func (s *service) CreateBlog(p CreateBlogRequest) (BlogResponse, error) {
 	uploadedImageFilName := bannerRes.FileName
 
 	//todo: Create Blog
+
+	var publishedAt *time.Time
+	var status string
+	if p.IsPublished == "Y" {
+		now := time.Now()
+		publishedAt = &now
+		status = "PUBLISHED"
+	} else if p.IsPublished == "N" {
+		status = "UNPUBLISHED"
+	}
+
 	payload := CreateBlogDTO{
 		AuthorID:        p.AuthorID,
 		StatisticID:     dataStatistic.ID,
@@ -276,6 +289,7 @@ func (s *service) CreateBlog(p CreateBlogRequest) (BlogResponse, error) {
 		BannerFileName:  bannerRes.FileName,
 		Summary:         p.Summary,
 		Status:          status,
+		Slug:            slugVal,
 		PublishedAt:     publishedAt,
 	}
 
@@ -342,6 +356,17 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 		return BlogUpdateResponse{}, err
 	}
 
+	//todo: Check Is Unique Slug
+	slugVal := utils.StringToSlug(p.Slug)
+	is_unique_slug, err := s.blogRepo.CheckUniqueSlug(slugVal)
+	if err != nil {
+		return BlogUpdateResponse{}, err
+	}
+	if !is_unique_slug {
+		err = fmt.Errorf("slug %s already exists", slugVal)
+		return BlogUpdateResponse{}, err
+	}
+
 	//todo: Check Author Id
 	_, err = s.authorService.GetAuthorById(p.AuthorID)
 	if err != nil {
@@ -365,27 +390,6 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 	if err != nil {
 		tx.Rollback()
 		return BlogUpdateResponse{}, err
-	}
-
-	var publishedAt *time.Time
-	var status string
-	var oldIsPublished string
-	if blog.Status == "Published" {
-		oldIsPublished = "Y"
-	} else {
-		oldIsPublished = "N"
-	}
-
-	if oldIsPublished != p.IsPublished {
-		if p.IsPublished == "Y" {
-			now := time.Now()
-			publishedAt = &now
-			status = "Published"
-		} else if p.IsPublished == "N" {
-			status = "Unpublished"
-		}
-	} else {
-		status = blog.Status
 	}
 
 	isUpdateReadingTime := false
@@ -431,6 +435,27 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 		newFileName = blog.BannerFileName
 	}
 
+	var publishedAt *time.Time
+	var status string
+	var oldIsPublished string
+	if blog.Status == "Published" {
+		oldIsPublished = "Y"
+	} else {
+		oldIsPublished = "N"
+	}
+
+	if oldIsPublished != p.IsPublished {
+		if p.IsPublished == "Y" {
+			now := time.Now()
+			publishedAt = &now
+			status = "Published"
+		} else if p.IsPublished == "N" {
+			status = "Unpublished"
+		}
+	} else {
+		status = blog.Status
+	}
+
 	payload := UpdateBlogDTO{
 		ID:              p.ID,
 		TopicIds:        p.TopicIds,
@@ -443,6 +468,7 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 		BannerFileName:  newFileName,
 		Summary:         p.Summary,
 		Status:          status,
+		Slug:            slugVal,
 		PublishedAt:     publishedAt,
 	}
 

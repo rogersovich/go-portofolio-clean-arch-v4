@@ -17,6 +17,7 @@ type Blog struct {
 	BannerFileName  string `json:"banner_file_name"`
 	Summary         string `json:"summary"`
 	Status          string `json:"status"`
+	Slug            string `json:"slug"`
 	PublishedAt     *time.Time
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
