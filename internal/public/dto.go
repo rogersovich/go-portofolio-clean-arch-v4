@@ -128,9 +128,9 @@ type BlogPublicTopicResponse struct {
 }
 
 type BlogPublicContentImageResponse struct {
-	ContentImageID  int    `json:"id"`
-	ContentImageUrl string `json:"url"`
-	ContentFileName string `json:"file_name"`
+	ContentImageID       int    `json:"id"`
+	ContentImageUrl      string `json:"url"`
+	ContentImageFileName string `json:"file_name"`
 }
 
 type BlogPublicResponse struct {
@@ -146,4 +146,50 @@ type BlogPublicResponse struct {
 	ReadingTime    *BlogPublicReadingTimeResponse `json:"reading_time"`
 	Statistic      *BlogPublicStatisticResponse   `json:"statistic"`
 	Topics         []BlogPublicTopicResponse      `json:"topics"`
+}
+
+type SingleBlogPublicRaw struct {
+	ID                          int        `json:"id"`
+	Title                       string     `json:"title"`
+	DescriptionHTML             string     `json:"description_html"`
+	BannerUrl                   string     `json:"banner_url"`
+	BannerFileName              string     `json:"banner_file_name"`
+	Summary                     string     `json:"summary"`
+	Status                      string     `json:"status"`
+	Slug                        string     `json:"slug"`
+	PublishedAt                 *time.Time `json:"published_at"`
+	AuthorID                    int        `json:"author_id"`
+	AuthorName                  string     `json:"author_name"`
+	ReadingTimeID               int        `json:"reading_time_id"`
+	ReadingTimeMinutes          int        `json:"reading_time_minutes"`
+	ReadingTimeTextLength       int        `json:"reading_time_text_length"`
+	ReadingTimeEstimatedSeconds float64    `json:"reading_time_estimated_seconds"`
+	ReadingTimeWordCount        int        `json:"reading_time_word_count"`
+	ReadingTimeType             string     `json:"reading_time_type"`
+	StatisticID                 int        `json:"statistic_id"`
+	StatisticLikes              int        `json:"statistic_likes"`
+	StatisticViews              int        `json:"statistic_views"`
+	StatisticType               string     `json:"statistic_type"`
+	ContentImageID              int        `json:"content_image_id"`
+	ContentImageUrl             string     `json:"content_image_url"`
+	ContentImageFileName        string     `json:"content_image_file_name"`
+	TopicID                     int        `json:"topic_id"`
+	TopicName                   string     `json:"topic_name"`
+}
+
+type SingleBlogPublicResponse struct {
+	ID              int                              `json:"id"`
+	Title           string                           `json:"title"`
+	DescriptionHTML string                           `json:"description_html"`
+	BannerUrl       string                           `json:"banner_url"`
+	BannerFileName  string                           `json:"banner_file_name"`
+	Summary         string                           `json:"summary"`
+	Status          string                           `json:"status"`
+	Slug            string                           `json:"slug"`
+	PublishedAt     *string                          `json:"published_at"`
+	Author          *BlogPublicAuthorResponse        `json:"author"`
+	ReadingTime     *BlogPublicReadingTimeResponse   `json:"reading_time"`
+	Statistic       *BlogPublicStatisticResponse     `json:"statistic"`
+	Topics          []BlogPublicTopicResponse        `json:"topics"`
+	ContentImages   []BlogPublicContentImageResponse `json:"content_image"`
 }

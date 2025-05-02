@@ -12,6 +12,7 @@ type Service interface {
 	GetAllPublicAuthors(params AuthorPublicParams) ([]AuthorPublicResponse, error)
 	GetProfile() (ProfilePublicResponse, error)
 	GetPublicBlogs(params BlogPublicParams) ([]BlogPublicResponse, error)
+	GetPublicBlogBySlug(slug string) (SingleBlogPublicResponse, error)
 }
 
 type service struct {
@@ -256,4 +257,119 @@ func (s *service) MapBlogRawToResponse(raw BlogPublicRaw, blogTopics []BlogTopic
 	}
 
 	return blogResponse
+}
+
+func (s *service) GetPublicBlogBySlug(slug string) (SingleBlogPublicResponse, error) {
+	rawData, err := s.repo.GetPublicBlogBySlug(slug)
+
+	datas := s.MapSingleBlogRawToResponse(rawData)
+
+	if err != nil {
+		return SingleBlogPublicResponse{}, err
+	}
+	return datas, nil
+}
+
+func (s *service) MapSingleBlogRawToResponse(rawData []SingleBlogPublicRaw) SingleBlogPublicResponse {
+	// Mapping result
+	blogMap := map[int]*SingleBlogPublicResponse{}
+
+	for _, row := range rawData {
+		blogID := int(row.ID)
+
+		//? "Comma-ok" itu fitur spesial
+		_, exists := blogMap[blogID]
+		if !exists {
+			var publishedAtPointer *string
+			if row.PublishedAt != nil {
+				formattedPublishedAt := row.PublishedAt.Format("2006-01-02 15:04:05")
+				publishedAtPointer = &formattedPublishedAt
+			}
+
+			var blogAuthor *BlogPublicAuthorResponse
+			if row.AuthorID != 0 {
+				blogAuthor = &BlogPublicAuthorResponse{
+					AuthorID:   row.AuthorID,
+					AuthorName: row.AuthorName,
+				}
+			}
+
+			var blogReadingTime *BlogPublicReadingTimeResponse
+			if row.ReadingTimeID != 0 {
+				blogReadingTime = &BlogPublicReadingTimeResponse{
+					ReadingTimeID:               row.ReadingTimeID,
+					ReadingTimeMinutes:          row.ReadingTimeMinutes,
+					ReadingTimeTextLength:       row.ReadingTimeTextLength,
+					ReadingTimeEstimatedSeconds: row.ReadingTimeEstimatedSeconds,
+					ReadingTimeWordCount:        row.ReadingTimeWordCount,
+					ReadingTimeType:             row.ReadingTimeType,
+				}
+			}
+
+			var blogStatistic *BlogPublicStatisticResponse
+			if row.StatisticID != 0 {
+				blogStatistic = &BlogPublicStatisticResponse{
+					StatisticID:    row.StatisticID,
+					StatisticLikes: row.StatisticLikes,
+					StatisticViews: row.StatisticViews,
+					StatisticType:  row.StatisticType,
+				}
+			}
+
+			blogMap[blogID] = &SingleBlogPublicResponse{
+				ID:              blogID,
+				Title:           row.Title,
+				DescriptionHTML: row.DescriptionHTML,
+				BannerUrl:       row.BannerUrl,
+				BannerFileName:  row.BannerFileName,
+				Summary:         row.Summary,
+				Status:          row.Status,
+				Slug:            row.Slug,
+				Author:          blogAuthor,
+				ReadingTime:     blogReadingTime,
+				Statistic:       blogStatistic,
+				PublishedAt:     publishedAtPointer,
+				Topics:          []BlogPublicTopicResponse{},
+				ContentImages:   []BlogPublicContentImageResponse{},
+			}
+		}
+
+		if row.TopicID != 0 {
+			seen := make(map[int]bool)
+			for _, topic := range blogMap[blogID].Topics {
+				seen[topic.TopicID] = true
+			}
+
+			if !seen[row.TopicID] {
+				blogMap[blogID].Topics = append(blogMap[blogID].Topics, BlogPublicTopicResponse{
+					TopicID:   row.TopicID,
+					TopicName: row.TopicName,
+				})
+			}
+		}
+
+		if row.ContentImageID != 0 {
+			seen := make(map[int]bool)
+			for _, img := range blogMap[blogID].ContentImages {
+				seen[img.ContentImageID] = true
+			}
+
+			if !seen[row.ContentImageID] {
+				blogMap[blogID].ContentImages = append(blogMap[blogID].ContentImages, BlogPublicContentImageResponse{
+					ContentImageID:       row.ContentImageID,
+					ContentImageUrl:      row.ContentImageUrl,
+					ContentImageFileName: row.ContentImageFileName,
+				})
+			}
+		}
+	}
+
+	// Convert Map to Struct
+	var result SingleBlogPublicResponse
+	for _, v := range blogMap {
+		result = *v
+		break
+	}
+
+	return result
 }

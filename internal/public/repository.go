@@ -1,8 +1,8 @@
 package public
 
 import (
+	"errors"
 	"fmt"
-	"slices"
 
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
 	"gorm.io/gorm"
@@ -16,6 +16,7 @@ type Repository interface {
 	GetExperiencesPublic() ([]ExperiencesPublicResponse, error)
 	GetPublicBlogs(params BlogPublicParams) ([]BlogPublicRaw, error)
 	GetPublicBlogTopics(params BlogPublicParams, uniqueBlogIDs []int) ([]BlogTopicPublicRaw, error)
+	GetPublicBlogBySlug(slug string) ([]SingleBlogPublicRaw, error)
 }
 
 type repository struct {
@@ -169,16 +170,6 @@ func (r *repository) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicRaw, e
 		return []BlogPublicRaw{}, err
 	}
 
-	//todo: GET TOPICS
-
-	var uniqueBlogIDs []int
-
-	for _, data := range datas {
-		if !slices.Contains(uniqueBlogIDs, data.ID) {
-			uniqueBlogIDs = append(uniqueBlogIDs, data.ID)
-		}
-	}
-
 	return datas, nil
 }
 
@@ -214,6 +205,65 @@ func (r *repository) GetPublicBlogTopics(params BlogPublicParams, uniqueBlogIDs 
 	err := r.db.Raw(rawTopicSQL, blogTopicArgs...).Scan(&datas).Error
 	if err != nil {
 		return []BlogTopicPublicRaw{}, err
+	}
+
+	return datas, nil
+}
+
+func (r *repository) GetPublicBlogBySlug(slug string) ([]SingleBlogPublicRaw, error) {
+	var datas []SingleBlogPublicRaw
+
+	// Build the raw SQL query
+	rawSQL := `
+		SELECT 
+			b.id, 
+			b.title,
+			b.summary,
+			b.banner_url,
+			b.banner_file_name,
+			b.description_html,
+			b.published_at,
+			b.status,
+			b.slug,
+			a.id as author_id,
+			a.name as author_name,
+			rt.id as reading_time_id,
+			rt.minutes as reading_time_minutes,
+			rt.text_length as reading_time_text_length,
+			rt.estimated_seconds as reading_time_estimated_seconds,
+			rt.word_count as reading_time_word_count,
+			rt.type as reading_time_type,
+			s.id as statistic_id,
+			s.likes as statistic_likes,
+			s.views as statistic_views,
+			s.type as statistic_type,
+			bct.id as content_image_id,
+      bct.image_url as content_image_url,
+      bct.image_file_name as content_image_file_name,
+      t.id as topic_id,
+      t.name as topic_name
+		FROM blogs b
+		LEFT JOIN authors a ON a.id = b.author_id
+		LEFT JOIN reading_times rt ON rt.id = b.reading_time_id
+		LEFT JOIN statistics s ON s.id = b.statistic_id
+		LEFT JOIN blog_content_images bct ON bct.blog_id = b.id
+    LEFT JOIN blog_topics bt ON bt.blog_id = b.id
+    LEFT JOIN topics t ON t.id = bt.topic_id
+		WHERE 
+			b.deleted_at IS NULL AND 
+			b.slug = ? AND
+			b.status = ?
+	`
+
+	// Execute the raw SQL query
+	err := r.db.Raw(rawSQL, slug, "Published").Scan(&datas).Error
+
+	if err != nil {
+		return []SingleBlogPublicRaw{}, err
+	}
+
+	if len(datas) == 0 {
+		return []SingleBlogPublicRaw{}, errors.New("blog not found")
 	}
 
 	return datas, nil

@@ -71,3 +71,13 @@ func (h *handler) GetPublicBlogs(c *gin.Context) {
 	}
 	utils.Success(c, "success get all data", data)
 }
+
+func (h *handler) GetPublicBlogBySlug(c *gin.Context) {
+	slug := c.Param("slug")
+	data, err := h.service.GetPublicBlogBySlug(slug)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.Success(c, "success get data", data)
+}
