@@ -369,12 +369,23 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 
 	var publishedAt *time.Time
 	var status string
-	if p.IsPublished == "Y" {
-		now := time.Now()
-		publishedAt = &now
-		status = "PUBLISHED"
-	} else if p.IsPublished == "N" {
-		status = "UNPUBLISHED"
+	var oldIsPublished string
+	if blog.Status == "Published" {
+		oldIsPublished = "Y"
+	} else {
+		oldIsPublished = "N"
+	}
+
+	if oldIsPublished != p.IsPublished {
+		if p.IsPublished == "Y" {
+			now := time.Now()
+			publishedAt = &now
+			status = "Published"
+		} else if p.IsPublished == "N" {
+			status = "Unpublished"
+		}
+	} else {
+		status = blog.Status
 	}
 
 	isUpdateReadingTime := false

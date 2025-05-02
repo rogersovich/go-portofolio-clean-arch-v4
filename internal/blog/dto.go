@@ -155,17 +155,16 @@ type BlogRelationResponse struct {
 }
 
 type BlogUpdateResponse struct {
-	ID              int     `json:"id"`
-	Title           string  `json:"title"`
-	DescriptionHTML string  `json:"description_html"`
-	BannerUrl       string  `json:"banner_url"`
-	BannerFileName  string  `json:"banner_file_name"`
-	Summary         string  `json:"summary"`
-	Status          string  `json:"status"`
-	PublishedAt     *string `json:"published_at"`
-	StatisticID     int     `json:"statistic_id"`
-	ReadingTimeID   int     `json:"reading_time_id"`
-	AuthorID        int     `json:"author_id"`
+	ID              int    `json:"id"`
+	Title           string `json:"title"`
+	DescriptionHTML string `json:"description_html"`
+	BannerUrl       string `json:"banner_url"`
+	BannerFileName  string `json:"banner_file_name"`
+	Summary         string `json:"summary"`
+	Status          string `json:"status"`
+	StatisticID     int    `json:"statistic_id"`
+	ReadingTimeID   int    `json:"reading_time_id"`
+	AuthorID        int    `json:"author_id"`
 }
 
 type BlogDeleteRequest struct {
@@ -195,11 +194,6 @@ func ToBlogResponse(p Blog) BlogResponse {
 }
 
 func ToBlogUpdateResponse(p Blog) BlogUpdateResponse {
-	var publishedAtPointer *string
-	if p.PublishedAt != nil {
-		formattedPublishedAt := p.PublishedAt.Format("2006-01-02")
-		publishedAtPointer = &formattedPublishedAt
-	}
 	return BlogUpdateResponse{
 		ID:              p.ID,
 		Title:           p.Title,
@@ -208,7 +202,6 @@ func ToBlogUpdateResponse(p Blog) BlogUpdateResponse {
 		BannerFileName:  p.BannerFileName,
 		Summary:         p.Summary,
 		Status:          p.Status,
-		PublishedAt:     publishedAtPointer,
 		StatisticID:     p.StatisticID,
 		ReadingTimeID:   p.ReadingTimeID,
 		AuthorID:        p.AuthorID,

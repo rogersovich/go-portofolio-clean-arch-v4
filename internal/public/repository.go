@@ -1,6 +1,10 @@
 package public
 
 import (
+	"fmt"
+	"slices"
+
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -11,6 +15,7 @@ type Repository interface {
 	GetCurrentWork() (CurrentWorkPublicResponse, error)
 	GetExperiencesPublic() ([]ExperiencesPublicResponse, error)
 	GetPublicBlogs(params BlogPublicParams) ([]BlogPublicRaw, error)
+	GetPublicBlogTopics(params BlogPublicParams, uniqueBlogIDs []int) ([]BlogTopicPublicRaw, error)
 }
 
 type repository struct {
@@ -111,7 +116,6 @@ func (r *repository) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicRaw, e
 		SELECT 
 			b.id, 
 			b.title,
-			b.description_html,
 			b.summary,
 			b.banner_url,
 			b.banner_file_name,
@@ -128,43 +132,88 @@ func (r *repository) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicRaw, e
 			s.id as statistic_id,
 			s.likes as statistic_likes,
 			s.views as statistic_views,
-			s.type as statistic_type,
-			t.id as topic_id,
-			t.name as topic_name,
-			bct.id as content_image_id,
-			bct.image_file_name as content_image_file_name,
-			bct.image_url as content_image_url
+			s.type as statistic_type
 		FROM blogs b
 		LEFT JOIN authors a ON a.id = b.author_id
 		LEFT JOIN reading_times rt ON rt.id = b.reading_time_id
 		LEFT JOIN statistics s ON s.id = b.statistic_id
-		LEFT JOIN blog_topics bt ON bt.blog_id = b.id
-		LEFT JOIN topics t ON t.id = bt.topic_id
-		LEFT JOIN blog_content_images bct ON bct.blog_id = b.id
 		WHERE 
 			b.deleted_at IS NULL AND 
 			b.status = ?
 	`
 
+	blogArgs := []interface{}{"Published"}
+
+	if params.Search != "" {
+		rawSQL += " AND (b.title LIKE ? OR b.summary LIKE ?)"
+		blogArgs = append(blogArgs, "%"+params.Search+"%", "%"+params.Search+"%")
+	}
+
 	// Apply sorting if provided
 	if params.Sort != "" && params.Order != "" {
-		rawSQL += " ORDER BY " + params.Order + " " + params.Sort
+		rawSQL += " ORDER BY " + params.Sort + " " + params.Order
 	}
 
 	// Apply pagination (LIMIT and OFFSET)
 	if params.Limit > 0 {
 		rawSQL += " LIMIT ? OFFSET ?"
-	}
-
-	offset := (params.Page - 1) * params.Limit
-
-	args := []interface{}{
-		"Published",
-		params.Limit,
-		offset,
+		offset := (params.Page - 1) * params.Limit
+		blogArgs = append(blogArgs, params.Limit, offset)
 	}
 
 	// Execute the raw SQL query
-	err := r.db.Raw(rawSQL, args...).Scan(&datas).Error
-	return datas, err
+	err := r.db.Raw(rawSQL, blogArgs...).Scan(&datas).Error
+
+	if err != nil {
+		return []BlogPublicRaw{}, err
+	}
+
+	//todo: GET TOPICS
+
+	var uniqueBlogIDs []int
+
+	for _, data := range datas {
+		if !slices.Contains(uniqueBlogIDs, data.ID) {
+			uniqueBlogIDs = append(uniqueBlogIDs, data.ID)
+		}
+	}
+
+	return datas, nil
+}
+
+func (r *repository) GetPublicBlogTopics(params BlogPublicParams, uniqueBlogIDs []int) ([]BlogTopicPublicRaw, error) {
+	var datas []BlogTopicPublicRaw
+
+	// Create a slice of "?" placeholders equal to the length of the input slice
+	placeholders := utils.SliceIntToPlaceholder(uniqueBlogIDs)
+
+	rawTopicSQL := fmt.Sprintf(`
+		SELECT 
+			b.id as blog_id,
+			t.id as topic_id,
+			t.name as topic_name
+		FROM blogs b
+		JOIN blog_topics bt on bt.blog_id = b.id
+		JOIN topics t on t.id = bt.topic_id
+		JOIN statistics s on s.id = b.statistic_id
+		WHERE b.id IN (%s)
+	`, placeholders)
+
+	// Convert uniqueBlogIDs into a slice of interfaces for GORM query
+	blogTopicArgs := make([]interface{}, len(uniqueBlogIDs))
+	for i, id := range uniqueBlogIDs {
+		blogTopicArgs[i] = id
+	}
+
+	// Apply sorting if provided
+	if params.Sort != "" && params.Order != "" {
+		rawTopicSQL += " ORDER BY " + params.Sort + " " + params.Order
+	}
+
+	err := r.db.Raw(rawTopicSQL, blogTopicArgs...).Scan(&datas).Error
+	if err != nil {
+		return []BlogTopicPublicRaw{}, err
+	}
+
+	return datas, nil
 }

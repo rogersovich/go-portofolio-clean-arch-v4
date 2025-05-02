@@ -273,3 +273,13 @@ func GetQueryParamInt(c *gin.Context, key string, defaultValue int) int {
 	}
 	return value
 }
+
+func SliceIntToPlaceholder(ids []int) string {
+	// Create a slice of "?" placeholders equal to the length of the input slice
+	placeholders := make([]string, len(ids))
+	for i := range ids {
+		placeholders[i] = "?"
+	}
+	// Join the placeholders with commas
+	return strings.Join(placeholders, ", ")
+}

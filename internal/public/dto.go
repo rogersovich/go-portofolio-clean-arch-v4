@@ -65,16 +65,16 @@ type ProfilePublicResponse struct {
 }
 
 type BlogPublicParams struct {
-	Page  int
-	Limit int
-	Sort  string
-	Order string
+	Page   int    `binding:"required"`
+	Limit  int    `binding:"required"`
+	Sort   string `binding:"required,oneof=published_at id views"`
+	Order  string `binding:"required"`
+	Search string
 }
 
 type BlogPublicRaw struct {
 	ID                          int        `json:"id"`
 	Title                       string     `json:"title"`
-	DescriptionHTML             string     `json:"description_html"`
 	BannerUrl                   string     `json:"banner_url"`
 	BannerFileName              string     `json:"banner_file_name"`
 	Summary                     string     `json:"summary"`
@@ -92,11 +92,12 @@ type BlogPublicRaw struct {
 	StatisticLikes              int        `json:"statistic_likes"`
 	StatisticViews              int        `json:"statistic_views"`
 	StatisticType               string     `json:"statistic_type"`
-	TopicID                     int        `json:"topic_id"`
-	TopicName                   string     `json:"topic_name"`
-	ContentImageID              int        `json:"content_image_id"`
-	ContentImageUrl             string     `json:"content_image_url"`
-	ContentImageFileName        string     `json:"content_image_file_name"`
+}
+
+type BlogTopicPublicRaw struct {
+	BlogID    int    `json:"blog_id"`
+	TopicID   int    `json:"topic_id"`
+	TopicName string `json:"topic_name"`
 }
 
 type BlogPublicAuthorResponse struct {
@@ -132,17 +133,15 @@ type BlogPublicContentImageResponse struct {
 }
 
 type BlogPublicResponse struct {
-	ID              int                              `json:"id"`
-	Title           string                           `json:"title"`
-	DescriptionHTML string                           `json:"description_html"`
-	BannerUrl       string                           `json:"banner_url"`
-	BannerFileName  string                           `json:"banner_file_name"`
-	Summary         string                           `json:"summary"`
-	Status          string                           `json:"status"`
-	PublishedAt     *time.Time                       `json:"published_at"`
-	Author          *BlogPublicAuthorResponse        `json:"author"`
-	ReadingTime     *BlogPublicReadingTimeResponse   `json:"reading_time"`
-	Statistic       *BlogPublicStatisticResponse     `json:"statistic"`
-	Topics          []BlogPublicTopicResponse        `json:"topics"`
-	ContentImages   []BlogPublicContentImageResponse `json:"images"`
+	ID             int                            `json:"id"`
+	Title          string                         `json:"title"`
+	BannerUrl      string                         `json:"banner_url"`
+	BannerFileName string                         `json:"banner_file_name"`
+	Summary        string                         `json:"summary"`
+	Status         string                         `json:"status"`
+	PublishedAt    *time.Time                     `json:"published_at"`
+	Author         *BlogPublicAuthorResponse      `json:"author"`
+	ReadingTime    *BlogPublicReadingTimeResponse `json:"reading_time"`
+	Statistic      *BlogPublicStatisticResponse   `json:"statistic"`
+	Topics         []BlogPublicTopicResponse      `json:"topics"`
 }

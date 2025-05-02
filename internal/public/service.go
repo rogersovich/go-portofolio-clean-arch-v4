@@ -1,6 +1,7 @@
 package public
 
 import (
+	"slices"
 	"sync"
 
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/author"
@@ -137,34 +138,65 @@ func (s *service) GetProfile() (ProfilePublicResponse, error) {
 }
 
 func (s *service) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicResponse, error) {
+	//todo: Get Blogs
 	rawBlogs, err := s.repo.GetPublicBlogs(params)
+
+	if err != nil {
+		return []BlogPublicResponse{}, err
+	}
+
+	//todo: Slice unique blog ids
+	var uniqueBlogIDs []int
+
+	for _, data := range rawBlogs {
+		if !slices.Contains(uniqueBlogIDs, data.ID) {
+			uniqueBlogIDs = append(uniqueBlogIDs, data.ID)
+		}
+	}
+
+	//todo: Get Blog Topics
+	blogTopics, err := s.repo.GetPublicBlogTopics(params, uniqueBlogIDs)
+
+	if err != nil {
+		return []BlogPublicResponse{}, err
+	}
+
+	//todo: Map Blog Topics
+	mappedBlogTopics := make(map[int][]BlogTopicPublicRaw)
+	for _, topic := range blogTopics {
+		mappedBlogTopics[topic.BlogID] = append(mappedBlogTopics[topic.BlogID], topic)
+	}
 
 	// Create a slice to hold the formatted BlogPublicResponse data
 	var blogResponses []BlogPublicResponse
 
 	// Iterate through the raw blog data and map it to BlogPublicResponse
 	for _, raw := range rawBlogs {
-		blogResponse := s.MapBlogRawToResponse(raw)
+		// Map the raw data to BlogPublicResponse
+		mapBlogTopic := mappedBlogTopics[raw.ID]
+		blogResponse := s.MapBlogRawToResponse(raw, mapBlogTopic)
+
+		// Append the result to the slice
 		blogResponses = append(blogResponses, blogResponse)
 	}
 
-	if err != nil {
-		return []BlogPublicResponse{}, err
-	}
 	return blogResponses, nil
 }
 
-func (s *service) MapBlogRawToResponse(raw BlogPublicRaw) BlogPublicResponse {
+func (s *service) GetPublicBlogTopics(params BlogPublicParams, uniqueBlogIDs []int) ([]BlogTopicPublicRaw, error) {
+	return s.repo.GetPublicBlogTopics(params, uniqueBlogIDs)
+}
+
+func (s *service) MapBlogRawToResponse(raw BlogPublicRaw, blogTopics []BlogTopicPublicRaw) BlogPublicResponse {
 	// Mapping the BlogPublicRaw to BlogPublicResponse
 	blogResponse := BlogPublicResponse{
-		ID:              raw.ID,
-		Title:           raw.Title,
-		DescriptionHTML: raw.DescriptionHTML,
-		BannerUrl:       raw.BannerUrl,
-		BannerFileName:  raw.BannerFileName,
-		Summary:         raw.Summary,
-		Status:          raw.Status,
-		PublishedAt:     raw.PublishedAt,
+		ID:             raw.ID,
+		Title:          raw.Title,
+		BannerUrl:      raw.BannerUrl,
+		BannerFileName: raw.BannerFileName,
+		Summary:        raw.Summary,
+		Status:         raw.Status,
+		PublishedAt:    raw.PublishedAt,
 	}
 
 	// Mapping Author (Assuming Author info comes from the same raw data)
@@ -211,28 +243,15 @@ func (s *service) MapBlogRawToResponse(raw BlogPublicRaw) BlogPublicResponse {
 	}
 
 	// Mapping the Topics (Assuming topics is an array, you may want to append more topic records here)
-	var blogTopics []BlogPublicTopicResponse
-	if raw.TopicID != 0 {
-		blogTopics = append(blogTopics, BlogPublicTopicResponse{
-			TopicID:   raw.TopicID,
-			TopicName: raw.TopicName,
-		})
-		blogResponse.Topics = blogTopics
+	if len(blogTopics) != 0 {
+		for _, topic := range blogTopics {
+			blogResponse.Topics = append(blogResponse.Topics, BlogPublicTopicResponse{
+				TopicID:   topic.TopicID,
+				TopicName: topic.TopicName,
+			})
+		}
 	} else {
 		blogResponse.Topics = []BlogPublicTopicResponse{}
-	}
-
-	// Mapping Content Images (Assuming there can be multiple content images)
-	var blogImages []BlogPublicContentImageResponse
-	if raw.ContentImageID != 0 {
-		blogImages = append(blogImages, BlogPublicContentImageResponse{
-			ContentImageID:  raw.ContentImageID,
-			ContentImageUrl: raw.ContentImageUrl,
-			ContentFileName: raw.ContentImageFileName,
-		})
-		blogResponse.ContentImages = blogImages
-	} else {
-		blogResponse.ContentImages = []BlogPublicContentImageResponse{}
 	}
 
 	return blogResponse
