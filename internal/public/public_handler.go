@@ -31,3 +31,12 @@ func (h *handler) GetAllPublicAuthors(c *gin.Context) {
 	}
 	utils.Success(c, "success get all data", data)
 }
+
+func (h *handler) GetProfile(c *gin.Context) {
+	data, err := h.service.GetProfile()
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.Success(c, "success get data", data)
+}

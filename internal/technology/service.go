@@ -55,6 +55,7 @@ func (s *service) CreateTechnology(p CreateTechnologyRequest) (TechnologyRespons
 		LogoUrl:         logoRes.FileURL,
 		LogoFileName:    logoRes.FileName,
 		IsMajor:         p.IsMajor == "Y",
+		Link:            p.Link,
 	}
 
 	data, err := s.repo.CreateTechnology(payload)
@@ -102,6 +103,7 @@ func (s *service) UpdateTechnology(p UpdateTechnologyRequest) error {
 		LogoUrl:         newFileURL,
 		LogoFileName:    newFileName,
 		IsMajor:         p.IsMajor == "Y",
+		Link:            p.Link,
 	}
 
 	err = s.repo.UpdateTechnology(payload)

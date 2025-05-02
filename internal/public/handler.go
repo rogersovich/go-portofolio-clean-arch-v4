@@ -20,4 +20,5 @@ func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	h := handler{service: service}
 
 	r.GET("/authors", h.GetAllPublicAuthors)
+	r.GET("/profile", h.GetProfile)
 }

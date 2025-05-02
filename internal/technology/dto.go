@@ -11,6 +11,7 @@ type CreateTechnologyRequest struct {
 	DescriptionHTML string                `json:"description_html" validate:"required"`
 	LogoFile        *multipart.FileHeader `json:"logo_file"`
 	IsMajor         string                `json:"is_major" validate:"required,oneof=Y N"`
+	Link            *string               `json:"link"`
 }
 
 type UpdateTechnologyRequest struct {
@@ -19,6 +20,7 @@ type UpdateTechnologyRequest struct {
 	DescriptionHTML string                `json:"description_html" validate:"required"`
 	LogoFile        *multipart.FileHeader `json:"logo_file"`
 	IsMajor         string                `json:"is_major" validate:"required,oneof=Y N"`
+	Link            *string               `json:"link"`
 }
 
 type CreateTechnologyDTO struct {
@@ -27,6 +29,7 @@ type CreateTechnologyDTO struct {
 	LogoUrl         string
 	LogoFileName    string
 	IsMajor         bool
+	Link            *string
 }
 
 type UpdateTechnologyDTO struct {
@@ -36,25 +39,28 @@ type UpdateTechnologyDTO struct {
 	LogoUrl         string
 	LogoFileName    string
 	IsMajor         bool
+	Link            *string
 }
 
 type TechnologyResponse struct {
-	ID              int    `json:"id"`
-	Name            string `json:"name"`
-	DescriptionHTML string `json:"description_html"`
-	LogoUrl         string `json:"logo_url"`
-	LogoFileName    string `json:"logo_file_name"`
-	IsMajor         string `json:"is_major"`
-	CreatedAt       string `json:"created_at"`
+	ID              int     `json:"id"`
+	Name            string  `json:"name"`
+	DescriptionHTML string  `json:"description_html"`
+	LogoUrl         string  `json:"logo_url"`
+	LogoFileName    string  `json:"logo_file_name"`
+	IsMajor         string  `json:"is_major"`
+	CreatedAt       string  `json:"created_at"`
+	Link            *string `json:"link"`
 }
 
 type TechnologyUpdateResponse struct {
-	ID              int    `json:"id"`
-	Name            string `json:"name"`
-	DescriptionHTML string `json:"description_html"`
-	LogoUrl         string `json:"logo_url"`
-	LogoFileName    string `json:"logo_file_name"`
-	IsMajor         string `json:"is_major"`
+	ID              int     `json:"id"`
+	Name            string  `json:"name"`
+	DescriptionHTML string  `json:"description_html"`
+	LogoUrl         string  `json:"logo_url"`
+	LogoFileName    string  `json:"logo_file_name"`
+	IsMajor         string  `json:"is_major"`
+	Link            *string `json:"link"`
 }
 
 type TechnologyDeleteRequest struct {
@@ -69,6 +75,7 @@ func ToTechnologyResponse(p Technology) TechnologyResponse {
 		LogoUrl:         p.LogoUrl,
 		LogoFileName:    p.LogoFileName,
 		IsMajor:         utils.BoolToYN(p.IsMajor),
+		Link:            p.Link,
 		CreatedAt:       p.CreatedAt.Format("2006-01-02"),
 	}
 }
@@ -80,6 +87,7 @@ func ToTechnologyUpdateResponse(p Technology) TechnologyUpdateResponse {
 		DescriptionHTML: p.DescriptionHTML,
 		LogoUrl:         p.LogoUrl,
 		LogoFileName:    p.LogoFileName,
+		Link:            p.Link,
 		IsMajor:         utils.BoolToYN(p.IsMajor),
 	}
 }

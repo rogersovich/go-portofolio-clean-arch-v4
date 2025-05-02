@@ -7,12 +7,13 @@ import (
 )
 
 type Technology struct {
-	ID              int    `json:"id" gorm:"primaryKey"`
-	Name            string `json:"name"`
-	DescriptionHTML string `json:"description_html"`
-	LogoUrl         string `json:"logo_url"`
-	LogoFileName    string `json:"logo_file_name"`
-	IsMajor         bool   `json:"is_major"`
+	ID              int     `json:"id" gorm:"primaryKey"`
+	Name            string  `json:"name"`
+	DescriptionHTML string  `json:"description_html"`
+	LogoUrl         string  `json:"logo_url"`
+	LogoFileName    string  `json:"logo_file_name"`
+	IsMajor         bool    `json:"is_major"`
+	Link            *string `json:"link"`
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	DeletedAt       gorm.DeletedAt `gorm:"index"`

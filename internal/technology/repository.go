@@ -42,6 +42,7 @@ func (r *repository) CreateTechnology(p CreateTechnologyDTO) (Technology, error)
 		LogoUrl:         p.LogoUrl,
 		LogoFileName:    p.LogoFileName,
 		IsMajor:         p.IsMajor,
+		Link:            p.Link,
 	}
 	err := r.db.Create(&data).Error
 	return data, err
@@ -56,6 +57,7 @@ func (r *repository) UpdateTechnology(p UpdateTechnologyDTO) error {
 		"logo_url":         p.LogoUrl,
 		"logo_file_name":   p.LogoFileName,
 		"is_major":         p.IsMajor,
+		"link":             p.Link,
 	}
 	err := r.db.Table("technologies").Where("id = ?", p.ID).Updates(updateMap).Error
 	if err != nil {

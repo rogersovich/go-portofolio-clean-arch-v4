@@ -1,9 +1,12 @@
 package public
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Repository interface {
 	FindAllAuthors(params AuthorPublicParams) ([]AuthorPublicResponse, error)
+	GetProfile() (ProfilePublicResponse, error)
 }
 
 type repository struct {
@@ -38,4 +41,25 @@ func (r *repository) FindAllAuthors(params AuthorPublicParams) ([]AuthorPublicRe
 	// Execute the query
 	err := query.Find(&datas).Error
 	return datas, err
+}
+
+func (r *repository) GetProfile() (ProfilePublicResponse, error) {
+	var about AboutPublicResponse
+
+	err := r.db.Table("abouts").Where("is_used = ? AND deleted_at IS NULL", 1).Scan(&about).Error
+	if err != nil {
+		return ProfilePublicResponse{}, err
+	}
+
+	var technologies []TechnologyProfilePublicResponse
+	err = r.db.Table("technologies").Where("is_major = ? AND deleted_at IS NULL", 1).Scan(&technologies).Error
+	if err != nil {
+		return ProfilePublicResponse{}, err
+	}
+
+	data := ProfilePublicResponse{
+		About:        about,
+		Technologies: technologies,
+	}
+	return data, nil
 }

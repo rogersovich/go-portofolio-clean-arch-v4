@@ -73,6 +73,7 @@ func (h *handler) CreateTechnology(c *gin.Context) {
 	name := c.PostForm("name")
 	description_html := c.PostForm("description_html")
 	is_major := c.PostForm("is_major")
+	link := c.PostForm("link")
 
 	logo_file, errors, err := h.ValidateLogo(c, nil)
 	if err != nil {
@@ -86,6 +87,7 @@ func (h *handler) CreateTechnology(c *gin.Context) {
 		DescriptionHTML: description_html,
 		LogoFile:        logo_file,
 		IsMajor:         is_major,
+		Link:            &link,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {
@@ -109,6 +111,7 @@ func (h *handler) UpdateTechnology(c *gin.Context) {
 	name := c.PostForm("name")
 	description_html := c.PostForm("description_html")
 	is_major := c.PostForm("is_major")
+	link := c.PostForm("link")
 
 	validationCheck := []string{"extension", "size"}
 	logo_file, errors, err := h.ValidateLogo(c, validationCheck)
@@ -123,6 +126,7 @@ func (h *handler) UpdateTechnology(c *gin.Context) {
 		DescriptionHTML: description_html,
 		LogoFile:        logo_file,
 		IsMajor:         is_major,
+		Link:            &link,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {

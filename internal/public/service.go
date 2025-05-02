@@ -4,6 +4,7 @@ import "github.com/rogersovich/go-portofolio-clean-arch-v4/internal/author"
 
 type Service interface {
 	GetAllPublicAuthors(params AuthorPublicParams) ([]AuthorPublicResponse, error)
+	GetProfile() (ProfilePublicResponse, error)
 }
 
 type service struct {
@@ -24,5 +25,13 @@ func (s *service) GetAllPublicAuthors(params AuthorPublicParams) ([]AuthorPublic
 		return nil, err
 	}
 
+	return data, nil
+}
+
+func (s *service) GetProfile() (ProfilePublicResponse, error) {
+	data, err := s.repo.GetProfile()
+	if err != nil {
+		return ProfilePublicResponse{}, err
+	}
 	return data, nil
 }
