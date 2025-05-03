@@ -254,6 +254,19 @@ type ProjectTechnologyPublicResponse struct {
 	TechLink    string `json:"tech_link"`
 }
 
+type ProjectPublicContentImageResponse struct {
+	ContentImageID       int    `json:"id"`
+	ContentImageUrl      string `json:"url"`
+	ContentImageFileName string `json:"file_name"`
+}
+
+type ProjectPublicStatisticResponse struct {
+	StatisticID    int    `json:"id"`
+	StatisticLikes int    `json:"likes"`
+	StatisticViews int    `json:"views"`
+	StatisticType  string `json:"type"`
+}
+
 type ProjectPublicResponse struct {
 	ID            int                               `json:"id"`
 	Title         string                            `json:"title"`
@@ -263,4 +276,44 @@ type ProjectPublicResponse struct {
 	Slug          string                            `json:"slug"`
 	PublishedAt   *time.Time                        `json:"published_at"`
 	Technologies  []ProjectTechnologyPublicResponse `json:"technologies"`
+}
+
+type SingleProjectPublicRaw struct {
+	ID                   int        `json:"id"`
+	Title                string     `json:"title"`
+	Description          string     `json:"description"`
+	ImageUrl             string     `json:"image_url"`
+	ImageFileName        string     `json:"image_file_name"`
+	RepositoryUrl        *string    `json:"repository_url"`
+	Summary              string     `json:"summary"`
+	Status               string     `json:"status"`
+	Slug                 string     `json:"slug"`
+	PublishedAt          *time.Time `json:"published_at"`
+	StatisticID          int        `json:"statistic_id"`
+	StatisticLikes       int        `json:"statistic_likes"`
+	StatisticViews       int        `json:"statistic_views"`
+	StatisticType        string     `json:"statistic_type"`
+	ContentImageID       int        `json:"content_image_id"`
+	ContentImageUrl      string     `json:"content_image_url"`
+	ContentImageFileName string     `json:"content_image_file_name"`
+	TechID               int        `json:"tech_id"`
+	TechName             string     `json:"tech_name"`
+	TechLogoURL          string     `json:"tech_logo_url"`
+	TechLink             string     `json:"tech_link"`
+}
+
+type SingleProjectPublicResponse struct {
+	ID            int                                 `json:"id"`
+	Title         string                              `json:"title"`
+	Description   string                              `json:"description"`
+	ImageUrl      string                              `json:"image_url"`
+	ImageFileName string                              `json:"image_file_name"`
+	RepositoryUrl *string                             `json:"repository_url"`
+	Summary       string                              `json:"summary"`
+	Status        string                              `json:"status"`
+	Slug          string                              `json:"slug"`
+	PublishedAt   *string                             `json:"published_at"`
+	Statistic     *ProjectPublicStatisticResponse     `json:"statistic"`
+	ContentImages []ProjectPublicContentImageResponse `json:"content_image"`
+	Technologies  []ProjectTechnologyPublicResponse   `json:"topics"`
 }

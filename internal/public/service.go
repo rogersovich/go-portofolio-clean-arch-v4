@@ -14,6 +14,7 @@ type Service interface {
 	GetPublicTestimonials() ([]TestimonialPublicResponse, error)
 	GetPublicTopics() ([]TopicPublicResponse, error)
 	GetPublicProjects(params ProjectPublicParams) ([]ProjectPublicResponse, error)
+	GetPublicProjectBySlug(slug string) (SingleProjectPublicResponse, error)
 }
 
 type service struct {
@@ -473,4 +474,100 @@ func (s *service) MapProjectRawToResponse(raw ProjectPaginatePublicRaw, projectT
 	}
 
 	return projectResponse
+}
+
+func (s *service) GetPublicProjectBySlug(slug string) (SingleProjectPublicResponse, error) {
+	rawData, err := s.repo.GetPublicProjectBySlug(slug)
+
+	datas := s.MapSingleProjectRawToResponse(rawData)
+
+	if err != nil {
+		return SingleProjectPublicResponse{}, err
+	}
+	return datas, nil
+}
+
+func (s *service) MapSingleProjectRawToResponse(rawData []SingleProjectPublicRaw) SingleProjectPublicResponse {
+	// Mapping result
+	projectMap := map[int]*SingleProjectPublicResponse{}
+
+	for _, row := range rawData {
+		projectID := int(row.ID)
+
+		//? "Comma-ok" itu fitur spesial
+		_, exists := projectMap[projectID]
+		if !exists {
+			var publishedAtPointer *string
+			if row.PublishedAt != nil {
+				formattedPublishedAt := row.PublishedAt.Format("2006-01-02 15:04:05")
+				publishedAtPointer = &formattedPublishedAt
+			}
+
+			var projectStatistic *ProjectPublicStatisticResponse
+			if row.StatisticID != 0 {
+				projectStatistic = &ProjectPublicStatisticResponse{
+					StatisticID:    row.StatisticID,
+					StatisticLikes: row.StatisticLikes,
+					StatisticViews: row.StatisticViews,
+					StatisticType:  row.StatisticType,
+				}
+			}
+
+			projectMap[projectID] = &SingleProjectPublicResponse{
+				ID:            projectID,
+				Title:         row.Title,
+				Description:   row.Description,
+				ImageUrl:      row.ImageUrl,
+				ImageFileName: row.ImageFileName,
+				RepositoryUrl: row.RepositoryUrl,
+				Summary:       row.Summary,
+				Status:        row.Status,
+				Slug:          row.Slug,
+				PublishedAt:   publishedAtPointer,
+				Statistic:     projectStatistic,
+				ContentImages: []ProjectPublicContentImageResponse{},
+				Technologies:  []ProjectTechnologyPublicResponse{},
+			}
+		}
+
+		if row.TechID != 0 {
+			seen := make(map[int]bool)
+			for _, project := range projectMap[projectID].Technologies {
+				seen[project.TechID] = true
+			}
+
+			if !seen[row.TechID] {
+				projectMap[projectID].Technologies = append(projectMap[projectID].Technologies, ProjectTechnologyPublicResponse{
+					TechID:      row.TechID,
+					TechName:    row.TechName,
+					TechLogoURL: row.TechLogoURL,
+					TechLink:    row.TechLink,
+				})
+			}
+		}
+
+		if row.ContentImageID != 0 {
+			seen := make(map[int]bool)
+			for _, img := range projectMap[projectID].ContentImages {
+				seen[img.ContentImageID] = true
+			}
+
+			if !seen[row.ContentImageID] {
+				projectMap[projectID].ContentImages = append(projectMap[projectID].ContentImages, ProjectPublicContentImageResponse{
+					ContentImageID:       row.ContentImageID,
+					ContentImageUrl:      row.ContentImageUrl,
+					ContentImageFileName: row.ContentImageFileName,
+				})
+			}
+		}
+	}
+
+	// Convert Map to Struct
+	var result SingleProjectPublicResponse
+	for _, v := range projectMap {
+		result = *v
+		break
+	}
+
+	return result
 }

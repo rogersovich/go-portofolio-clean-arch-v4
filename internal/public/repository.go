@@ -21,6 +21,7 @@ type Repository interface {
 	GetPublicTopics() ([]TopicPublicResponse, error)
 	GetRawPublicPaginateProjects(params ProjectPublicParams) ([]ProjectPaginatePublicRaw, error)
 	GetRawPublicProjectTechnologies(params ProjectPublicParams, uniqueProjectIDs []int) ([]ProjectTechnologyPublicRaw, error)
+	GetPublicProjectBySlug(slug string) ([]SingleProjectPublicRaw, error)
 }
 
 type repository struct {
@@ -316,7 +317,7 @@ func (r *repository) GetPublicBlogBySlug(slug string) ([]SingleBlogPublicRaw, er
 	}
 
 	if len(datas) == 0 {
-		return []SingleBlogPublicRaw{}, errors.New("blog not found")
+		return []SingleBlogPublicRaw{}, errors.New("data not found")
 	}
 
 	return datas, nil
@@ -435,6 +436,58 @@ func (r *repository) GetRawPublicProjectTechnologies(params ProjectPublicParams,
 	err := r.db.Raw(finalSQL, queryArgs...).Scan(&datas).Error
 	if err != nil {
 		return []ProjectTechnologyPublicRaw{}, err
+	}
+
+	return datas, nil
+}
+
+func (r *repository) GetPublicProjectBySlug(slug string) ([]SingleProjectPublicRaw, error) {
+	var datas []SingleProjectPublicRaw
+
+	// Build the raw SQL query
+	rawSQL := `
+		SELECT 
+			p.id, 
+			p.title,
+			p.description,
+			p.image_url,
+			p.image_file_name,
+			p.repository_url,
+			p.summary,
+			p.status,
+			p.slug,
+			p.published_at,
+			s.id as statistic_id,
+			s.likes as statistic_likes,
+			s.views as statistic_views,
+			s.type as statistic_type,
+			pci.id as content_image_id,
+      pci.image_url as content_image_url,
+      pci.image_file_name as content_image_file_name,
+      t.id as tech_id,
+      t.name as tech_name,
+			t.logo_url as tech_logo_url,
+			t.link as tech_link
+		FROM projects p
+		LEFT JOIN statistics s ON s.id = p.statistic_id
+		LEFT JOIN project_content_images pci ON pci.project_id = p.id
+    LEFT JOIN project_technologies pt ON pt.project_id = p.id
+    LEFT JOIN technologies t ON t.id = pt.technology_id
+		WHERE 
+			p.deleted_at IS NULL AND 
+			p.slug = ? AND
+			p.status = ?
+	`
+
+	// Execute the raw SQL query
+	err := r.db.Raw(rawSQL, slug, "Published").Scan(&datas).Error
+
+	if err != nil {
+		return []SingleProjectPublicRaw{}, err
+	}
+
+	if len(datas) == 0 {
+		return []SingleProjectPublicRaw{}, errors.New("data not found")
 	}
 
 	return datas, nil

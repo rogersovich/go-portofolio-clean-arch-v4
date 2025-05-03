@@ -125,3 +125,13 @@ func (h *handler) GetPublicProjects(c *gin.Context) {
 	}
 	utils.Success(c, "success get all data", data)
 }
+
+func (h *handler) GetPublicProjectBySlug(c *gin.Context) {
+	slug := c.Param("slug")
+	data, err := h.service.GetPublicProjectBySlug(slug)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.Success(c, "success get data", data)
+}
