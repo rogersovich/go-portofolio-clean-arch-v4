@@ -139,14 +139,38 @@ func (s *service) GetProfile() (ProfilePublicResponse, error) {
 }
 
 func (s *service) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicResponse, error) {
-	//todo: Get Blogs
-	rawBlogs, err := s.repo.GetPublicBlogs(params)
+	//todo: Get Raw Paginate Blogs
+	rawPaginateBlogs, err := s.repo.GetRawPublicPaginateBlogs(params)
 
 	if err != nil {
 		return []BlogPublicResponse{}, err
 	}
 
-	//todo: Slice unique blog ids
+	if len(rawPaginateBlogs) == 0 {
+		return []BlogPublicResponse{}, nil
+	}
+
+	//?: Slice unique paginate blog ids
+	var uniquePaginateBlogIDs []int
+
+	for _, data := range rawPaginateBlogs {
+		if !slices.Contains(uniquePaginateBlogIDs, data.ID) {
+			uniquePaginateBlogIDs = append(uniquePaginateBlogIDs, data.ID)
+		}
+	}
+
+	//todo: Get Raw Blogs
+	rawBlogs, err := s.repo.GetRawPublicBlogs(params, uniquePaginateBlogIDs)
+
+	if err != nil {
+		return []BlogPublicResponse{}, err
+	}
+
+	if len(rawBlogs) == 0 {
+		return []BlogPublicResponse{}, nil
+	}
+
+	//?: Slice unique blog ids
 	var uniqueBlogIDs []int
 
 	for _, data := range rawBlogs {
@@ -155,16 +179,16 @@ func (s *service) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicResponse,
 		}
 	}
 
-	//todo: Get Blog Topics
-	blogTopics, err := s.repo.GetPublicBlogTopics(params, uniqueBlogIDs)
+	//todo: Get Raw Blog Topics
+	rawBlogTopics, err := s.repo.GetRawPublicBlogTopics(params, uniqueBlogIDs)
 
 	if err != nil {
 		return []BlogPublicResponse{}, err
 	}
 
-	//todo: Map Blog Topics
+	//?: Map Blog Topics
 	mappedBlogTopics := make(map[int][]BlogTopicPublicRaw)
-	for _, topic := range blogTopics {
+	for _, topic := range rawBlogTopics {
 		mappedBlogTopics[topic.BlogID] = append(mappedBlogTopics[topic.BlogID], topic)
 	}
 
@@ -182,10 +206,6 @@ func (s *service) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicResponse,
 	}
 
 	return blogResponses, nil
-}
-
-func (s *service) GetPublicBlogTopics(params BlogPublicParams, uniqueBlogIDs []int) ([]BlogTopicPublicRaw, error) {
-	return s.repo.GetPublicBlogTopics(params, uniqueBlogIDs)
 }
 
 func (s *service) MapBlogRawToResponse(raw BlogPublicRaw, blogTopics []BlogTopicPublicRaw) BlogPublicResponse {

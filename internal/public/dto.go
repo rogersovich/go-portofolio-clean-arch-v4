@@ -70,6 +70,16 @@ type BlogPublicParams struct {
 	Sort   string `binding:"required,oneof=published_at id views"`
 	Order  string `binding:"required"`
 	Search string
+	Topics []int
+}
+
+type BlogPaginatePublicRaw struct {
+	ID             int    `json:"id"`
+	Title          string `json:"title"`
+	StatisticID    int    `json:"statistic_id"`
+	StatisticLikes int    `json:"statistic_likes"`
+	StatisticViews int    `json:"statistic_views"`
+	StatisticType  string `json:"statistic_type"`
 }
 
 type BlogPublicRaw struct {
@@ -93,6 +103,8 @@ type BlogPublicRaw struct {
 	StatisticLikes              int        `json:"statistic_likes"`
 	StatisticViews              int        `json:"statistic_views"`
 	StatisticType               string     `json:"statistic_type"`
+	TopicID                     int        `json:"topic_id"`
+	TopicName                   string     `json:"topic_name"`
 }
 
 type BlogTopicPublicRaw struct {

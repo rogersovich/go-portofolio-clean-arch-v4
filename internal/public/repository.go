@@ -3,8 +3,8 @@ package public
 import (
 	"errors"
 	"fmt"
+	"strings"
 
-	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -14,9 +14,10 @@ type Repository interface {
 	GetAboutPublic() (AboutPublicResponse, error)
 	GetCurrentWork() (CurrentWorkPublicResponse, error)
 	GetExperiencesPublic() ([]ExperiencesPublicResponse, error)
-	GetPublicBlogs(params BlogPublicParams) ([]BlogPublicRaw, error)
-	GetPublicBlogTopics(params BlogPublicParams, uniqueBlogIDs []int) ([]BlogTopicPublicRaw, error)
+	GetRawPublicPaginateBlogs(params BlogPublicParams) ([]BlogPaginatePublicRaw, error)
+	GetRawPublicBlogs(params BlogPublicParams, uniquePaginateBlogIDs []int) ([]BlogPublicRaw, error)
 	GetPublicBlogBySlug(slug string) ([]SingleBlogPublicRaw, error)
+	GetRawPublicBlogTopics(params BlogPublicParams, uniqueBlogIDs []int) ([]BlogTopicPublicRaw, error)
 }
 
 type repository struct {
@@ -109,11 +110,67 @@ func (r *repository) GetExperiencesPublic() ([]ExperiencesPublicResponse, error)
 	return data, nil
 }
 
-func (r *repository) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicRaw, error) {
-	var datas []BlogPublicRaw
+func (r *repository) GetRawPublicPaginateBlogs(params BlogPublicParams) ([]BlogPaginatePublicRaw, error) {
+	var datas []BlogPaginatePublicRaw
 
 	// Build the raw SQL query
 	rawSQL := `
+		SELECT 
+			b.id, 
+			b.title,
+			s.id as statistic_id,
+			s.likes as statistic_likes,
+			s.views as statistic_views,
+			s.type as statistic_type
+		FROM blogs b
+		LEFT JOIN statistics s ON s.id = b.statistic_id
+	`
+
+	// Initialize the WHERE clause and arguments
+	whereClauses := []string{"b.deleted_at IS NULL"}
+	queryArgs := []interface{}{}
+
+	//? field "status"
+	whereClauses = append(whereClauses, "b.status = ?")
+	queryArgs = append(queryArgs, "Published")
+
+	//? field "search"
+	if params.Search != "" {
+		whereClauses = append(whereClauses, "(b.title LIKE ? OR b.summary LIKE ?)")
+		queryArgs = append(queryArgs, "%"+params.Search+"%", "%"+params.Search+"%")
+	}
+
+	//? Construct the WHERE clause
+	whereSQL := "WHERE " + strings.Join(whereClauses, " AND ")
+
+	//? Construct the ORDER BY clause
+	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Sort, params.Order)
+
+	// Construct the final SQL query with LIMIT and OFFSET
+	finalSQL := fmt.Sprintf(`
+		%s
+		%s
+		%s
+		LIMIT ? OFFSET ?`, rawSQL, whereSQL, orderBySQL)
+
+	// Add LIMIT and OFFSET arguments
+	offset := (params.Page - 1) * params.Limit
+	queryArgs = append(queryArgs, params.Limit, offset)
+
+	// Execute the raw SQL query
+	err := r.db.Raw(finalSQL, queryArgs...).Scan(&datas).Error
+
+	if err != nil {
+		return []BlogPaginatePublicRaw{}, err
+	}
+
+	return datas, nil
+}
+
+func (r *repository) GetRawPublicBlogs(params BlogPublicParams, uniquePaginateBlogIDs []int) ([]BlogPublicRaw, error) {
+	var datas []BlogPublicRaw
+
+	rawTopicSQL := `
 		SELECT 
 			b.id, 
 			b.title,
@@ -134,38 +191,43 @@ func (r *repository) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicRaw, e
 			s.id as statistic_id,
 			s.likes as statistic_likes,
 			s.views as statistic_views,
-			s.type as statistic_type
+			s.type as statistic_type,
+			t.id as topic_id,
+			t.name as topic_name
 		FROM blogs b
 		LEFT JOIN authors a ON a.id = b.author_id
 		LEFT JOIN reading_times rt ON rt.id = b.reading_time_id
 		LEFT JOIN statistics s ON s.id = b.statistic_id
-		WHERE 
-			b.deleted_at IS NULL AND 
-			b.status = ?
+		LEFT JOIN blog_topics bt on bt.blog_id = b.id
+		LEFT JOIN topics t on t.id = bt.topic_id
 	`
 
-	blogArgs := []interface{}{"Published"}
+	whereClauses := []string{}
+	queryArgs := []interface{}{}
 
-	if params.Search != "" {
-		rawSQL += " AND (b.title LIKE ? OR b.summary LIKE ?)"
-		blogArgs = append(blogArgs, "%"+params.Search+"%", "%"+params.Search+"%")
+	if len(uniquePaginateBlogIDs) > 0 {
+		whereClauses = append(whereClauses, "b.id IN (?)")
+		queryArgs = append(queryArgs, uniquePaginateBlogIDs)
 	}
 
-	// Apply sorting if provided
-	if params.Sort != "" && params.Order != "" {
-		rawSQL += " ORDER BY " + params.Sort + " " + params.Order
+	if len(params.Topics) > 0 {
+		whereClauses = append(whereClauses, "t.id IN (?)")
+		queryArgs = append(queryArgs, params.Topics)
 	}
 
-	// Apply pagination (LIMIT and OFFSET)
-	if params.Limit > 0 {
-		rawSQL += " LIMIT ? OFFSET ?"
-		offset := (params.Page - 1) * params.Limit
-		blogArgs = append(blogArgs, params.Limit, offset)
-	}
+	//? Construct the WHERE clause
+	whereSQL := "WHERE " + strings.Join(whereClauses, " AND ")
 
-	// Execute the raw SQL query
-	err := r.db.Raw(rawSQL, blogArgs...).Scan(&datas).Error
+	//? Construct the ORDER BY clause
+	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Sort, params.Order)
 
+	// Construct the final SQL query with LIMIT and OFFSET
+	finalSQL := fmt.Sprintf(`
+		%s
+		%s
+		%s`, rawTopicSQL, whereSQL, orderBySQL)
+
+	err := r.db.Raw(finalSQL, queryArgs...).Scan(&datas).Error
 	if err != nil {
 		return []BlogPublicRaw{}, err
 	}
@@ -173,36 +235,41 @@ func (r *repository) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicRaw, e
 	return datas, nil
 }
 
-func (r *repository) GetPublicBlogTopics(params BlogPublicParams, uniqueBlogIDs []int) ([]BlogTopicPublicRaw, error) {
+func (r *repository) GetRawPublicBlogTopics(params BlogPublicParams, uniqueBlogIDs []int) ([]BlogTopicPublicRaw, error) {
 	var datas []BlogTopicPublicRaw
 
-	// Create a slice of "?" placeholders equal to the length of the input slice
-	placeholders := utils.SliceIntToPlaceholder(uniqueBlogIDs)
-
-	rawTopicSQL := fmt.Sprintf(`
+	rawTopicSQL := `
 		SELECT 
-			b.id as blog_id,
+			b.id as blog_id, 
 			t.id as topic_id,
 			t.name as topic_name
 		FROM blogs b
-		JOIN blog_topics bt on bt.blog_id = b.id
-		JOIN topics t on t.id = bt.topic_id
-		JOIN statistics s on s.id = b.statistic_id
-		WHERE b.id IN (%s)
-	`, placeholders)
+		LEFT JOIN statistics s ON s.id = b.statistic_id
+		LEFT JOIN blog_topics bt on bt.blog_id = b.id
+		LEFT JOIN topics t on t.id = bt.topic_id
+	`
 
-	// Convert uniqueBlogIDs into a slice of interfaces for GORM query
-	blogTopicArgs := make([]interface{}, len(uniqueBlogIDs))
-	for i, id := range uniqueBlogIDs {
-		blogTopicArgs[i] = id
+	whereClauses := []string{}
+	queryArgs := []interface{}{}
+
+	if len(uniqueBlogIDs) > 0 {
+		whereClauses = append(whereClauses, "b.id IN (?)")
+		queryArgs = append(queryArgs, uniqueBlogIDs)
 	}
 
-	// Apply sorting if provided
-	if params.Sort != "" && params.Order != "" {
-		rawTopicSQL += " ORDER BY " + params.Sort + " " + params.Order
-	}
+	//? Construct the WHERE clause
+	whereSQL := "WHERE " + strings.Join(whereClauses, " AND ")
 
-	err := r.db.Raw(rawTopicSQL, blogTopicArgs...).Scan(&datas).Error
+	//? Construct the ORDER BY clause
+	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Sort, params.Order)
+
+	// Construct the final SQL query with LIMIT and OFFSET
+	finalSQL := fmt.Sprintf(`
+		%s
+		%s
+		%s`, rawTopicSQL, whereSQL, orderBySQL)
+
+	err := r.db.Raw(finalSQL, queryArgs...).Scan(&datas).Error
 	if err != nil {
 		return []BlogTopicPublicRaw{}, err
 	}
