@@ -215,3 +215,8 @@ type TestimonialPublicResponse struct {
 	IsUsed    string  `json:"is_used"`
 	CreatedAt string  `json:"created_at"`
 }
+
+type TopicPublicResponse struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}

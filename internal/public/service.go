@@ -12,6 +12,7 @@ type Service interface {
 	GetPublicBlogs(params BlogPublicParams) ([]BlogPublicResponse, error)
 	GetPublicBlogBySlug(slug string) (SingleBlogPublicResponse, error)
 	GetPublicTestimonials() ([]TestimonialPublicResponse, error)
+	GetPublicTopics() ([]TopicPublicResponse, error)
 }
 
 type service struct {
@@ -382,6 +383,15 @@ func (s *service) GetPublicTestimonials() ([]TestimonialPublicResponse, error) {
 	datas, err := s.repo.GetPublicTestimonials()
 	if err != nil {
 		return []TestimonialPublicResponse{}, err
+	}
+
+	return datas, nil
+}
+
+func (s *service) GetPublicTopics() ([]TopicPublicResponse, error) {
+	datas, err := s.repo.GetPublicTopics()
+	if err != nil {
+		return []TopicPublicResponse{}, err
 	}
 
 	return datas, nil

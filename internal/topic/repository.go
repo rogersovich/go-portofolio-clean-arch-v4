@@ -57,7 +57,7 @@ func (r *repository) DeleteTopic(id int) (Topic, error) {
 	}
 
 	// Step 2: Delete
-	if err := r.db.Delete(&data).Error; err != nil {
+	if err := r.db.Unscoped().Delete(&data).Error; err != nil {
 		return Topic{}, err
 	}
 

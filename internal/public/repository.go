@@ -18,6 +18,7 @@ type Repository interface {
 	GetPublicBlogBySlug(slug string) ([]SingleBlogPublicRaw, error)
 	GetRawPublicBlogTopics(params BlogPublicParams, uniqueBlogIDs []int) ([]BlogTopicPublicRaw, error)
 	GetPublicTestimonials() ([]TestimonialPublicResponse, error)
+	GetPublicTopics() ([]TopicPublicResponse, error)
 }
 
 type repository struct {
@@ -322,5 +323,11 @@ func (r *repository) GetPublicBlogBySlug(slug string) ([]SingleBlogPublicRaw, er
 func (r *repository) GetPublicTestimonials() ([]TestimonialPublicResponse, error) {
 	var datas []TestimonialPublicResponse
 	err := r.db.Table("testimonials").Where("deleted_at IS NULL AND is_used = ?", 1).Order("created_at DESC").Scan(&datas).Error
+	return datas, err
+}
+
+func (r *repository) GetPublicTopics() ([]TopicPublicResponse, error) {
+	var datas []TopicPublicResponse
+	err := r.db.Table("topics").Where("deleted_at IS NULL").Order("created_at DESC").Scan(&datas).Error
 	return datas, err
 }
