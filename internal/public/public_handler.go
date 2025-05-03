@@ -77,3 +77,12 @@ func (h *handler) GetPublicBlogBySlug(c *gin.Context) {
 	}
 	utils.Success(c, "success get data", data)
 }
+
+func (h *handler) GetPublicTestimonials(c *gin.Context) {
+	data, err := h.service.GetPublicTestimonials()
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.Success(c, "success get all data", data)
+}

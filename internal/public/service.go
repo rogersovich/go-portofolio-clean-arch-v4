@@ -4,36 +4,24 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/author"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
 )
 
 type Service interface {
-	GetAllPublicAuthors(params AuthorPublicParams) ([]AuthorPublicResponse, error)
 	GetProfile() (ProfilePublicResponse, error)
 	GetPublicBlogs(params BlogPublicParams) ([]BlogPublicResponse, error)
 	GetPublicBlogBySlug(slug string) (SingleBlogPublicResponse, error)
+	GetPublicTestimonials() ([]TestimonialPublicResponse, error)
 }
 
 type service struct {
-	authorService author.Service
-	repo          Repository
+	repo Repository
 }
 
-func NewService(authorSvc author.Service, r Repository) Service {
+func NewService(r Repository) Service {
 	return &service{
-		authorService: authorSvc,
-		repo:          r,
+		repo: r,
 	}
-}
-
-func (s *service) GetAllPublicAuthors(params AuthorPublicParams) ([]AuthorPublicResponse, error) {
-	data, err := s.repo.FindAllAuthors(params)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
 }
 
 func (s *service) GetProfile() (ProfilePublicResponse, error) {
@@ -164,10 +152,6 @@ func (s *service) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicResponse,
 
 	if err != nil {
 		return []BlogPublicResponse{}, err
-	}
-
-	if len(rawBlogs) == 0 {
-		return []BlogPublicResponse{}, nil
 	}
 
 	//?: Slice unique blog ids
@@ -392,4 +376,13 @@ func (s *service) MapSingleBlogRawToResponse(rawData []SingleBlogPublicRaw) Sing
 	}
 
 	return result
+}
+
+func (s *service) GetPublicTestimonials() ([]TestimonialPublicResponse, error) {
+	datas, err := s.repo.GetPublicTestimonials()
+	if err != nil {
+		return []TestimonialPublicResponse{}, err
+	}
+
+	return datas, nil
 }

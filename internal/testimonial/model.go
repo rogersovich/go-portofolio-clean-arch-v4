@@ -12,6 +12,7 @@ type Testimonial struct {
 	Via       *string `json:"via"`
 	Role      *string `json:"role"`
 	WorkingAt *string `json:"working_at"`
+	IsUsed    bool    `json:"is_used"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`

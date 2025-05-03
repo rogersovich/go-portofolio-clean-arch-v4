@@ -205,3 +205,13 @@ type SingleBlogPublicResponse struct {
 	Topics          []BlogPublicTopicResponse        `json:"topics"`
 	ContentImages   []BlogPublicContentImageResponse `json:"content_image"`
 }
+
+type TestimonialPublicResponse struct {
+	ID        int     `json:"id"`
+	Name      string  `json:"name"`
+	Via       *string `json:"via"`
+	Role      *string `json:"role"`
+	WorkingAt *string `json:"working_at"`
+	IsUsed    string  `json:"is_used"`
+	CreatedAt string  `json:"created_at"`
+}

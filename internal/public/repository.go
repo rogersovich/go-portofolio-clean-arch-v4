@@ -9,7 +9,6 @@ import (
 )
 
 type Repository interface {
-	FindAllAuthors(params AuthorPublicParams) ([]AuthorPublicResponse, error)
 	GetTechnologiesPublic() ([]TechnologyProfilePublicResponse, error)
 	GetAboutPublic() (AboutPublicResponse, error)
 	GetCurrentWork() (CurrentWorkPublicResponse, error)
@@ -18,6 +17,7 @@ type Repository interface {
 	GetRawPublicBlogs(params BlogPublicParams, uniquePaginateBlogIDs []int) ([]BlogPublicRaw, error)
 	GetPublicBlogBySlug(slug string) ([]SingleBlogPublicRaw, error)
 	GetRawPublicBlogTopics(params BlogPublicParams, uniqueBlogIDs []int) ([]BlogTopicPublicRaw, error)
+	GetPublicTestimonials() ([]TestimonialPublicResponse, error)
 }
 
 type repository struct {
@@ -26,32 +26,6 @@ type repository struct {
 
 func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
-}
-
-func (r *repository) FindAllAuthors(params AuthorPublicParams) ([]AuthorPublicResponse, error) {
-	var datas []AuthorPublicResponse
-
-	// Build the query
-	query := r.db.Table("authors").Where("deleted_at IS NULL")
-
-	// Filter by 'name' if provided
-	if params.Name != "" {
-		query = query.Where("name LIKE ?", "%"+params.Name+"%")
-	}
-
-	// Apply sorting if provided
-	if params.Sort != "" && params.Order != "" {
-		query = query.Order(params.Order + " " + params.Sort) // Dynamically apply sorting (e.g., id ASC)
-	}
-
-	// Apply pagination (LIMIT and OFFSET)
-	if params.Limit > 0 {
-		query = query.Offset((params.Page - 1) * params.Limit).Limit(params.Limit)
-	}
-
-	// Execute the query
-	err := query.Find(&datas).Error
-	return datas, err
 }
 
 func (r *repository) GetTechnologiesPublic() ([]TechnologyProfilePublicResponse, error) {
@@ -141,7 +115,10 @@ func (r *repository) GetRawPublicPaginateBlogs(params BlogPublicParams) ([]BlogP
 	}
 
 	//? Construct the WHERE clause
-	whereSQL := "WHERE " + strings.Join(whereClauses, " AND ")
+	whereSQL := ""
+	if len(whereClauses) != 0 {
+		whereSQL = "WHERE " + strings.Join(whereClauses, " AND ")
+	}
 
 	//? Construct the ORDER BY clause
 	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Sort, params.Order)
@@ -216,7 +193,10 @@ func (r *repository) GetRawPublicBlogs(params BlogPublicParams, uniquePaginateBl
 	}
 
 	//? Construct the WHERE clause
-	whereSQL := "WHERE " + strings.Join(whereClauses, " AND ")
+	whereSQL := ""
+	if len(whereClauses) != 0 {
+		whereSQL = "WHERE " + strings.Join(whereClauses, " AND ")
+	}
 
 	//? Construct the ORDER BY clause
 	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Sort, params.Order)
@@ -258,7 +238,10 @@ func (r *repository) GetRawPublicBlogTopics(params BlogPublicParams, uniqueBlogI
 	}
 
 	//? Construct the WHERE clause
-	whereSQL := "WHERE " + strings.Join(whereClauses, " AND ")
+	whereSQL := ""
+	if len(whereClauses) != 0 {
+		whereSQL = "WHERE " + strings.Join(whereClauses, " AND ")
+	}
 
 	//? Construct the ORDER BY clause
 	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Sort, params.Order)
@@ -334,4 +317,10 @@ func (r *repository) GetPublicBlogBySlug(slug string) ([]SingleBlogPublicRaw, er
 	}
 
 	return datas, nil
+}
+
+func (r *repository) GetPublicTestimonials() ([]TestimonialPublicResponse, error) {
+	var datas []TestimonialPublicResponse
+	err := r.db.Table("testimonials").Where("deleted_at IS NULL AND is_used = ?", 1).Order("created_at DESC").Scan(&datas).Error
+	return datas, err
 }

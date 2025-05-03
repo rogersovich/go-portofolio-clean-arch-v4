@@ -80,3 +80,34 @@ func (h *handler) DeleteTestimonial(c *gin.Context) {
 	}
 	utils.Success(c, "success deleted data", data)
 }
+
+func (h *handler) ChangeStatusTestimonial(c *gin.Context) {
+	var req TestimonialChangeStatusRequest
+
+	if !utils.ValidateStruct(c, &req, c.ShouldBindJSON(&req)) {
+		return
+	}
+
+	err := h.service.ChangeStatusTestimonial(req.ID, req.IsUsed)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.Success(c, "success change status", nil)
+
+}
+func (h *handler) ChangeMultiStatusTestimonial(c *gin.Context) {
+	var req TestimonialChangeMultiStatusRequest
+
+	if !utils.ValidateStruct(c, &req, c.ShouldBindJSON(&req)) {
+		return
+	}
+
+	err := h.service.ChangeMultiStatusTestimonial(req.IDs, req.IsUsed)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.Success(c, "success change status", nil)
+
+}

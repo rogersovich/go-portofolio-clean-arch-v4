@@ -21,5 +21,7 @@ func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
 		testimonial.POST("/store", h.CreateTestimonial)
 		testimonial.POST("/update", h.UpdateTestimonial)
 		testimonial.POST("/delete", h.DeleteTestimonial)
+		testimonial.POST("/change-status", h.ChangeStatusTestimonial)
+		testimonial.POST("/bulk-change-status", h.ChangeMultiStatusTestimonial)
 	}
 }

@@ -1,11 +1,15 @@
 package testimonial
 
+import "fmt"
+
 type Service interface {
 	GetAllTestimonials() ([]TestimonialResponse, error)
 	GetTestimonialById(id int) (TestimonialResponse, error)
 	CreateTestimonial(p CreateTestimonialRequest) (TestimonialResponse, error)
 	UpdateTestimonial(p UpdateTestimonialRequest) error
 	DeleteTestimonial(id int) (Testimonial, error)
+	ChangeStatusTestimonial(id int, isUsed string) error
+	ChangeMultiStatusTestimonial(ids []int, isUsed string) error
 }
 
 type service struct {
@@ -38,7 +42,15 @@ func (s *service) GetTestimonialById(id int) (TestimonialResponse, error) {
 }
 
 func (s *service) CreateTestimonial(p CreateTestimonialRequest) (TestimonialResponse, error) {
-	data, err := s.repo.CreateTestimonial(p)
+	payload := CreateTestimonialDTO{
+		Name:      p.Name,
+		Via:       p.Via,
+		Role:      p.Role,
+		WorkingAt: p.WorkingAt,
+		IsUsed:    false,
+	}
+
+	data, err := s.repo.CreateTestimonial(payload)
 	if err != nil {
 		return TestimonialResponse{}, err
 	}
@@ -51,7 +63,16 @@ func (s *service) UpdateTestimonial(p UpdateTestimonialRequest) error {
 		return err
 	}
 
-	err = s.repo.UpdateTestimonial(p)
+	payload := UpdateTestimonialDTO{
+		ID:        p.ID,
+		Name:      p.Name,
+		Via:       p.Via,
+		Role:      p.Role,
+		WorkingAt: p.WorkingAt,
+		IsUsed:    p.IsUsed == "Y",
+	}
+
+	err = s.repo.UpdateTestimonial(payload)
 	if err != nil {
 		return err
 	}
@@ -65,4 +86,39 @@ func (s *service) DeleteTestimonial(id int) (Testimonial, error) {
 		return Testimonial{}, err
 	}
 	return data, nil
+}
+
+func (s *service) ChangeStatusTestimonial(id int, isUsed string) error {
+	_, err := s.repo.FindById(id)
+	if err != nil {
+		return err
+	}
+
+	isUsedBool := isUsed == "Y"
+
+	err = s.repo.ChangeStatusTestimonial(id, isUsedBool)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) ChangeMultiStatusTestimonial(ids []int, isUsed string) error {
+	countData, err := s.repo.FindByMultiId(ids)
+	if err != nil {
+		return err
+	}
+
+	if len(countData) != len(ids) {
+		err := fmt.Errorf("some testimonial_ids not found in database")
+		return err
+	}
+
+	isUsedBool := isUsed == "Y"
+
+	err = s.repo.ChangeMultiStatusTestimonial(ids, isUsedBool)
+	if err != nil {
+		return err
+	}
+	return nil
 }
