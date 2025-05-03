@@ -95,3 +95,33 @@ func (h *handler) GetPublicTopics(c *gin.Context) {
 	}
 	utils.Success(c, "success get all data", data)
 }
+
+func (h *handler) GetPublicProjects(c *gin.Context) {
+	// Retrieve query parameters from the request
+	page := utils.GetQueryParamInt(c, "page", 1)    // Default to page 1
+	limit := utils.GetQueryParamInt(c, "limit", 10) // Default to 10 items per page
+	sort := c.DefaultQuery("sort", "id")
+	order := c.DefaultQuery("order", "ASC")
+	search := c.DefaultQuery("search", "")
+
+	params := ProjectPublicParams{
+		Page:   page,
+		Limit:  limit,
+		Sort:   sort,
+		Order:  order,
+		Search: search,
+	}
+
+	// Validate the params using the binding tags
+	if err := c.ShouldBindQuery(&params); err != nil {
+		utils.Error(c, http.StatusBadRequest, "Invalid query parameters")
+		return
+	}
+
+	data, err := h.service.GetPublicProjects(params)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.Success(c, "success get all data", data)
+}

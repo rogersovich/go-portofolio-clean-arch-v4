@@ -19,6 +19,8 @@ type Repository interface {
 	GetRawPublicBlogTopics(params BlogPublicParams, uniqueBlogIDs []int) ([]BlogTopicPublicRaw, error)
 	GetPublicTestimonials() ([]TestimonialPublicResponse, error)
 	GetPublicTopics() ([]TopicPublicResponse, error)
+	GetRawPublicPaginateProjects(params ProjectPublicParams) ([]ProjectPaginatePublicRaw, error)
+	GetRawPublicProjectTechnologies(params ProjectPublicParams, uniqueProjectIDs []int) ([]ProjectTechnologyPublicRaw, error)
 }
 
 type repository struct {
@@ -330,4 +332,109 @@ func (r *repository) GetPublicTopics() ([]TopicPublicResponse, error) {
 	var datas []TopicPublicResponse
 	err := r.db.Table("topics").Where("deleted_at IS NULL").Order("created_at DESC").Scan(&datas).Error
 	return datas, err
+}
+
+func (r *repository) GetRawPublicPaginateProjects(params ProjectPublicParams) ([]ProjectPaginatePublicRaw, error) {
+	var datas []ProjectPaginatePublicRaw
+
+	// Build the raw SQL query
+	rawSQL := `
+		SELECT 
+			p.id,
+			p.title,
+			p.summary,
+			p.image_url,
+			p.repository_url,
+			p.published_at
+		FROM projects p
+	`
+
+	// Initialize the WHERE clause and arguments
+	whereClauses := []string{"p.deleted_at IS NULL"}
+	queryArgs := []interface{}{}
+
+	//? field "status"
+	whereClauses = append(whereClauses, "p.status = ?")
+	queryArgs = append(queryArgs, "Published")
+
+	//? field "search"
+	if params.Search != "" {
+		whereClauses = append(whereClauses, "(b.title LIKE ? OR b.summary LIKE ?)")
+		queryArgs = append(queryArgs, "%"+params.Search+"%", "%"+params.Search+"%")
+	}
+
+	//? Construct the WHERE clause
+	whereSQL := ""
+	if len(whereClauses) != 0 {
+		whereSQL = "WHERE " + strings.Join(whereClauses, " AND ")
+	}
+
+	//? Construct the ORDER BY clause
+	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Sort, params.Order)
+
+	// Construct the final SQL query with LIMIT and OFFSET
+	finalSQL := fmt.Sprintf(`
+		%s
+		%s
+		%s
+		LIMIT ? OFFSET ?`, rawSQL, whereSQL, orderBySQL)
+
+	// Add LIMIT and OFFSET arguments
+	offset := (params.Page - 1) * params.Limit
+	queryArgs = append(queryArgs, params.Limit, offset)
+
+	// Execute the raw SQL query
+	err := r.db.Raw(finalSQL, queryArgs...).Scan(&datas).Error
+
+	if err != nil {
+		return []ProjectPaginatePublicRaw{}, err
+	}
+
+	return datas, nil
+}
+
+func (r *repository) GetRawPublicProjectTechnologies(params ProjectPublicParams, uniqueProjectIDs []int) ([]ProjectTechnologyPublicRaw, error) {
+	var datas []ProjectTechnologyPublicRaw
+
+	rawSQL := `
+		SELECT 
+			p.id AS project_id,
+			t.id AS tech_id,
+			t.name AS tech_name,
+			t.logo_url AS tech_logo_url,
+			t.link AS tech_link
+		FROM projects p
+		LEFT JOIN project_technologies pt ON pt.project_id = p.id
+		LEFT JOIN technologies t ON t.id = pt.technology_id
+	`
+
+	whereClauses := []string{}
+	queryArgs := []interface{}{}
+
+	if len(uniqueProjectIDs) > 0 {
+		whereClauses = append(whereClauses, "p.id IN (?)")
+		queryArgs = append(queryArgs, uniqueProjectIDs)
+	}
+
+	//? Construct the WHERE clause
+	whereSQL := ""
+	if len(whereClauses) != 0 {
+		whereSQL = "WHERE " + strings.Join(whereClauses, " AND ")
+	}
+
+	//? Construct the ORDER BY clause
+	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Sort, params.Order)
+
+	//? Construct the final SQL query with LIMIT and OFFSET
+	finalSQL := fmt.Sprintf(`
+		%s
+		%s
+		%s`, rawSQL, whereSQL, orderBySQL)
+
+	err := r.db.Raw(finalSQL, queryArgs...).Scan(&datas).Error
+	if err != nil {
+		return []ProjectTechnologyPublicRaw{}, err
+	}
+
+	return datas, nil
 }

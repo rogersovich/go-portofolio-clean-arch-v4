@@ -23,4 +23,5 @@ func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	r.GET("/blogs/:slug", h.GetPublicBlogBySlug)
 	r.GET("/testimonials", h.GetPublicTestimonials)
 	r.GET("/topics", h.GetPublicTopics)
+	r.GET("/projects", h.GetPublicProjects)
 }

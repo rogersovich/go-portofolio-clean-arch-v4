@@ -13,6 +13,7 @@ type Service interface {
 	GetPublicBlogBySlug(slug string) (SingleBlogPublicResponse, error)
 	GetPublicTestimonials() ([]TestimonialPublicResponse, error)
 	GetPublicTopics() ([]TopicPublicResponse, error)
+	GetPublicProjects(params ProjectPublicParams) ([]ProjectPublicResponse, error)
 }
 
 type service struct {
@@ -395,4 +396,80 @@ func (s *service) GetPublicTopics() ([]TopicPublicResponse, error) {
 	}
 
 	return datas, nil
+}
+
+func (s *service) GetPublicProjects(params ProjectPublicParams) ([]ProjectPublicResponse, error) {
+	//todo: Get Raw Paginate Project
+	rawPaginateProjects, err := s.repo.GetRawPublicPaginateProjects(params)
+
+	if err != nil {
+		return []ProjectPublicResponse{}, err
+	}
+
+	if len(rawPaginateProjects) == 0 {
+		return []ProjectPublicResponse{}, nil
+	}
+
+	//?: Slice unique paginate Project ids
+	var uniquePaginateProjectIDs []int
+
+	for _, data := range rawPaginateProjects {
+		if !slices.Contains(uniquePaginateProjectIDs, data.ID) {
+			uniquePaginateProjectIDs = append(uniquePaginateProjectIDs, data.ID)
+		}
+	}
+
+	//todo: Get Raw Project Technlogies
+	rawProjectTechnologies, err := s.repo.GetRawPublicProjectTechnologies(params, uniquePaginateProjectIDs)
+
+	if err != nil {
+		return []ProjectPublicResponse{}, err
+	}
+
+	//?: Map Project Technlogies
+	mappedProjectTechnologies := make(map[int][]ProjectTechnologyPublicRaw)
+	for _, tech := range rawProjectTechnologies {
+		mappedProjectTechnologies[tech.ProjectID] = append(mappedProjectTechnologies[tech.ProjectID], tech)
+	}
+
+	//? Create a slice to hold the formatted ProjectPublicResponse data
+	var projectResponses []ProjectPublicResponse
+
+	for _, raw := range rawPaginateProjects {
+		mapProjectTech := mappedProjectTechnologies[raw.ID]
+		projectResponse := s.MapProjectRawToResponse(raw, mapProjectTech)
+
+		// Append the result to the slice
+		projectResponses = append(projectResponses, projectResponse)
+	}
+
+	return projectResponses, nil
+}
+
+func (s *service) MapProjectRawToResponse(raw ProjectPaginatePublicRaw, projectTechnologies []ProjectTechnologyPublicRaw) ProjectPublicResponse {
+	// Mapping the BlogPublicRaw to ProjectPublicResponse
+	projectResponse := ProjectPublicResponse{
+		ID:            raw.ID,
+		Title:         raw.Title,
+		Summary:       raw.Summary,
+		ImageURL:      raw.ImageURL,
+		RepositoryURL: raw.RepositoryURL,
+		PublishedAt:   raw.PublishedAt,
+	}
+
+	// Mapping the Topics (Assuming topics is an array, you may want to append more topic records here)
+	if len(projectTechnologies) != 0 {
+		for _, tech := range projectTechnologies {
+			projectResponse.Technologies = append(projectResponse.Technologies, ProjectTechnologyPublicResponse{
+				TechID:      tech.TechID,
+				TechName:    tech.TechName,
+				TechLogoURL: tech.TechLogoURL,
+				TechLink:    tech.TechLink,
+			})
+		}
+	} else {
+		projectResponse.Technologies = []ProjectTechnologyPublicResponse{}
+	}
+
+	return projectResponse
 }

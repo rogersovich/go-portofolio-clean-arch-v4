@@ -220,3 +220,46 @@ type TopicPublicResponse struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
+
+type ProjectPublicParams struct {
+	Page   int    `binding:"required"`
+	Limit  int    `binding:"required"`
+	Sort   string `binding:"required,oneof=published_at created_at id"`
+	Order  string `binding:"required"`
+	Search string
+}
+
+type ProjectPaginatePublicRaw struct {
+	ID            int        `json:"id"`
+	Title         string     `json:"title"`
+	Summary       string     `json:"summary"`
+	ImageURL      string     `json:"image_url"`
+	RepositoryURL *string    `json:"repository_url"`
+	PublishedAt   *time.Time `json:"published_at"`
+}
+
+type ProjectTechnologyPublicRaw struct {
+	ProjectID   int    `json:"project_id"`
+	TechID      int    `json:"tech_id"`
+	TechName    string `json:"tech_name"`
+	TechLogoURL string `json:"tech_logo_url"`
+	TechLink    string `json:"tech_link"`
+}
+
+type ProjectTechnologyPublicResponse struct {
+	TechID      int    `json:"tech_id"`
+	TechName    string `json:"tech_name"`
+	TechLogoURL string `json:"tech_logo_url"`
+	TechLink    string `json:"tech_link"`
+}
+
+type ProjectPublicResponse struct {
+	ID            int     `json:"id"`
+	Title         string  `json:"title"`
+	Summary       string  `json:"summary"`
+	ImageURL      string  `json:"image_url"`
+	RepositoryURL *string `json:"repository_url"`
+	// Slug          string                         `json:"slug"`
+	PublishedAt  *time.Time                        `json:"published_at"`
+	Technologies []ProjectTechnologyPublicResponse `json:"technologies"`
+}
