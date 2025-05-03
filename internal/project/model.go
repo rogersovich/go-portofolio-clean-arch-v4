@@ -16,6 +16,7 @@ type Project struct {
 	RepositoryUrl *string `json:"repository_url"`
 	Summary       string  `json:"summary"`
 	Status        string  `json:"status"`
+	Slug          string  `json:"slug"`
 	PublishedAt   *time.Time
 	CreatedAt     time.Time
 	UpdatedAt     time.Time

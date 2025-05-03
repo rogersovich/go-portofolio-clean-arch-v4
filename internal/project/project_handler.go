@@ -76,6 +76,7 @@ func (h *handler) CreateProject(c *gin.Context) {
 	is_published := c.PostForm("is_published") // Y or N
 	repository_url := c.PostForm("repository_url")
 	summary := c.PostForm("summary")
+	slug := c.PostForm("slug")
 
 	var technology_ids []int
 	if err := json.Unmarshal([]byte(c.PostForm("technology_ids")), &technology_ids); err != nil {
@@ -109,6 +110,7 @@ func (h *handler) CreateProject(c *gin.Context) {
 		IsPublished:   is_published,
 		TechnologyIds: technology_ids,
 		ContentImages: project_images,
+		Slug:          slug,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {
@@ -138,6 +140,7 @@ func (h *handler) UpdateProject(c *gin.Context) {
 	is_published := c.PostForm("is_published") // Y or N
 	repository_url := c.PostForm("repository_url")
 	summary := c.PostForm("summary")
+	slug := c.PostForm("slug")
 
 	var technologyIds []ProjectTechUpdatePayload
 	if err := json.Unmarshal([]byte(c.PostForm("technology_ids")), &technologyIds); err != nil {
@@ -169,6 +172,7 @@ func (h *handler) UpdateProject(c *gin.Context) {
 		IsPublished:   is_published,
 		TechnologyIds: technologyIds,
 		ProjectImages: project_images,
+		Slug:          slug,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {

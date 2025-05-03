@@ -158,6 +158,17 @@ func (s *service) GetProjectById(id int) (ProjectResponse, error) {
 }
 
 func (s *service) CreateProject(p CreateProjectRequest) (ProjectResponse, error) {
+	//todo: Check Is Unique Slug
+	slugVal := utils.StringToSlug(p.Slug)
+	is_unique_slug, err := s.projectRepo.CheckUniqueSlug(slugVal)
+	if err != nil {
+		return ProjectResponse{}, err
+	}
+	if !is_unique_slug {
+		err = fmt.Errorf("slug %s already exists", slugVal)
+		return ProjectResponse{}, err
+	}
+
 	//todo: Check Technology Ids
 	if err := s.projectTechService.CountTechnologiesByIDs(p.TechnologyIds); err != nil {
 		return ProjectResponse{}, err
@@ -215,6 +226,7 @@ func (s *service) CreateProject(p CreateProjectRequest) (ProjectResponse, error)
 		RepositoryUrl:        p.RepositoryUrl,
 		Summary:              p.Summary,
 		Status:               status,
+		Slug:                 slugVal,
 		PublishedAt:          publishedAt,
 	}
 
@@ -261,6 +273,17 @@ func (s *service) UpdateProject(p UpdateProjectRequest) (ProjectUpdateResponse, 
 	//todo: Get Project
 	project, err := s.GetProjectById(p.Id)
 	if err != nil {
+		return ProjectUpdateResponse{}, err
+	}
+
+	//todo: Check Is Unique Slug
+	slugVal := utils.StringToSlug(p.Slug)
+	is_unique_slug, err := s.projectRepo.CheckUniqueSlug(slugVal)
+	if err != nil {
+		return ProjectUpdateResponse{}, err
+	}
+	if !is_unique_slug {
+		err = fmt.Errorf("slug %s already exists", slugVal)
 		return ProjectUpdateResponse{}, err
 	}
 
@@ -314,12 +337,23 @@ func (s *service) UpdateProject(p UpdateProjectRequest) (ProjectUpdateResponse, 
 
 	var publishedAt *time.Time
 	var status string
-	if p.IsPublished == "Y" {
-		now := time.Now()
-		publishedAt = &now
-		status = "PUBLISHED"
-	} else if p.IsPublished == "N" {
-		status = "UNPUBLISHED"
+	var oldIsPublished string
+	if project.Status == "Published" {
+		oldIsPublished = "Y"
+	} else {
+		oldIsPublished = "N"
+	}
+
+	if oldIsPublished != p.IsPublished {
+		if p.IsPublished == "Y" {
+			now := time.Now()
+			publishedAt = &now
+			status = "Published"
+		} else if p.IsPublished == "N" {
+			status = "Unpublished"
+		}
+	} else {
+		status = project.Status
 	}
 
 	payload := UpdateProjectDTO{
@@ -331,6 +365,7 @@ func (s *service) UpdateProject(p UpdateProjectRequest) (ProjectUpdateResponse, 
 		RepositoryUrl: p.RepositoryUrl,
 		Summary:       p.Summary,
 		Status:        status,
+		Slug:          slugVal,
 		PublishedAt:   publishedAt,
 	}
 

@@ -236,6 +236,7 @@ type ProjectPaginatePublicRaw struct {
 	ImageURL      string     `json:"image_url"`
 	RepositoryURL *string    `json:"repository_url"`
 	PublishedAt   *time.Time `json:"published_at"`
+	Slug          string     `json:"slug"`
 }
 
 type ProjectTechnologyPublicRaw struct {
@@ -254,12 +255,12 @@ type ProjectTechnologyPublicResponse struct {
 }
 
 type ProjectPublicResponse struct {
-	ID            int     `json:"id"`
-	Title         string  `json:"title"`
-	Summary       string  `json:"summary"`
-	ImageURL      string  `json:"image_url"`
-	RepositoryURL *string `json:"repository_url"`
-	// Slug          string                         `json:"slug"`
-	PublishedAt  *time.Time                        `json:"published_at"`
-	Technologies []ProjectTechnologyPublicResponse `json:"technologies"`
+	ID            int                               `json:"id"`
+	Title         string                            `json:"title"`
+	Summary       string                            `json:"summary"`
+	ImageURL      string                            `json:"image_url"`
+	RepositoryURL *string                           `json:"repository_url"`
+	Slug          string                            `json:"slug"`
+	PublishedAt   *time.Time                        `json:"published_at"`
+	Technologies  []ProjectTechnologyPublicResponse `json:"technologies"`
 }

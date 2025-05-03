@@ -13,6 +13,7 @@ type Repository interface {
 	UpdateProject(p UpdateProjectDTO, tx *gorm.DB) (Project, error)
 	UpdateProjectStatistic(p ProjectStatisticUpdateDTO) (ProjectStatisticUpdateResponse, error)
 	DeleteProject(id int) (Project, error)
+	CheckUniqueSlug(slug string) (bool, error)
 }
 
 type repository struct {
@@ -99,6 +100,7 @@ func (r *repository) CreateProject(p CreateProjectDTO, tx *gorm.DB) (Project, er
 		RepositoryUrl: p.RepositoryUrl,
 		Summary:       p.Summary,
 		Status:        p.Status,
+		Slug:          p.Slug,
 		PublishedAt:   p.PublishedAt}
 
 	err := db.Create(&data).Error
@@ -129,6 +131,7 @@ func (r *repository) UpdateProject(p UpdateProjectDTO, tx *gorm.DB) (Project, er
 		RepositoryUrl: p.RepositoryUrl,
 		Summary:       p.Summary,
 		Status:        p.Status,
+		Slug:          p.Slug,
 		PublishedAt:   p.PublishedAt}
 
 	err := db.Where("ID = ?", p.Id).Updates(&data).Error
@@ -179,4 +182,20 @@ func (r *repository) DeleteProject(id int) (Project, error) {
 
 	// Step 3: Return the data
 	return data, nil
+}
+
+func (r *repository) CheckUniqueSlug(slug string) (bool, error) {
+	var data ProjectResponse
+
+	err := r.db.Table("projects").Where("slug = ?", slug).Scan(&data).Error
+
+	if err != nil {
+		return false, err // handle DB or syntax error
+	}
+
+	if data.ID == 0 {
+		return true, nil
+	}
+
+	return false, nil
 }

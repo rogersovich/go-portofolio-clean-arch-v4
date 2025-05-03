@@ -12,6 +12,7 @@ type CreateProjectRequest struct {
 	RepositoryUrl *string
 	Summary       string `validate:"required"`
 	IsPublished   string `validate:"required,oneof=Y N"`
+	Slug          string `validate:"required"`
 	TechnologyIds []int
 	ContentImages []string
 }
@@ -24,6 +25,7 @@ type UpdateProjectRequest struct {
 	RepositoryUrl *string
 	Summary       string                     `validate:"required"`
 	IsPublished   string                     `validate:"required,oneof=Y N"`
+	Slug          string                     `validate:"required"`
 	TechnologyIds []ProjectTechUpdatePayload `json:"technology_ids" validate:"required,dive"`
 	ProjectImages []string                   `json:"project_images" validate:"required,dive"`
 }
@@ -40,6 +42,7 @@ type CreateProjectDTO struct {
 	ImageFileName        string
 	Summary              string
 	Status               string
+	Slug                 string
 	PublishedAt          *time.Time
 }
 
@@ -52,6 +55,7 @@ type UpdateProjectDTO struct {
 	ImageFileName string
 	Summary       string
 	Status        string
+	Slug          string
 	PublishedAt   *time.Time
 }
 
@@ -64,6 +68,7 @@ type ProjectResponse struct {
 	RepositoryUrl *string `json:"repository_url"`
 	Summary       string  `json:"summary"`
 	Status        string  `json:"status"`
+	Slug          string  `json:"slug"`
 	PublishedAt   *string `json:"published_at"`
 	CreatedAt     string  `json:"created_at"`
 }
@@ -136,6 +141,7 @@ type ProjectUpdateResponse struct {
 	RepositoryUrl *string `json:"repository_url"`
 	Summary       string  `json:"summary"`
 	Status        string  `json:"status"`
+	Slug          string  `json:"slug"`
 	PublishedAt   *string `json:"published_at"`
 }
 
@@ -194,6 +200,7 @@ func ToProjectResponse(p Project) ProjectResponse {
 		RepositoryUrl: p.RepositoryUrl,
 		Summary:       p.Summary,
 		Status:        p.Status,
+		Slug:          p.Slug,
 		PublishedAt:   publishedAtPointer,
 		CreatedAt:     p.CreatedAt.Format("2006-01-02"),
 	}
@@ -214,6 +221,7 @@ func ToProjectUpdateResponse(p Project) ProjectUpdateResponse {
 		RepositoryUrl: p.RepositoryUrl,
 		Summary:       p.Summary,
 		Status:        p.Status,
+		Slug:          p.Slug,
 		PublishedAt:   publishedAtPointer,
 	}
 }

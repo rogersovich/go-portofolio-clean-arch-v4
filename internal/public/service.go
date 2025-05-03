@@ -455,6 +455,7 @@ func (s *service) MapProjectRawToResponse(raw ProjectPaginatePublicRaw, projectT
 		ImageURL:      raw.ImageURL,
 		RepositoryURL: raw.RepositoryURL,
 		PublishedAt:   raw.PublishedAt,
+		Slug:          raw.Slug,
 	}
 
 	// Mapping the Topics (Assuming topics is an array, you may want to append more topic records here)

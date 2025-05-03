@@ -345,7 +345,8 @@ func (r *repository) GetRawPublicPaginateProjects(params ProjectPublicParams) ([
 			p.summary,
 			p.image_url,
 			p.repository_url,
-			p.published_at
+			p.published_at,
+			p.slug
 		FROM projects p
 	`
 
@@ -370,7 +371,7 @@ func (r *repository) GetRawPublicPaginateProjects(params ProjectPublicParams) ([
 	}
 
 	//? Construct the ORDER BY clause
-	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Sort, params.Order)
+	orderBySQL := fmt.Sprintf("ORDER BY p.%s %s", params.Sort, params.Order)
 
 	// Construct the final SQL query with LIMIT and OFFSET
 	finalSQL := fmt.Sprintf(`
@@ -423,7 +424,7 @@ func (r *repository) GetRawPublicProjectTechnologies(params ProjectPublicParams,
 	}
 
 	//? Construct the ORDER BY clause
-	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Sort, params.Order)
+	orderBySQL := fmt.Sprintf("ORDER BY p.%s %s", params.Sort, params.Order)
 
 	//? Construct the final SQL query with LIMIT and OFFSET
 	finalSQL := fmt.Sprintf(`
