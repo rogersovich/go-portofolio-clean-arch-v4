@@ -39,5 +39,6 @@ func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
 		project.POST("/update", h.UpdateProject)
 		project.POST("/update-statistic", h.UpdateProjectStatistic)
 		project.POST("/delete", h.DeleteProject)
+		project.POST("/change-status", h.ChangeStatusProject)
 	}
 }

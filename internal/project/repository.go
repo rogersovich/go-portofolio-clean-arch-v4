@@ -1,6 +1,8 @@
 package project
 
 import (
+	"time"
+
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/statistic"
 	"gorm.io/gorm"
 )
@@ -14,6 +16,7 @@ type Repository interface {
 	UpdateProjectStatistic(p ProjectStatisticUpdateDTO) (ProjectStatisticUpdateResponse, error)
 	DeleteProject(id int) (Project, error)
 	CheckUniqueSlug(slug string) (bool, error)
+	ChangeStatusProject(id int, status string, project ProjectResponse) (ProjectChangeStatusResponse, error)
 }
 
 type repository struct {
@@ -198,4 +201,33 @@ func (r *repository) CheckUniqueSlug(slug string) (bool, error) {
 	}
 
 	return false, nil
+}
+
+func (r *repository) ChangeStatusProject(id int, status string, project ProjectResponse) (ProjectChangeStatusResponse, error) {
+	now := time.Now()
+	var updateMap = make(map[string]interface{})
+	updateMap["status"] = status
+	if status == "Published" {
+		updateMap["published_at"] = now
+	}
+	err := r.db.Model(&Project{}).Where("id = ?", id).Updates(updateMap).Error
+
+	if err != nil {
+		return ProjectChangeStatusResponse{}, err
+	}
+
+	// Return the updated data
+	var publishedAtStringPtr *string
+	if status == "Published" {
+		publishedAtString := now.Format("2006-01-02 15:04:05")
+		publishedAtStringPtr = &publishedAtString
+	}
+	updatedData := ProjectChangeStatusResponse{
+		ID:          id,
+		Title:       project.Title,
+		Status:      status,
+		PublishedAt: publishedAtStringPtr,
+	}
+
+	return updatedData, nil
 }

@@ -118,7 +118,7 @@ func (s *service) BatchUpdateTechnologies(tech_ids []int, project_id int, tx *go
 		existing_tech_ids = append(existing_tech_ids, item.TechnologyID)
 	}
 
-	if !isNewTech {
+	if !isNewTech && len(tech_ids) == len(existing_tech_ids) {
 		return nil
 	}
 

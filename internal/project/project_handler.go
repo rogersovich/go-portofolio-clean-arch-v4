@@ -15,7 +15,7 @@ import (
 func (h *handler) GetAll(c *gin.Context) {
 	data, err := h.service.GetAllProjects()
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data")
+		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	utils.Success(c, "success get all data", data)
@@ -29,7 +29,7 @@ func (h *handler) GetProjectByIdWithRelations(c *gin.Context) {
 	}
 	data, err := h.service.GetProjectByIdWithRelations(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to get data")
+		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	utils.Success(c, "success get data", data)
@@ -182,7 +182,7 @@ func (h *handler) UpdateProject(c *gin.Context) {
 
 	data, err := h.service.UpdateProject(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to updated data")
+		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -198,7 +198,7 @@ func (h *handler) UpdateProjectStatistic(c *gin.Context) {
 
 	data, err := h.service.UpdateProjectStatistic(req)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to updated data")
+		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -216,8 +216,23 @@ func (h *handler) DeleteProject(c *gin.Context) {
 
 	data, err := h.service.DeleteProject(id)
 	if err != nil {
-		utils.Error(c, http.StatusInternalServerError, "failed to deleted data")
+		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	utils.Success(c, "success deleted data", data)
+}
+
+func (h *handler) ChangeStatusProject(c *gin.Context) {
+	var req ProjectChangeStatusRequest
+
+	if !utils.ValidateStruct(c, &req, c.ShouldBindJSON(&req)) {
+		return
+	}
+
+	data, err := h.service.ChangeStatusProject(req)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.Success(c, "success change status", data)
 }

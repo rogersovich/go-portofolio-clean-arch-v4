@@ -97,20 +97,20 @@ func (s *service) BatchUpdateBlogTopic(topic_ids []int, blog_id int, tx *gorm.DB
 		return err
 	}
 
-	var existingtopic_ids []int
+	var existing_topic_ids []int
 	var isNewTopic bool = true
 	for _, item := range existingBlogTopics {
 		if slices.Contains(topic_ids, item.TopicID) {
 			isNewTopic = false
 		}
-		existingtopic_ids = append(existingtopic_ids, item.TopicID)
+		existing_topic_ids = append(existing_topic_ids, item.TopicID)
 	}
 
-	if !isNewTopic {
+	if !isNewTopic && len(topic_ids) == len(existing_topic_ids) {
 		return nil
 	}
 
-	err = s.repo.BulkDeleteHard(existingtopic_ids, tx)
+	err = s.repo.BulkDeleteHard(existing_topic_ids, tx)
 	if err != nil {
 		return err
 	}

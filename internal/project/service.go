@@ -20,6 +20,7 @@ type Service interface {
 	UpdateProject(p UpdateProjectRequest) (ProjectUpdateResponse, error)
 	UpdateProjectStatistic(p ProjectStatisticUpdateRequest) (ProjectStatisticUpdateResponse, error)
 	DeleteProject(id int) (Project, error)
+	ChangeStatusProject(req ProjectChangeStatusRequest) (ProjectChangeStatusResponse, error)
 }
 
 type service struct {
@@ -278,13 +279,16 @@ func (s *service) UpdateProject(p UpdateProjectRequest) (ProjectUpdateResponse, 
 
 	//todo: Check Is Unique Slug
 	slugVal := utils.StringToSlug(p.Slug)
-	is_unique_slug, err := s.projectRepo.CheckUniqueSlug(slugVal)
-	if err != nil {
-		return ProjectUpdateResponse{}, err
-	}
-	if !is_unique_slug {
-		err = fmt.Errorf("slug %s already exists", slugVal)
-		return ProjectUpdateResponse{}, err
+
+	if project.Slug != slugVal {
+		is_unique_slug, err := s.projectRepo.CheckUniqueSlug(slugVal)
+		if err != nil {
+			return ProjectUpdateResponse{}, err
+		}
+		if !is_unique_slug {
+			err = fmt.Errorf("slug %s already exists", slugVal)
+			return ProjectUpdateResponse{}, err
+		}
 	}
 
 	//todo: set oldFileName
@@ -429,6 +433,19 @@ func (s *service) DeleteProject(id int) (Project, error) {
 	data, err := s.projectRepo.DeleteProject(id)
 	if err != nil {
 		return Project{}, err
+	}
+	return data, nil
+}
+
+func (s *service) ChangeStatusProject(req ProjectChangeStatusRequest) (ProjectChangeStatusResponse, error) {
+	project, err := s.GetProjectById(req.ID)
+	if err != nil {
+		return ProjectChangeStatusResponse{}, err
+	}
+
+	data, err := s.projectRepo.ChangeStatusProject(req.ID, req.Status, project)
+	if err != nil {
+		return ProjectChangeStatusResponse{}, err
 	}
 	return data, nil
 }

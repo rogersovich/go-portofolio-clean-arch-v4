@@ -358,13 +358,16 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 
 	//todo: Check Is Unique Slug
 	slugVal := utils.StringToSlug(p.Slug)
-	is_unique_slug, err := s.blogRepo.CheckUniqueSlug(slugVal)
-	if err != nil {
-		return BlogUpdateResponse{}, err
-	}
-	if !is_unique_slug {
-		err = fmt.Errorf("slug %s already exists", slugVal)
-		return BlogUpdateResponse{}, err
+
+	if blog.Slug != slugVal {
+		is_unique_slug, err := s.blogRepo.CheckUniqueSlug(slugVal)
+		if err != nil {
+			return BlogUpdateResponse{}, err
+		}
+		if !is_unique_slug {
+			err = fmt.Errorf("slug %s already exists", slugVal)
+			return BlogUpdateResponse{}, err
+		}
 	}
 
 	//todo: Check Author Id

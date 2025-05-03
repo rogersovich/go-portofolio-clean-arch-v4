@@ -185,6 +185,18 @@ type ProjectDeleteRequest struct {
 	ID int `json:"id" binding:"required"`
 }
 
+type ProjectChangeStatusRequest struct {
+	ID     int    `json:"id" binding:"required"`
+	Status string `json:"status" binding:"required,oneof=Published Unpublished"`
+}
+
+type ProjectChangeStatusResponse struct {
+	ID          int     `json:"id"`
+	Title       string  `json:"title"`
+	Status      string  `json:"status"`
+	PublishedAt *string `json:"published_at"`
+}
+
 func ToProjectResponse(p Project) ProjectResponse {
 	var publishedAtPointer *string
 	if p.PublishedAt != nil {
