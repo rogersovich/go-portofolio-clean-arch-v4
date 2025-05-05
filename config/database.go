@@ -23,6 +23,12 @@ func InitDB() *gorm.DB {
 	password := getEnv("DB_PASSWORD", "")
 	name := getEnv("DB_NAME", "project_db")
 
+	// If running inside Docker, use host.docker.internal (for Docker Desktop on macOS/Windows)
+	if _, err := os.Stat("/.dockerenv"); err == nil {
+		// Running inside Docker
+		host = "host.docker.internal"
+	}
+
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
 		log.Fatalf("❌ Invalid DB_PORT: %v", err)

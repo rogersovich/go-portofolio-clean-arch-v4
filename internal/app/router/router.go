@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/about"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/auth"
@@ -27,6 +28,16 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	r := gin.New()
 	r.Use(utils.RecoveryWithLogger())
 	r.Use(utils.LoggerMiddleware())
+
+	// Configure CORS options
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowOrigins = []string{"http://localhost:3000"}                   // Allow requests from the frontend (e.g., React app)
+	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "DELETE"}            // Allowed methods
+	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"} // Allowed headers
+	corsConfig.AllowCredentials = true                                            // Allow credentials (cookies, authorization headers)
+
+	// Apply CORS middleware
+	r.Use(cors.New(corsConfig))
 
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(404, gin.H{
