@@ -59,7 +59,7 @@ func (r *repository) FindAll(params GetAllTestimonialParams) ([]Testimonial, int
 		queryArgs = append(queryArgs, "%"+params.WorkingAt+"%")
 	}
 
-	//? field "working_at"
+	//? field "is_used"
 	if params.IsUsed != "" {
 		is_used := params.IsUsed == "Y"
 		whereClauses = append(whereClauses, "(is_used = ?)")

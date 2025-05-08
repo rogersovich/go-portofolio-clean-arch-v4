@@ -31,6 +31,18 @@ type ReadingTimeDeleteRequest struct {
 	ID int `json:"id" binding:"required"`
 }
 
+type GetAllReadingTimeParams struct {
+	Limit        int `binding:"required"`
+	Page         int `binding:"required"`
+	Sort         string
+	Order        string
+	MinMinutes   string
+	MaxMinutes   string
+	MinEstimates string
+	MaxEstimates string
+	CreatedAt    []string
+}
+
 func ToReadingTimeResponse(p ReadingTime) ReadingTimeResponse {
 	return ReadingTimeResponse{
 		ID:               p.ID,

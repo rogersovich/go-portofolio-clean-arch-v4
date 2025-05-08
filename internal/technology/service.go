@@ -7,7 +7,7 @@ import (
 )
 
 type Service interface {
-	GetAllTechnologies() ([]TechnologyResponse, error)
+	GetAllTechnologies(params GetAllTechnologyParams) ([]TechnologyResponse, int, error)
 	GetTechnologyById(id int) (TechnologyResponse, error)
 	CreateTechnology(p CreateTechnologyRequest) (TechnologyResponse, error)
 	UpdateTechnology(p UpdateTechnologyRequest) error
@@ -22,17 +22,17 @@ func NewService(r Repository) Service {
 	return &service{repo: r}
 }
 
-func (s *service) GetAllTechnologies() ([]TechnologyResponse, error) {
-	datas, err := s.repo.FindAll()
+func (s *service) GetAllTechnologies(params GetAllTechnologyParams) ([]TechnologyResponse, int, error) {
+	datas, total, err := s.repo.FindAll(params)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var result []TechnologyResponse
 	for _, p := range datas {
 		result = append(result, ToTechnologyResponse(p))
 	}
-	return result, nil
+	return result, total, nil
 }
 
 func (s *service) GetTechnologyById(id int) (TechnologyResponse, error) {

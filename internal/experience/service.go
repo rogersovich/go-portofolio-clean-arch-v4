@@ -8,7 +8,7 @@ import (
 )
 
 type Service interface {
-	GetAllExperiences() ([]ExperienceResponse, error)
+	GetAllExperiences(params GetAllExperienceParams) ([]ExperienceResponse, int, error)
 	GetExperienceById(id int) (ExperienceResponse, error)
 	CreateExperience(p CreateExperienceRequest) (ExperienceResponse, error)
 	UpdateExperience(p UpdateExperienceRequest) error
@@ -23,17 +23,17 @@ func NewService(r Repository) Service {
 	return &service{repo: r}
 }
 
-func (s *service) GetAllExperiences() ([]ExperienceResponse, error) {
-	datas, err := s.repo.FindAll()
+func (s *service) GetAllExperiences(params GetAllExperienceParams) ([]ExperienceResponse, int, error) {
+	datas, total, err := s.repo.FindAll(params)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var result []ExperienceResponse
 	for _, p := range datas {
 		result = append(result, ToExperienceResponse(p))
 	}
-	return result, nil
+	return result, total, nil
 }
 
 func (s *service) GetExperienceById(id int) (ExperienceResponse, error) {

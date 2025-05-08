@@ -1,11 +1,14 @@
 package technology
 
 import (
+	"fmt"
+	"strings"
+
 	"gorm.io/gorm"
 )
 
 type Repository interface {
-	FindAll() ([]Technology, error)
+	FindAll(params GetAllTechnologyParams) ([]Technology, int, error)
 	FindById(id int) (Technology, error)
 	CreateTechnology(p CreateTechnologyDTO) (Technology, error)
 	UpdateTechnology(p UpdateTechnologyDTO) error
@@ -20,10 +23,104 @@ func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) FindAll() ([]Technology, error) {
-	var datas []Technology
-	err := r.db.Find(&datas).Error
-	return datas, err
+func (r *repository) FindAll(params GetAllTechnologyParams) ([]Technology, int, error) {
+	var technology []Technology
+	var totalCount int
+
+	//todo: Build the raw Count SQL query
+	rawCountSQL := `
+		SELECT 
+			count(*)
+		FROM technologies
+	`
+
+	// Initialize the WHERE clause and arguments
+	whereClauses := []string{"deleted_at IS NULL"}
+	queryArgs := []interface{}{}
+
+	//? field "name"
+	if params.Name != "" {
+		whereClauses = append(whereClauses, "(name LIKE ?)")
+		queryArgs = append(queryArgs, "%"+params.Name+"%")
+	}
+
+	//? field "description_html"
+	if params.DescriptionHTML != "" {
+		whereClauses = append(whereClauses, "(description_html LIKE ?)")
+		queryArgs = append(queryArgs, "%"+params.DescriptionHTML+"%")
+	}
+
+	//? field "is_major"
+	if params.IsMajor != "" {
+		is_used := params.IsMajor == "Y"
+		whereClauses = append(whereClauses, "(is_major = ?)")
+		queryArgs = append(queryArgs, is_used)
+	}
+
+	// Apply date range filtering for created_at if provided
+	if len(params.CreatedAt) == 1 {
+		// If only one date is provided, use equality
+		whereClauses = append(whereClauses, "(created_at LIKE ?)")
+		queryArgs = append(queryArgs, "%"+params.CreatedAt[0]+"%")
+	} else if len(params.CreatedAt) == 2 {
+		// If two dates are provided, use BETWEEN
+		whereClauses = append(whereClauses, "(created_at BETWEEN ? AND ?)")
+		queryArgs = append(queryArgs, params.CreatedAt[0], params.CreatedAt[1])
+	}
+
+	//? Construct the WHERE clause
+	whereSQL := ""
+	if len(whereClauses) != 0 {
+		whereSQL = "WHERE " + strings.Join(whereClauses, " AND ")
+	}
+
+	finalCountSQL := fmt.Sprintf(`
+		%s
+		%s`, rawCountSQL, whereSQL)
+
+	// Add LIMIT and OFFSET arguments
+	err := r.db.Raw(finalCountSQL, queryArgs...).Scan(&totalCount).Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	//todo: Build the raw SQL query
+	rawSQL := `
+		SELECT
+			id,
+			name,
+			description_html,
+			logo_url,
+			logo_file_name,
+			is_major,
+			link,
+			created_at
+		FROM technologies
+	`
+
+	//? Construct the ORDER BY clause
+	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Order, params.Sort)
+
+	// Construct the final SQL query with LIMIT and OFFSET
+	finalSQL := fmt.Sprintf(`
+		%s
+		%s
+		%s
+		LIMIT ? OFFSET ?`, rawSQL, whereSQL, orderBySQL)
+
+	// Add LIMIT and OFFSET arguments
+	offset := (params.Page - 1) * params.Limit
+	queryArgs = append(queryArgs, params.Limit, offset)
+
+	// Execute the raw SQL query
+	err = r.db.Raw(finalSQL, queryArgs...).Scan(&technology).Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return technology, totalCount, nil
 }
 
 func (r *repository) FindById(id int) (Technology, error) {

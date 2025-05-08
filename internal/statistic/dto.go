@@ -32,6 +32,19 @@ type StatisticDeleteRequest struct {
 	ID int `json:"id" binding:"required"`
 }
 
+type GetAllStatisticParams struct {
+	Limit     int `binding:"required"`
+	Page      int `binding:"required"`
+	Sort      string
+	Order     string
+	Type      string
+	MinLikes  string
+	MaxLikes  string
+	MinViews  string
+	MaxViews  string
+	CreatedAt []string
+}
+
 func ToStatisticResponse(p Statistic) StatisticResponse {
 	return StatisticResponse{
 		ID:        p.ID,

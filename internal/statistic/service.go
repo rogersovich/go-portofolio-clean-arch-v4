@@ -3,7 +3,7 @@ package statistic
 import "gorm.io/gorm"
 
 type Service interface {
-	GetAllStatistics() ([]StatisticResponse, error)
+	GetAllStatistics(params GetAllStatisticParams) ([]StatisticResponse, int, error)
 	GetStatisticById(id int) (StatisticResponse, error)
 	CreateStatistic(p CreateStatisticRequest) (StatisticResponse, error)
 	CreateStatisticWithTx(p CreateStatisticRequest, tx *gorm.DB) (StatisticResponse, error)
@@ -19,17 +19,17 @@ func NewService(r Repository) Service {
 	return &service{repo: r}
 }
 
-func (s *service) GetAllStatistics() ([]StatisticResponse, error) {
-	datas, err := s.repo.FindAll()
+func (s *service) GetAllStatistics(params GetAllStatisticParams) ([]StatisticResponse, int, error) {
+	datas, total, err := s.repo.FindAll(params)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var result []StatisticResponse
 	for _, p := range datas {
 		result = append(result, ToStatisticResponse(p))
 	}
-	return result, nil
+	return result, total, nil
 }
 
 func (s *service) GetStatisticById(id int) (StatisticResponse, error) {

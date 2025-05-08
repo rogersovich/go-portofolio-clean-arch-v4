@@ -88,6 +88,23 @@ type ExperienceDeleteRequest struct {
 	ID int `json:"id" binding:"required"`
 }
 
+type GetAllExperienceParams struct {
+	Limit       int `binding:"required"`
+	Page        int `binding:"required"`
+	Sort        string
+	Order       string
+	Position    string
+	CompanyName string
+	WorkType    string
+	Country     string
+	City        string
+	SummaryHTML string
+	FromDate    []string
+	ToDate      []string
+	IsCurrent   string
+	CreatedAt   []string
+}
+
 func ToExperienceResponse(p Experience) ExperienceResponse {
 	var toDateAtPointer *string
 	if p.ToDate != nil {

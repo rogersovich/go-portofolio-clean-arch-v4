@@ -6,18 +6,54 @@ import (
 	"net/http"
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
 )
 
 func (h *handler) GetAll(c *gin.Context) {
-	data, err := h.service.GetAllTechnologies()
+	page := utils.GetQueryParamInt(c, "page", 1) // Default to page 1
+	limit := utils.GetQueryParamInt(c, "limit", 10)
+	//? Sort and order
+	sort := c.DefaultQuery("sort", "ASC")
+	order := c.DefaultQuery("order", "id")
+	//? Filters
+	name := c.DefaultQuery("name", "")
+	description_html := c.DefaultQuery("description_html", "")
+	is_major := c.DefaultQuery("is_major", "")
+	created_at := c.DefaultQuery("created_at", "")
+
+	// Check if the created_at parameter has a value and parse the range
+	var createdAtRange []string
+	if created_at != "" {
+		created_at = strings.Trim(created_at, "[]")
+		createdAtRange = strings.Split(created_at, ",")
+	}
+
+	params := GetAllTechnologyParams{
+		Page:            page,
+		Limit:           limit,
+		Sort:            sort,
+		Order:           order,
+		Name:            name,
+		DescriptionHTML: description_html,
+		IsMajor:         is_major,
+		CreatedAt:       createdAtRange,
+	}
+
+	// Validate the params using the binding tags
+	if err := c.ShouldBindQuery(&params); err != nil {
+		utils.Error(c, http.StatusBadRequest, "Invalid query parameters")
+		return
+	}
+
+	data, total_records, err := h.service.GetAllTechnologies(params)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.Success(c, "success get all data", data)
+	utils.PaginatedSuccess(c, "success get all data", data, page, limit, total_records)
 }
 
 func (h *handler) GetTechnologyById(c *gin.Context) {

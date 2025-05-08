@@ -6,18 +6,78 @@ import (
 	"net/http"
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
 )
 
 func (h *handler) GetAll(c *gin.Context) {
-	data, err := h.service.GetAllExperiences()
+	page := utils.GetQueryParamInt(c, "page", 1) // Default to page 1
+	limit := utils.GetQueryParamInt(c, "limit", 10)
+	//? Sort and order
+	sort := c.DefaultQuery("sort", "ASC")
+	order := c.DefaultQuery("order", "id")
+	//? Filters
+	position := c.DefaultQuery("position", "")
+	company_name := c.DefaultQuery("company_name", "")
+	work_type := c.DefaultQuery("work_type", "")
+	country := c.DefaultQuery("country", "")
+	city := c.DefaultQuery("city", "")
+	summary_html := c.DefaultQuery("summary_html", "")
+	from_date := c.DefaultQuery("from_date", "")
+	to_date := c.DefaultQuery("to_date", "")
+	is_current := c.DefaultQuery("is_current", "")
+	created_at := c.DefaultQuery("created_at", "")
+
+	// Check if the created_at parameter has a value and parse the range
+	var createdAtRange []string
+	if created_at != "" {
+		created_at = strings.Trim(created_at, "[]")
+		createdAtRange = strings.Split(created_at, ",")
+	}
+
+	var fromDateAtRange []string
+	if from_date != "" {
+		from_date = strings.Trim(from_date, "[]")
+		fromDateAtRange = strings.Split(from_date, ",")
+	}
+
+	var toDateAtRange []string
+	if to_date != "" {
+		to_date = strings.Trim(to_date, "[]")
+		toDateAtRange = strings.Split(to_date, ",")
+	}
+
+	params := GetAllExperienceParams{
+		Page:        page,
+		Limit:       limit,
+		Sort:        sort,
+		Order:       order,
+		Position:    position,
+		CompanyName: company_name,
+		WorkType:    work_type,
+		Country:     country,
+		City:        city,
+		SummaryHTML: summary_html,
+		FromDate:    fromDateAtRange,
+		ToDate:      toDateAtRange,
+		IsCurrent:   is_current,
+		CreatedAt:   createdAtRange,
+	}
+
+	// Validate the params using the binding tags
+	if err := c.ShouldBindQuery(&params); err != nil {
+		utils.Error(c, http.StatusBadRequest, "Invalid query parameters")
+		return
+	}
+
+	data, total_records, err := h.service.GetAllExperiences(params)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.Success(c, "success get all data", data)
+	utils.PaginatedSuccess(c, "success get all data", data, page, limit, total_records)
 }
 
 func (h *handler) GetExperienceById(c *gin.Context) {

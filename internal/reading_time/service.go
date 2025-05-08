@@ -3,7 +3,7 @@ package reading_time
 import "gorm.io/gorm"
 
 type Service interface {
-	GetAllReadingTimes() ([]ReadingTimeResponse, error)
+	GetAllReadingTimes(params GetAllReadingTimeParams) ([]ReadingTimeResponse, int, error)
 	GetReadingTimeById(id int) (ReadingTimeResponse, error)
 	CreateReadingTime(p CreateReadingTimeRequest, tx *gorm.DB) (ReadingTimeResponse, error)
 	UpdateReadingTime(p UpdateReadingTimeRequest, tx *gorm.DB) error
@@ -18,17 +18,17 @@ func NewService(r Repository) Service {
 	return &service{repo: r}
 }
 
-func (s *service) GetAllReadingTimes() ([]ReadingTimeResponse, error) {
-	datas, err := s.repo.FindAll()
+func (s *service) GetAllReadingTimes(params GetAllReadingTimeParams) ([]ReadingTimeResponse, int, error) {
+	datas, total, err := s.repo.FindAll(params)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var result []ReadingTimeResponse
 	for _, p := range datas {
 		result = append(result, ToReadingTimeResponse(p))
 	}
-	return result, nil
+	return result, total, nil
 }
 
 func (s *service) GetReadingTimeById(id int) (ReadingTimeResponse, error) {

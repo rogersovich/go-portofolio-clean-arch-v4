@@ -1,11 +1,14 @@
 package statistic
 
 import (
+	"fmt"
+	"strings"
+
 	"gorm.io/gorm"
 )
 
 type Repository interface {
-	FindAll() ([]Statistic, error)
+	FindAll(params GetAllStatisticParams) ([]Statistic, int, error)
 	FindById(id int) (Statistic, error)
 	CreateStatistic(p CreateStatisticRequest) (Statistic, error)
 	CreateStatisticWithTx(p CreateStatisticRequest, tx *gorm.DB) (Statistic, error)
@@ -21,10 +24,112 @@ func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) FindAll() ([]Statistic, error) {
-	var datas []Statistic
-	err := r.db.Find(&datas).Error
-	return datas, err
+func (r *repository) FindAll(params GetAllStatisticParams) ([]Statistic, int, error) {
+	var statistic []Statistic
+	var totalCount int
+
+	//todo: Build the raw Count SQL query
+	rawCountSQL := `
+		SELECT 
+			count(*)
+		FROM statistics
+	`
+
+	// Initialize the WHERE clause and arguments
+	whereClauses := []string{"deleted_at IS NULL"}
+	queryArgs := []interface{}{}
+
+	//? field "type"
+	if params.Type != "" {
+		whereClauses = append(whereClauses, "(type LIKE ?)")
+		queryArgs = append(queryArgs, "%"+params.Type+"%")
+	}
+
+	//? field "min_likes"
+	if params.MinLikes != "" {
+		whereClauses = append(whereClauses, "(likes >= ?)")
+		queryArgs = append(queryArgs, params.MinLikes)
+	}
+
+	//? field "max_likes"
+	if params.MaxLikes != "" {
+		whereClauses = append(whereClauses, "(likes <= ?)")
+		queryArgs = append(queryArgs, params.MaxLikes)
+	}
+
+	//? field "min_views"
+	if params.MinViews != "" {
+		whereClauses = append(whereClauses, "(views >= ?)")
+		queryArgs = append(queryArgs, params.MinViews)
+	}
+
+	//? field "max_views"
+	if params.MaxViews != "" {
+		whereClauses = append(whereClauses, "(views <= ?)")
+		queryArgs = append(queryArgs, params.MaxViews)
+	}
+
+	// Apply date range filtering for created_at if provided
+	if len(params.CreatedAt) == 1 {
+		// If only one date is provided, use equality
+		whereClauses = append(whereClauses, "(created_at LIKE ?)")
+		queryArgs = append(queryArgs, "%"+params.CreatedAt[0]+"%")
+	} else if len(params.CreatedAt) == 2 {
+		// If two dates are provided, use BETWEEN
+		whereClauses = append(whereClauses, "(created_at BETWEEN ? AND ?)")
+		queryArgs = append(queryArgs, params.CreatedAt[0], params.CreatedAt[1])
+	}
+
+	//? Construct the WHERE clause
+	whereSQL := ""
+	if len(whereClauses) != 0 {
+		whereSQL = "WHERE " + strings.Join(whereClauses, " AND ")
+	}
+
+	finalCountSQL := fmt.Sprintf(`
+		%s
+		%s`, rawCountSQL, whereSQL)
+
+	// Add LIMIT and OFFSET arguments
+	err := r.db.Raw(finalCountSQL, queryArgs...).Scan(&totalCount).Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	//todo: Build the raw SQL query
+	rawSQL := `
+		SELECT
+			id,
+			likes,
+			views,
+			type,
+			created_at
+		FROM statistics
+	`
+
+	//? Construct the ORDER BY clause
+	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Order, params.Sort)
+
+	// Construct the final SQL query with LIMIT and OFFSET
+	finalSQL := fmt.Sprintf(`
+		%s
+		%s
+		%s
+		LIMIT ? OFFSET ?`, rawSQL, whereSQL, orderBySQL)
+
+	// Add LIMIT and OFFSET arguments
+	offset := (params.Page - 1) * params.Limit
+	queryArgs = append(queryArgs, params.Limit, offset)
+
+	// Execute the raw SQL query
+	err = r.db.Raw(finalSQL, queryArgs...).Scan(&statistic).Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return statistic, totalCount, nil
 }
 
 func (r *repository) FindById(id int) (Statistic, error) {

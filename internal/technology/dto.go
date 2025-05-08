@@ -67,6 +67,17 @@ type TechnologyDeleteRequest struct {
 	ID int `json:"id" binding:"required"`
 }
 
+type GetAllTechnologyParams struct {
+	Limit           int `binding:"required"`
+	Page            int `binding:"required"`
+	Sort            string
+	Order           string
+	Name            string
+	DescriptionHTML string
+	IsMajor         string
+	CreatedAt       []string
+}
+
 func ToTechnologyResponse(p Technology) TechnologyResponse {
 	return TechnologyResponse{
 		ID:              p.ID,
