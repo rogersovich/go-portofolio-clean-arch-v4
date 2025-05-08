@@ -7,7 +7,7 @@ import (
 )
 
 type Service interface {
-	GetAllAuthors() ([]AuthorResponse, error)
+	GetAllAuthors(params GetAllAuthorParams) ([]AuthorResponse, int, error)
 	GetAuthorById(id int) (AuthorResponse, error)
 	CreateAuthor(p CreateAuthorRequest) (AuthorResponse, error)
 	UpdateAuthor(p UpdateAuthorRequest) error
@@ -22,17 +22,17 @@ func NewService(r Repository) Service {
 	return &service{repo: r}
 }
 
-func (s *service) GetAllAuthors() ([]AuthorResponse, error) {
-	authors, err := s.repo.FindAll()
+func (s *service) GetAllAuthors(params GetAllAuthorParams) ([]AuthorResponse, int, error) {
+	authors, total, err := s.repo.FindAll(params)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var result []AuthorResponse
 	for _, p := range authors {
 		result = append(result, ToAuthorResponse(p))
 	}
-	return result, nil
+	return result, total, nil
 }
 
 func (s *service) GetAuthorById(id int) (AuthorResponse, error) {

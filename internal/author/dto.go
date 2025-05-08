@@ -38,6 +38,15 @@ type AuthorDeleteRequest struct {
 	ID int `json:"id" binding:"required"`
 }
 
+type GetAllAuthorParams struct {
+	Limit     int `binding:"required"`
+	Page      int `binding:"required"`
+	Sort      string
+	Order     string
+	Name      string
+	CreatedAt string
+}
+
 func ToAuthorResponse(p Author) AuthorResponse {
 	return AuthorResponse{
 		ID:             p.ID,

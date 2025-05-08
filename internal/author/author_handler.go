@@ -12,12 +12,36 @@ import (
 )
 
 func (h *handler) GetAll(c *gin.Context) {
-	data, err := h.service.GetAllAuthors()
+	page := utils.GetQueryParamInt(c, "page", 1) // Default to page 1
+	limit := utils.GetQueryParamInt(c, "limit", 10)
+	//? Sort and order
+	sort := c.DefaultQuery("sort", "ASC")
+	order := c.DefaultQuery("order", "id")
+	//? Filters
+	name := c.DefaultQuery("name", "")
+	created_at := c.DefaultQuery("created_at", "")
+
+	params := GetAllAuthorParams{
+		Page:      page,
+		Limit:     limit,
+		Sort:      sort,
+		Order:     order,
+		Name:      name,
+		CreatedAt: created_at,
+	}
+
+	// Validate the params using the binding tags
+	if err := c.ShouldBindQuery(&params); err != nil {
+		utils.Error(c, http.StatusBadRequest, "Invalid query parameters")
+		return
+	}
+
+	data, total_records, err := h.service.GetAllAuthors(params)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.Success(c, "success get all data", data)
+	utils.PaginatedSuccess(c, "success get all data", data, page, limit, int(total_records))
 }
 
 func (h *handler) GetAuthorById(c *gin.Context) {
