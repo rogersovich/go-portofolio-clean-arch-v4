@@ -17,6 +17,16 @@ type UserDeleteRequest struct {
 	ID int `json:"id" binding:"required"`
 }
 
+type GetAllUserParams struct {
+	Limit     int `binding:"required"`
+	Page      int `binding:"required"`
+	Sort      string
+	Order     string
+	Username  string
+	Email     string
+	CreatedAt []string
+}
+
 func ToUserResponse(p User) UserResponse {
 	return UserResponse{
 		ID:        p.ID,

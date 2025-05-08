@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
@@ -21,13 +22,20 @@ func (h *handler) GetAll(c *gin.Context) {
 	name := c.DefaultQuery("name", "")
 	created_at := c.DefaultQuery("created_at", "")
 
+	// Check if the created_at parameter has a value and parse the range
+	var createdAtRange []string
+	if created_at != "" {
+		created_at = strings.Trim(created_at, "[]")
+		createdAtRange = strings.Split(created_at, ",")
+	}
+
 	params := GetAllAuthorParams{
 		Page:      page,
 		Limit:     limit,
 		Sort:      sort,
 		Order:     order,
 		Name:      name,
-		CreatedAt: created_at,
+		CreatedAt: createdAtRange,
 	}
 
 	// Validate the params using the binding tags

@@ -3,7 +3,7 @@ package user
 import "fmt"
 
 type Service interface {
-	GetAllUsers() ([]UserResponse, error)
+	GetAllUsers(params GetAllUserParams) ([]UserResponse, int, error)
 	GetUserById(id int) (UserResponse, error)
 	UpdateUser(user User) (UserResponse, error)
 	DeleteUser(id int) error
@@ -17,17 +17,17 @@ func NewService(r Repository) Service {
 	return &service{repo: r}
 }
 
-func (s *service) GetAllUsers() ([]UserResponse, error) {
-	datas, err := s.repo.FindAll()
+func (s *service) GetAllUsers(params GetAllUserParams) ([]UserResponse, int, error) {
+	datas, total, err := s.repo.FindAll(params)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var result []UserResponse
 	for _, p := range datas {
 		result = append(result, ToUserResponse(p))
 	}
-	return result, nil
+	return result, total, nil
 }
 
 func (s *service) GetUserById(id int) (UserResponse, error) {

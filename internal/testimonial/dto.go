@@ -59,6 +59,18 @@ type TestimonialChangeMultiStatusRequest struct {
 	IsUsed string `json:"is_used" binding:"required,oneof=Y N"`
 }
 
+type GetAllTestimonialParams struct {
+	Limit     int `binding:"required"`
+	Page      int `binding:"required"`
+	Sort      string
+	Order     string
+	Name      string
+	Role      string
+	WorkingAt string
+	IsUsed    string
+	CreatedAt []string
+}
+
 func ToTestimonialResponse(p Testimonial) TestimonialResponse {
 	return TestimonialResponse{
 		ID:        p.ID,

@@ -44,7 +44,7 @@ type GetAllAuthorParams struct {
 	Sort      string
 	Order     string
 	Name      string
-	CreatedAt string
+	CreatedAt []string
 }
 
 func ToAuthorResponse(p Author) AuthorResponse {

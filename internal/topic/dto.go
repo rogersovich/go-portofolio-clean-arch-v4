@@ -28,6 +28,15 @@ type TopicCheckIdsRequest struct {
 	Ids []int `json:"ids" binding:"required,dive,gt=0"`
 }
 
+type GetAllTopicParams struct {
+	Limit     int `binding:"required"`
+	Page      int `binding:"required"`
+	Sort      string
+	Order     string
+	Name      string
+	CreatedAt []string
+}
+
 func ToTopicResponse(p Topic) TopicResponse {
 	return TopicResponse{
 		ID:        p.ID,

@@ -3,7 +3,7 @@ package testimonial
 import "fmt"
 
 type Service interface {
-	GetAllTestimonials() ([]TestimonialResponse, error)
+	GetAllTestimonials(params GetAllTestimonialParams) ([]TestimonialResponse, int, error)
 	GetTestimonialById(id int) (TestimonialResponse, error)
 	CreateTestimonial(p CreateTestimonialRequest) (TestimonialResponse, error)
 	UpdateTestimonial(p UpdateTestimonialRequest) error
@@ -20,17 +20,17 @@ func NewService(r Repository) Service {
 	return &service{repo: r}
 }
 
-func (s *service) GetAllTestimonials() ([]TestimonialResponse, error) {
-	datas, err := s.repo.FindAll()
+func (s *service) GetAllTestimonials(params GetAllTestimonialParams) ([]TestimonialResponse, int, error) {
+	datas, total, err := s.repo.FindAll(params)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var result []TestimonialResponse
 	for _, p := range datas {
 		result = append(result, ToTestimonialResponse(p))
 	}
-	return result, nil
+	return result, total, nil
 }
 
 func (s *service) GetTestimonialById(id int) (TestimonialResponse, error) {
