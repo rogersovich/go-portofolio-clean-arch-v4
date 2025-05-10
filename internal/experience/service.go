@@ -68,8 +68,8 @@ func (s *service) CreateExperience(p CreateExperienceRequest) (ExperienceRespons
 		SummaryHTML:       p.SummaryHTML,
 		FromDate:          fromDate,
 		ToDate:            toDateFiltered,
-		CompImageUrl:      imageFile.FileName,
-		CompImageFileName: imageFile.FileURL,
+		CompImageUrl:      imageFile.FileURL,
+		CompImageFileName: imageFile.FileName,
 		CompWebsiteUrl:    p.CompWebsiteUrl,
 		IsCurrent:         p.IsCurrent == "Y",
 	}

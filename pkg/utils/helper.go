@@ -73,6 +73,42 @@ func ErrorValidation(c *gin.Context, statusCode int, message string, errors inte
 }
 
 func PaginatedSuccess(c *gin.Context, message string, data interface{}, page, limit, total int) {
+	if data == nil {
+		c.JSON(200, gin.H{
+			"data": gin.H{
+				"items": []interface{}{}, // default empty array
+				"pagination": gin.H{
+					"page":  page,
+					"limit": limit,
+					"total": total,
+				},
+			},
+			"message": message,
+			"status":  "ok",
+		})
+		return
+	}
+
+	t := reflect.TypeOf(data)
+	v := reflect.ValueOf(data)
+
+	// If it's a slice and nil, return empty array
+	if t.Kind() == reflect.Slice && v.IsNil() {
+		c.JSON(200, gin.H{
+			"data": gin.H{
+				"items": []interface{}{}, // empty JSON array
+				"pagination": gin.H{
+					"page":  page,
+					"limit": limit,
+					"total": total,
+				},
+			},
+			"message": message,
+			"status":  "ok",
+		})
+		return
+	}
+
 	c.JSON(200, gin.H{
 		"data": gin.H{
 			"items": data,

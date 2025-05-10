@@ -130,9 +130,6 @@ func (r *repository) FindAll(params GetAllExperienceParams) ([]Experience, int, 
 		%s
 		%s`, rawCountSQL, whereSQL)
 
-	fmt.Println(finalCountSQL)
-	fmt.Println(queryArgs)
-
 	// Add LIMIT and OFFSET arguments
 	err := r.db.Raw(finalCountSQL, queryArgs...).Scan(&totalCount).Error
 
