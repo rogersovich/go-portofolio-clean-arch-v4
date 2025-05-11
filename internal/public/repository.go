@@ -23,6 +23,7 @@ type Repository interface {
 	GetRawPublicProjectTechnologies(params ProjectPublicParams, uniqueProjectIDs []int) ([]ProjectTechnologyPublicRaw, error)
 	GetPublicProjectBySlug(slug string) ([]SingleProjectPublicRaw, error)
 	GetPublicTechnologies() ([]TechnologyPublicResponse, error)
+	GetPublicAuthors() ([]AuthorPublicResponse, error)
 }
 
 type repository struct {
@@ -346,6 +347,7 @@ func (r *repository) GetRawPublicPaginateProjects(params ProjectPublicParams) ([
 			p.title,
 			p.summary,
 			p.image_url,
+			p.image_file_name,
 			p.repository_url,
 			p.published_at,
 			p.slug
@@ -497,5 +499,11 @@ func (r *repository) GetPublicProjectBySlug(slug string) ([]SingleProjectPublicR
 func (r *repository) GetPublicTechnologies() ([]TechnologyPublicResponse, error) {
 	var datas []TechnologyPublicResponse
 	err := r.db.Table("technologies").Where("deleted_at IS NULL").Order("updated_at DESC").Scan(&datas).Error
+	return datas, err
+}
+
+func (r *repository) GetPublicAuthors() ([]AuthorPublicResponse, error) {
+	var datas []AuthorPublicResponse
+	err := r.db.Table("authors").Where("deleted_at IS NULL").Order("updated_at DESC").Scan(&datas).Error
 	return datas, err
 }

@@ -144,3 +144,12 @@ func (h *handler) GetPublicTechnologies(c *gin.Context) {
 	}
 	utils.Success(c, "success get all data", data)
 }
+
+func (h *handler) GetPublicAuthors(c *gin.Context) {
+	data, err := h.service.GetPublicAuthors()
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.Success(c, "success get all data", data)
+}

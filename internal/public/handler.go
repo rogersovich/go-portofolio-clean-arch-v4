@@ -26,4 +26,5 @@ func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	r.GET("/projects", h.GetPublicProjects)
 	r.GET("/projects/:slug", h.GetPublicProjectBySlug)
 	r.GET("/technologies", h.GetPublicTechnologies)
+	r.GET("/authors", h.GetPublicAuthors)
 }

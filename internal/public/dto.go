@@ -7,7 +7,6 @@ type AuthorPublicResponse struct {
 	Name           string `json:"name"`
 	AvatarUrl      string `json:"avatar_url"`
 	AvatarFileName string `json:"avatar_file_name"`
-	CreatedAt      string `json:"created_at"`
 }
 
 type AuthorPublicParams struct {
@@ -234,6 +233,7 @@ type ProjectPaginatePublicRaw struct {
 	Title         string     `json:"title"`
 	Summary       string     `json:"summary"`
 	ImageURL      string     `json:"image_url"`
+	ImageFileName string     `json:"image_file_name"`
 	RepositoryURL *string    `json:"repository_url"`
 	PublishedAt   *time.Time `json:"published_at"`
 	Slug          string     `json:"slug"`
@@ -272,6 +272,7 @@ type ProjectPublicResponse struct {
 	Title         string                            `json:"title"`
 	Summary       string                            `json:"summary"`
 	ImageURL      string                            `json:"image_url"`
+	ImageFileName string                            `json:"image_file_name"`
 	RepositoryURL *string                           `json:"repository_url"`
 	Slug          string                            `json:"slug"`
 	PublishedAt   *time.Time                        `json:"published_at"`

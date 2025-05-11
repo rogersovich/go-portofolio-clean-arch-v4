@@ -173,7 +173,7 @@ func (h *handler) CreateBlog(c *gin.Context) {
 		return
 	}
 
-	utils.Success(c, "success get data", data)
+	utils.Success(c, "success create data", data)
 }
 
 func (h *handler) UpdateBlog(c *gin.Context) {
@@ -240,7 +240,7 @@ func (h *handler) UpdateBlog(c *gin.Context) {
 		return
 	}
 
-	utils.Success(c, "success get data", data)
+	utils.Success(c, "success updated data", data)
 }
 
 func (h *handler) DeleteBlog(c *gin.Context) {

@@ -16,6 +16,7 @@ type Service interface {
 	GetPublicProjects(params ProjectPublicParams) ([]ProjectPublicResponse, error)
 	GetPublicProjectBySlug(slug string) (SingleProjectPublicResponse, error)
 	GetPublicTechnologies() ([]TechnologyPublicResponse, error)
+	GetPublicAuthors() ([]AuthorPublicResponse, error)
 }
 
 type service struct {
@@ -455,6 +456,7 @@ func (s *service) MapProjectRawToResponse(raw ProjectPaginatePublicRaw, projectT
 		Title:         raw.Title,
 		Summary:       raw.Summary,
 		ImageURL:      raw.ImageURL,
+		ImageFileName: raw.ImageFileName,
 		RepositoryURL: raw.RepositoryURL,
 		PublishedAt:   raw.PublishedAt,
 		Slug:          raw.Slug,
@@ -585,6 +587,15 @@ func (s *service) GetPublicTechnologies() ([]TechnologyPublicResponse, error) {
 		} else {
 			datas[i].IsMajor = "Y"
 		}
+	}
+
+	return datas, nil
+}
+
+func (s *service) GetPublicAuthors() ([]AuthorPublicResponse, error) {
+	datas, err := s.repo.GetPublicAuthors()
+	if err != nil {
+		return []AuthorPublicResponse{}, err
 	}
 
 	return datas, nil
