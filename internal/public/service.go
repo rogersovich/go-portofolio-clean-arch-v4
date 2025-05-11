@@ -15,6 +15,7 @@ type Service interface {
 	GetPublicTopics() ([]TopicPublicResponse, error)
 	GetPublicProjects(params ProjectPublicParams) ([]ProjectPublicResponse, error)
 	GetPublicProjectBySlug(slug string) (SingleProjectPublicResponse, error)
+	GetPublicTechnologies() ([]TechnologyPublicResponse, error)
 }
 
 type service struct {
@@ -570,4 +571,21 @@ func (s *service) MapSingleProjectRawToResponse(rawData []SingleProjectPublicRaw
 	}
 
 	return result
+}
+
+func (s *service) GetPublicTechnologies() ([]TechnologyPublicResponse, error) {
+	datas, err := s.repo.GetPublicTechnologies()
+	if err != nil {
+		return []TechnologyPublicResponse{}, err
+	}
+
+	for i := range datas {
+		if datas[i].IsMajor == "0" {
+			datas[i].IsMajor = "N"
+		} else {
+			datas[i].IsMajor = "Y"
+		}
+	}
+
+	return datas, nil
 }

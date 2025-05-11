@@ -317,3 +317,11 @@ type SingleProjectPublicResponse struct {
 	ContentImages []ProjectPublicContentImageResponse `json:"content_image"`
 	Technologies  []ProjectTechnologyPublicResponse   `json:"topics"`
 }
+
+type TechnologyPublicResponse struct {
+	ID           int    `json:"id"`
+	Name         string `json:"name"`
+	LogoURL      string `json:"logo_url"`
+	LogoFileName string `json:"logo_file_name"`
+	IsMajor      string `json:"is_major"`
+}

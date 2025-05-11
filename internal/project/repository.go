@@ -52,8 +52,8 @@ func (r *repository) FindAll(params GetAllProjectParams) ([]Project, int, error)
 
 	//? field "status"
 	if params.Status != "" {
-		whereClauses = append(whereClauses, "(status LIKE ?)")
-		queryArgs = append(queryArgs, "%"+params.Status+"%")
+		whereClauses = append(whereClauses, "(status = ?)")
+		queryArgs = append(queryArgs, params.Status)
 	}
 
 	//? field "published_at"
@@ -167,6 +167,7 @@ func (r *repository) FindByIdWithRelations(id int) ([]RawProjectRelationResponse
 		SELECT 
 			p.id, 
 			p.title, 
+			p.slug, 
 			p.description, 
 			p.image_url, 
 			p.image_file_name, 

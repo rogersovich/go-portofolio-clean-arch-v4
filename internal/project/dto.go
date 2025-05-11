@@ -86,6 +86,7 @@ type RawProjectRelationResponse struct {
 	ProjectImgFileName  string     `json:"project_img_file_name"`
 	ProjectImgUrl       string     `json:"project_img_url"`
 	Title               string     `json:"title"`
+	Slug                string     `json:"slug"`
 	Description         string     `json:"description"`
 	ImageUrl            string     `json:"image_url"`
 	ImageFileName       string     `json:"image_file_name"`
@@ -99,6 +100,7 @@ type RawProjectRelationResponse struct {
 type ProjectRelationResponse struct {
 	ID            int                       `json:"id"`
 	Title         string                    `json:"title"`
+	Slug          string                    `json:"slug"`
 	Description   string                    `json:"description"`
 	ImageUrl      string                    `json:"image_url"`
 	ImageFileName string                    `json:"image_file_name"`

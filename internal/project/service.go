@@ -93,6 +93,7 @@ func (s *service) GetProjectByIdWithRelations(id int) (ProjectRelationResponse, 
 			projectMap[projectID] = &ProjectRelationResponse{
 				ID:            projectID,
 				Title:         row.Title,
+				Slug:          row.Slug,
 				Description:   row.Description,
 				ImageUrl:      row.ImageUrl,
 				ImageFileName: row.ImageFileName,
