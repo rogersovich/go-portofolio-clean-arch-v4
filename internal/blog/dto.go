@@ -179,6 +179,17 @@ type BlogDeleteRequest struct {
 	ID int `json:"id" binding:"required"`
 }
 
+type GetAllBlogParams struct {
+	Limit       int `binding:"required"`
+	Page        int `binding:"required"`
+	Sort        string
+	Order       string
+	Title       string
+	Status      string
+	PublishedAt []string
+	CreatedAt   []string
+}
+
 func ToBlogResponse(p Blog) BlogResponse {
 	var publishedAtPointer *string
 	if p.PublishedAt != nil {

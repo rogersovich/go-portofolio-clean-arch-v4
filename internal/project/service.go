@@ -13,7 +13,7 @@ import (
 )
 
 type Service interface {
-	GetAllProjects() ([]ProjectResponse, error)
+	GetAllProjects(params GetAllProjectParams) ([]ProjectResponse, int, error)
 	GetProjectByIdWithRelations(id int) (ProjectRelationResponse, error)
 	GetProjectById(id int) (ProjectResponse, error)
 	CreateProject(p CreateProjectRequest) (ProjectResponse, error)
@@ -47,17 +47,17 @@ func NewService(
 	}
 }
 
-func (s *service) GetAllProjects() ([]ProjectResponse, error) {
-	datas, err := s.projectRepo.FindAll()
+func (s *service) GetAllProjects(params GetAllProjectParams) ([]ProjectResponse, int, error) {
+	datas, total, err := s.projectRepo.FindAll(params)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var result []ProjectResponse
 	for _, p := range datas {
 		result = append(result, ToProjectResponse(p))
 	}
-	return result, nil
+	return result, total, nil
 }
 
 func (s *service) GetProjectByIdWithRelations(id int) (ProjectRelationResponse, error) {

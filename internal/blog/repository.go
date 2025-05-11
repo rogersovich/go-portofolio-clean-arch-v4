@@ -1,13 +1,15 @@
 package blog
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
 )
 
 type Repository interface {
-	FindAll() ([]Blog, error)
+	FindAll(params GetAllBlogParams) ([]Blog, int, error)
 	FindByIdWithRelations(id int) ([]RawBlogRelationResponse, error)
 	FindById(id int) (BlogResponse, error)
 	CreateBlog(p CreateBlogDTO, tx *gorm.DB) (Blog, error)
@@ -25,10 +27,138 @@ func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) FindAll() ([]Blog, error) {
-	var datas []Blog
-	err := r.db.Find(&datas).Error
-	return datas, err
+func (r *repository) FindAll(params GetAllBlogParams) ([]Blog, int, error) {
+	var blog []Blog
+	var totalCount int
+
+	//todo: Build the raw Count SQL query
+	rawCountSQL := `
+		SELECT 
+			count(*)
+		FROM blogs
+	`
+
+	// Initialize the WHERE clause and arguments
+	whereClauses := []string{"deleted_at IS NULL"}
+	queryArgs := []interface{}{}
+
+	//? field "title"
+	if params.Title != "" {
+		whereClauses = append(whereClauses, "(title LIKE ?)")
+		queryArgs = append(queryArgs, "%"+params.Title+"%")
+	}
+
+	//? field "status"
+	if params.Status != "" {
+		whereClauses = append(whereClauses, "(status LIKE ?)")
+		queryArgs = append(queryArgs, "%"+params.Status+"%")
+	}
+
+	//? field "published_at"
+	if len(params.PublishedAt) == 1 {
+		// If only one date is provided, use equality
+		whereClauses = append(whereClauses, "(published_at LIKE ?)")
+		queryArgs = append(queryArgs, "%"+params.PublishedAt[0]+"%")
+	} else if len(params.PublishedAt) == 2 {
+		// Parse the dates and adjust the time for the range
+		startDate, err := time.Parse("2006-01-02", params.PublishedAt[0])
+		if err != nil {
+			return nil, 0, err
+		}
+		endDate, err := time.Parse("2006-01-02", params.PublishedAt[1])
+		if err != nil {
+			return nil, 0, err
+		}
+
+		startDate = startDate.Truncate(24 * time.Hour)        // Start at 00:00:00
+		endDate = endDate.Add(24*time.Hour - time.Nanosecond) // End at 23:59:59.999
+		whereClauses = append(whereClauses, "(from_date BETWEEN ? AND ?)")
+		queryArgs = append(queryArgs, startDate, endDate)
+	}
+
+	//? field "created_at"
+	if len(params.CreatedAt) == 1 {
+		whereClauses = append(whereClauses, "(created_at LIKE ?)")
+		queryArgs = append(queryArgs, "%"+params.CreatedAt[0]+"%")
+	} else if len(params.CreatedAt) == 2 {
+		// Parse the dates and adjust the time for the range
+		startDate, err := time.Parse("2006-01-02", params.CreatedAt[0])
+		if err != nil {
+			return nil, 0, err
+		}
+		endDate, err := time.Parse("2006-01-02", params.CreatedAt[1])
+		if err != nil {
+			return nil, 0, err
+		}
+
+		startDate = startDate.Truncate(24 * time.Hour)        // Start at 00:00:00
+		endDate = endDate.Add(24*time.Hour - time.Nanosecond) // End at 23:59:59.999
+		whereClauses = append(whereClauses, "(created_at BETWEEN ? AND ?)")
+		queryArgs = append(queryArgs, startDate, endDate)
+	}
+
+	//? Construct the WHERE clause
+	whereSQL := ""
+	if len(whereClauses) != 0 {
+		whereSQL = "WHERE " + strings.Join(whereClauses, " AND ")
+	}
+
+	finalCountSQL := fmt.Sprintf(`
+		%s
+		%s`, rawCountSQL, whereSQL)
+
+	// Add LIMIT and OFFSET arguments
+	err := r.db.Raw(finalCountSQL, queryArgs...).Scan(&totalCount).Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if totalCount == 0 {
+		return blog, totalCount, nil
+	}
+
+	//todo: Build the raw SQL query
+	rawSQL := `
+		SELECT
+			id,
+			author_id,
+			statistic_id,
+			reading_time_id,
+			title,
+			description_html,
+			summary,
+			banner_url,
+			banner_file_name,
+			status,
+			slug,
+			published_at,
+			created_at
+		FROM blogs
+	`
+
+	//? Construct the ORDER BY clause
+	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Order, params.Sort)
+
+	// Construct the final SQL query with LIMIT and OFFSET
+	finalSQL := fmt.Sprintf(`
+		%s
+		%s
+		%s
+		LIMIT ? OFFSET ?`, rawSQL, whereSQL, orderBySQL)
+
+	// Add LIMIT and OFFSET arguments
+	offset := (params.Page - 1) * params.Limit
+	queryArgs = append(queryArgs, params.Limit, offset)
+
+	// Execute the raw SQL query
+	err = r.db.Raw(finalSQL, queryArgs...).Scan(&blog).Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return blog, totalCount, nil
 }
 
 func (r *repository) FindById(id int) (BlogResponse, error) {

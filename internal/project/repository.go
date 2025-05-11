@@ -1,6 +1,8 @@
 package project
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/statistic"
@@ -8,7 +10,7 @@ import (
 )
 
 type Repository interface {
-	FindAll() ([]Project, error)
+	FindAll(params GetAllProjectParams) ([]Project, int, error)
 	FindByIdWithRelations(id int) ([]RawProjectRelationResponse, error)
 	FindById(id int) (ProjectResponse, error)
 	CreateProject(p CreateProjectDTO, tx *gorm.DB) (Project, error)
@@ -27,10 +29,136 @@ func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) FindAll() ([]Project, error) {
-	var datas []Project
-	err := r.db.Find(&datas).Error
-	return datas, err
+func (r *repository) FindAll(params GetAllProjectParams) ([]Project, int, error) {
+	var project []Project
+	var totalCount int
+
+	//todo: Build the raw Count SQL query
+	rawCountSQL := `
+		SELECT 
+			count(*)
+		FROM projects
+	`
+
+	// Initialize the WHERE clause and arguments
+	whereClauses := []string{"deleted_at IS NULL"}
+	queryArgs := []interface{}{}
+
+	//? field "title"
+	if params.Title != "" {
+		whereClauses = append(whereClauses, "(title LIKE ?)")
+		queryArgs = append(queryArgs, "%"+params.Title+"%")
+	}
+
+	//? field "status"
+	if params.Status != "" {
+		whereClauses = append(whereClauses, "(status LIKE ?)")
+		queryArgs = append(queryArgs, "%"+params.Status+"%")
+	}
+
+	//? field "published_at"
+	if len(params.PublishedAt) == 1 {
+		// If only one date is provided, use equality
+		whereClauses = append(whereClauses, "(published_at LIKE ?)")
+		queryArgs = append(queryArgs, "%"+params.PublishedAt[0]+"%")
+	} else if len(params.PublishedAt) == 2 {
+		// Parse the dates and adjust the time for the range
+		startDate, err := time.Parse("2006-01-02", params.PublishedAt[0])
+		if err != nil {
+			return nil, 0, err
+		}
+		endDate, err := time.Parse("2006-01-02", params.PublishedAt[1])
+		if err != nil {
+			return nil, 0, err
+		}
+
+		startDate = startDate.Truncate(24 * time.Hour)        // Start at 00:00:00
+		endDate = endDate.Add(24*time.Hour - time.Nanosecond) // End at 23:59:59.999
+		whereClauses = append(whereClauses, "(from_date BETWEEN ? AND ?)")
+		queryArgs = append(queryArgs, startDate, endDate)
+	}
+
+	//? field "created_at"
+	if len(params.CreatedAt) == 1 {
+		whereClauses = append(whereClauses, "(created_at LIKE ?)")
+		queryArgs = append(queryArgs, "%"+params.CreatedAt[0]+"%")
+	} else if len(params.CreatedAt) == 2 {
+		// Parse the dates and adjust the time for the range
+		startDate, err := time.Parse("2006-01-02", params.CreatedAt[0])
+		if err != nil {
+			return nil, 0, err
+		}
+		endDate, err := time.Parse("2006-01-02", params.CreatedAt[1])
+		if err != nil {
+			return nil, 0, err
+		}
+
+		startDate = startDate.Truncate(24 * time.Hour)        // Start at 00:00:00
+		endDate = endDate.Add(24*time.Hour - time.Nanosecond) // End at 23:59:59.999
+		whereClauses = append(whereClauses, "(created_at BETWEEN ? AND ?)")
+		queryArgs = append(queryArgs, startDate, endDate)
+	}
+
+	//? Construct the WHERE clause
+	whereSQL := ""
+	if len(whereClauses) != 0 {
+		whereSQL = "WHERE " + strings.Join(whereClauses, " AND ")
+	}
+
+	finalCountSQL := fmt.Sprintf(`
+		%s
+		%s`, rawCountSQL, whereSQL)
+
+	// Add LIMIT and OFFSET arguments
+	err := r.db.Raw(finalCountSQL, queryArgs...).Scan(&totalCount).Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if totalCount == 0 {
+		return project, totalCount, nil
+	}
+
+	//todo: Build the raw SQL query
+	rawSQL := `
+		SELECT
+			id,
+			title,
+			description,
+			image_url,
+			image_file_name,
+			repository_url,
+			summary,
+			status,
+			slug,
+			published_at,
+			created_at
+		FROM projects
+	`
+
+	//? Construct the ORDER BY clause
+	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Order, params.Sort)
+
+	// Construct the final SQL query with LIMIT and OFFSET
+	finalSQL := fmt.Sprintf(`
+		%s
+		%s
+		%s
+		LIMIT ? OFFSET ?`, rawSQL, whereSQL, orderBySQL)
+
+	// Add LIMIT and OFFSET arguments
+	offset := (params.Page - 1) * params.Limit
+	queryArgs = append(queryArgs, params.Limit, offset)
+
+	// Execute the raw SQL query
+	err = r.db.Raw(finalSQL, queryArgs...).Scan(&project).Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return project, totalCount, nil
 }
 
 func (r *repository) FindByIdWithRelations(id int) ([]RawProjectRelationResponse, error) {

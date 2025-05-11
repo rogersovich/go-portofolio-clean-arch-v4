@@ -197,6 +197,17 @@ type ProjectChangeStatusResponse struct {
 	PublishedAt *string `json:"published_at"`
 }
 
+type GetAllProjectParams struct {
+	Limit       int `binding:"required"`
+	Page        int `binding:"required"`
+	Sort        string
+	Order       string
+	Title       string
+	Status      string
+	PublishedAt []string
+	CreatedAt   []string
+}
+
 func ToProjectResponse(p Project) ProjectResponse {
 	var publishedAtPointer *string
 	if p.PublishedAt != nil {

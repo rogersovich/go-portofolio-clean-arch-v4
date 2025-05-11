@@ -16,7 +16,7 @@ import (
 )
 
 type Service interface {
-	GetAllBlogs() ([]BlogResponse, error)
+	GetAllBlogs(params GetAllBlogParams) ([]BlogResponse, int, error)
 	GetBlogByIdWithRelations(id int) (BlogRelationResponse, error)
 	GetBlogById(id int) (BlogResponse, error)
 	CreateBlog(p CreateBlogRequest) (BlogResponse, error)
@@ -57,17 +57,17 @@ func NewService(
 	}
 }
 
-func (s *service) GetAllBlogs() ([]BlogResponse, error) {
-	datas, err := s.blogRepo.FindAll()
+func (s *service) GetAllBlogs(params GetAllBlogParams) ([]BlogResponse, int, error) {
+	datas, total, err := s.blogRepo.FindAll(params)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var result []BlogResponse
 	for _, p := range datas {
 		result = append(result, ToBlogResponse(p))
 	}
-	return result, nil
+	return result, total, nil
 }
 
 func (s *service) GetBlogById(id int) (BlogResponse, error) {

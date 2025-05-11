@@ -7,18 +7,57 @@ import (
 	"net/http"
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
 )
 
 func (h *handler) GetAll(c *gin.Context) {
-	data, err := h.service.GetAllBlogs()
+	page := utils.GetQueryParamInt(c, "page", 1) // Default to page 1
+	limit := utils.GetQueryParamInt(c, "limit", 10)
+	//? Sort and order
+	sort := c.DefaultQuery("sort", "ASC")
+	order := c.DefaultQuery("order", "id")
+	//? Filters
+	title := c.DefaultQuery("title", "")
+	status := c.DefaultQuery("status", "")
+	published_at := c.DefaultQuery("published_at", "")
+	created_at := c.DefaultQuery("created_at", "")
+
+	var createdAtRange []string
+	if created_at != "" {
+		createdAtRange = strings.Split(created_at, ",")
+	}
+
+	var publishedAtRange []string
+	if published_at != "" {
+		publishedAtRange = strings.Split(published_at, ",")
+	}
+
+	params := GetAllBlogParams{
+		Page:        page,
+		Limit:       limit,
+		Sort:        sort,
+		Order:       order,
+		Title:       title,
+		Status:      status,
+		PublishedAt: publishedAtRange,
+		CreatedAt:   createdAtRange,
+	}
+
+	// Validate the params using the binding tags
+	if err := c.ShouldBindQuery(&params); err != nil {
+		utils.Error(c, http.StatusBadRequest, "Invalid query parameters")
+		return
+	}
+
+	data, total_record, err := h.service.GetAllBlogs(params)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, "failed to get data")
 		return
 	}
-	utils.Success(c, "success get all data", data)
+	utils.PaginatedSuccess(c, "success get all data", data, page, limit, total_record)
 }
 
 func (h *handler) GetBlogByIdWithRelations(c *gin.Context) {
