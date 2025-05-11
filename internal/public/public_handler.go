@@ -60,12 +60,12 @@ func (h *handler) GetPublicBlogs(c *gin.Context) {
 		return
 	}
 
-	data, err := h.service.GetPublicBlogs(params)
+	data, total_records, err := h.service.GetPublicBlogs(params)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.Success(c, "success get all data", data)
+	utils.PaginatedSuccess(c, "success get all data", data, page, limit, total_records)
 }
 
 func (h *handler) GetPublicBlogBySlug(c *gin.Context) {
@@ -118,12 +118,12 @@ func (h *handler) GetPublicProjects(c *gin.Context) {
 		return
 	}
 
-	data, err := h.service.GetPublicProjects(params)
+	data, total_records, err := h.service.GetPublicProjects(params)
 	if err != nil {
 		utils.Error(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	utils.Success(c, "success get all data", data)
+	utils.PaginatedSuccess(c, "success get all data", data, page, limit, total_records)
 }
 
 func (h *handler) GetPublicProjectBySlug(c *gin.Context) {

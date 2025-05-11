@@ -9,11 +9,11 @@ import (
 
 type Service interface {
 	GetProfile() (ProfilePublicResponse, error)
-	GetPublicBlogs(params BlogPublicParams) ([]BlogPublicResponse, error)
+	GetPublicBlogs(params BlogPublicParams) ([]BlogPublicResponse, int, error)
 	GetPublicBlogBySlug(slug string) (SingleBlogPublicResponse, error)
 	GetPublicTestimonials() ([]TestimonialPublicResponse, error)
 	GetPublicTopics() ([]TopicPublicResponse, error)
-	GetPublicProjects(params ProjectPublicParams) ([]ProjectPublicResponse, error)
+	GetPublicProjects(params ProjectPublicParams) ([]ProjectPublicResponse, int, error)
 	GetPublicProjectBySlug(slug string) (SingleProjectPublicResponse, error)
 	GetPublicTechnologies() ([]TechnologyPublicResponse, error)
 	GetPublicAuthors() ([]AuthorPublicResponse, error)
@@ -131,16 +131,16 @@ func (s *service) GetProfile() (ProfilePublicResponse, error) {
 	return data, nil
 }
 
-func (s *service) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicResponse, error) {
+func (s *service) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicResponse, int, error) {
 	//todo: Get Raw Paginate Blogs
-	rawPaginateBlogs, err := s.repo.GetRawPublicPaginateBlogs(params)
+	rawPaginateBlogs, total_records, err := s.repo.GetRawPublicPaginateBlogs(params)
 
 	if err != nil {
-		return []BlogPublicResponse{}, err
+		return []BlogPublicResponse{}, 0, err
 	}
 
 	if len(rawPaginateBlogs) == 0 {
-		return []BlogPublicResponse{}, nil
+		return []BlogPublicResponse{}, 0, nil
 	}
 
 	//?: Slice unique paginate blog ids
@@ -156,7 +156,7 @@ func (s *service) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicResponse,
 	rawBlogs, err := s.repo.GetRawPublicBlogs(params, uniquePaginateBlogIDs)
 
 	if err != nil {
-		return []BlogPublicResponse{}, err
+		return []BlogPublicResponse{}, 0, err
 	}
 
 	//?: Slice unique blog ids
@@ -172,7 +172,7 @@ func (s *service) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicResponse,
 	rawBlogTopics, err := s.repo.GetRawPublicBlogTopics(params, uniqueBlogIDs)
 
 	if err != nil {
-		return []BlogPublicResponse{}, err
+		return []BlogPublicResponse{}, 0, err
 	}
 
 	//?: Map Blog Topics
@@ -186,15 +186,24 @@ func (s *service) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicResponse,
 
 	// Iterate through the raw blog data and map it to BlogPublicResponse
 	for _, raw := range rawBlogs {
-		// Map the raw data to BlogPublicResponse
-		mapBlogTopic := mappedBlogTopics[raw.ID]
-		blogResponse := s.MapBlogRawToResponse(raw, mapBlogTopic)
+		// Check if raw.ID already exists in blogResponses
+		exists := false
+		for _, existingResponse := range blogResponses {
+			if existingResponse.ID == raw.ID {
+				exists = true
+				break
+			}
+		}
 
-		// Append the result to the slice
-		blogResponses = append(blogResponses, blogResponse)
+		// If it doesn't exist, map the raw data to BlogPublicResponse and append it
+		if !exists {
+			mapBlogTopic := mappedBlogTopics[raw.ID]
+			blogResponse := s.MapBlogRawToResponse(raw, mapBlogTopic)
+			blogResponses = append(blogResponses, blogResponse)
+		}
 	}
 
-	return blogResponses, nil
+	return blogResponses, total_records, nil
 }
 
 func (s *service) MapBlogRawToResponse(raw BlogPublicRaw, blogTopics []BlogTopicPublicRaw) BlogPublicResponse {
@@ -401,16 +410,16 @@ func (s *service) GetPublicTopics() ([]TopicPublicResponse, error) {
 	return datas, nil
 }
 
-func (s *service) GetPublicProjects(params ProjectPublicParams) ([]ProjectPublicResponse, error) {
+func (s *service) GetPublicProjects(params ProjectPublicParams) ([]ProjectPublicResponse, int, error) {
 	//todo: Get Raw Paginate Project
-	rawPaginateProjects, err := s.repo.GetRawPublicPaginateProjects(params)
+	rawPaginateProjects, total_record, err := s.repo.GetRawPublicPaginateProjects(params)
 
 	if err != nil {
-		return []ProjectPublicResponse{}, err
+		return []ProjectPublicResponse{}, 0, err
 	}
 
 	if len(rawPaginateProjects) == 0 {
-		return []ProjectPublicResponse{}, nil
+		return []ProjectPublicResponse{}, 0, nil
 	}
 
 	//?: Slice unique paginate Project ids
@@ -426,7 +435,7 @@ func (s *service) GetPublicProjects(params ProjectPublicParams) ([]ProjectPublic
 	rawProjectTechnologies, err := s.repo.GetRawPublicProjectTechnologies(params, uniquePaginateProjectIDs)
 
 	if err != nil {
-		return []ProjectPublicResponse{}, err
+		return []ProjectPublicResponse{}, 0, err
 	}
 
 	//?: Map Project Technlogies
@@ -446,7 +455,7 @@ func (s *service) GetPublicProjects(params ProjectPublicParams) ([]ProjectPublic
 		projectResponses = append(projectResponses, projectResponse)
 	}
 
-	return projectResponses, nil
+	return projectResponses, total_record, nil
 }
 
 func (s *service) MapProjectRawToResponse(raw ProjectPaginatePublicRaw, projectTechnologies []ProjectTechnologyPublicRaw) ProjectPublicResponse {

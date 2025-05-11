@@ -13,13 +13,13 @@ type Repository interface {
 	GetAboutPublic() (AboutPublicResponse, error)
 	GetCurrentWork() (CurrentWorkPublicResponse, error)
 	GetExperiencesPublic() ([]ExperiencesPublicResponse, error)
-	GetRawPublicPaginateBlogs(params BlogPublicParams) ([]BlogPaginatePublicRaw, error)
+	GetRawPublicPaginateBlogs(params BlogPublicParams) ([]BlogPaginatePublicRaw, int, error)
 	GetRawPublicBlogs(params BlogPublicParams, uniquePaginateBlogIDs []int) ([]BlogPublicRaw, error)
 	GetPublicBlogBySlug(slug string) ([]SingleBlogPublicRaw, error)
 	GetRawPublicBlogTopics(params BlogPublicParams, uniqueBlogIDs []int) ([]BlogTopicPublicRaw, error)
 	GetPublicTestimonials() ([]TestimonialPublicResponse, error)
 	GetPublicTopics() ([]TopicPublicResponse, error)
-	GetRawPublicPaginateProjects(params ProjectPublicParams) ([]ProjectPaginatePublicRaw, error)
+	GetRawPublicPaginateProjects(params ProjectPublicParams) ([]ProjectPaginatePublicRaw, int, error)
 	GetRawPublicProjectTechnologies(params ProjectPublicParams, uniqueProjectIDs []int) ([]ProjectTechnologyPublicRaw, error)
 	GetPublicProjectBySlug(slug string) ([]SingleProjectPublicRaw, error)
 	GetPublicTechnologies() ([]TechnologyPublicResponse, error)
@@ -90,8 +90,16 @@ func (r *repository) GetExperiencesPublic() ([]ExperiencesPublicResponse, error)
 	return data, nil
 }
 
-func (r *repository) GetRawPublicPaginateBlogs(params BlogPublicParams) ([]BlogPaginatePublicRaw, error) {
+func (r *repository) GetRawPublicPaginateBlogs(params BlogPublicParams) ([]BlogPaginatePublicRaw, int, error) {
 	var datas []BlogPaginatePublicRaw
+	var totalCount int
+
+	//todo: Build the raw Count SQL query
+	rawCountSQL := `
+		SELECT 
+			count(*)
+		FROM blogs b
+	`
 
 	// Build the raw SQL query
 	rawSQL := `
@@ -126,6 +134,24 @@ func (r *repository) GetRawPublicPaginateBlogs(params BlogPublicParams) ([]BlogP
 		whereSQL = "WHERE " + strings.Join(whereClauses, " AND ")
 	}
 
+	finalCountSQL := fmt.Sprintf(`
+		%s
+		%s`, rawCountSQL, whereSQL)
+
+	// Add LIMIT and OFFSET arguments
+	err := r.db.Raw(finalCountSQL, queryArgs...).Scan(&totalCount).Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if totalCount == 0 {
+		errMsg := errors.New("data not found")
+		return nil, 0, errMsg
+	}
+
+	//! Build Query Paginate
+
 	//? Construct the ORDER BY clause
 	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Sort, params.Order)
 
@@ -141,13 +167,13 @@ func (r *repository) GetRawPublicPaginateBlogs(params BlogPublicParams) ([]BlogP
 	queryArgs = append(queryArgs, params.Limit, offset)
 
 	// Execute the raw SQL query
-	err := r.db.Raw(finalSQL, queryArgs...).Scan(&datas).Error
+	err = r.db.Raw(finalSQL, queryArgs...).Scan(&datas).Error
 
 	if err != nil {
-		return []BlogPaginatePublicRaw{}, err
+		return []BlogPaginatePublicRaw{}, 0, err
 	}
 
-	return datas, nil
+	return datas, totalCount, nil
 }
 
 func (r *repository) GetRawPublicBlogs(params BlogPublicParams, uniquePaginateBlogIDs []int) ([]BlogPublicRaw, error) {
@@ -337,8 +363,16 @@ func (r *repository) GetPublicTopics() ([]TopicPublicResponse, error) {
 	return datas, err
 }
 
-func (r *repository) GetRawPublicPaginateProjects(params ProjectPublicParams) ([]ProjectPaginatePublicRaw, error) {
+func (r *repository) GetRawPublicPaginateProjects(params ProjectPublicParams) ([]ProjectPaginatePublicRaw, int, error) {
 	var datas []ProjectPaginatePublicRaw
+	var totalCount int
+
+	//todo: Build the raw Count SQL query
+	rawCountSQL := `
+		SELECT 
+			count(*)
+		FROM projects p
+	`
 
 	// Build the raw SQL query
 	rawSQL := `
@@ -374,6 +408,24 @@ func (r *repository) GetRawPublicPaginateProjects(params ProjectPublicParams) ([
 		whereSQL = "WHERE " + strings.Join(whereClauses, " AND ")
 	}
 
+	finalCountSQL := fmt.Sprintf(`
+		%s
+		%s`, rawCountSQL, whereSQL)
+
+	// Add LIMIT and OFFSET arguments
+	err := r.db.Raw(finalCountSQL, queryArgs...).Scan(&totalCount).Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if totalCount == 0 {
+		errMsg := errors.New("data not found")
+		return nil, 0, errMsg
+	}
+
+	//! Build the raw SQL query
+
 	//? Construct the ORDER BY clause
 	orderBySQL := fmt.Sprintf("ORDER BY p.%s %s", params.Sort, params.Order)
 
@@ -389,13 +441,13 @@ func (r *repository) GetRawPublicPaginateProjects(params ProjectPublicParams) ([
 	queryArgs = append(queryArgs, params.Limit, offset)
 
 	// Execute the raw SQL query
-	err := r.db.Raw(finalSQL, queryArgs...).Scan(&datas).Error
+	err = r.db.Raw(finalSQL, queryArgs...).Scan(&datas).Error
 
 	if err != nil {
-		return []ProjectPaginatePublicRaw{}, err
+		return []ProjectPaginatePublicRaw{}, 0, err
 	}
 
-	return datas, nil
+	return datas, totalCount, nil
 }
 
 func (r *repository) GetRawPublicProjectTechnologies(params ProjectPublicParams, uniqueProjectIDs []int) ([]ProjectTechnologyPublicRaw, error) {
