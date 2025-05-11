@@ -3,6 +3,7 @@ package experience
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -93,9 +94,20 @@ func (r *repository) FindAll(params GetAllExperienceParams) ([]Experience, int, 
 		whereClauses = append(whereClauses, "(from_date LIKE ?)")
 		queryArgs = append(queryArgs, "%"+params.FromDate[0]+"%")
 	} else if len(params.FromDate) == 2 {
-		// If two dates are provided, use BETWEEN
+		// Parse the dates and adjust the time for the range
+		startDate, err := time.Parse("2006-01-02", params.FromDate[0])
+		if err != nil {
+			return nil, 0, err
+		}
+		endDate, err := time.Parse("2006-01-02", params.FromDate[1])
+		if err != nil {
+			return nil, 0, err
+		}
+
+		startDate = startDate.Truncate(24 * time.Hour)        // Start at 00:00:00
+		endDate = endDate.Add(24*time.Hour - time.Nanosecond) // End at 23:59:59.999
 		whereClauses = append(whereClauses, "(from_date BETWEEN ? AND ?)")
-		queryArgs = append(queryArgs, params.FromDate[0], params.FromDate[1])
+		queryArgs = append(queryArgs, startDate, endDate)
 	}
 
 	//? field "to_date"
@@ -104,20 +116,41 @@ func (r *repository) FindAll(params GetAllExperienceParams) ([]Experience, int, 
 		whereClauses = append(whereClauses, "(to_date LIKE ?)")
 		queryArgs = append(queryArgs, "%"+params.ToDate[0]+"%")
 	} else if len(params.ToDate) == 2 {
-		// If two dates are provided, use BETWEEN
+		// Parse the dates and adjust the time for the range
+		startDate, err := time.Parse("2006-01-02", params.ToDate[0])
+		if err != nil {
+			return nil, 0, err
+		}
+		endDate, err := time.Parse("2006-01-02", params.ToDate[1])
+		if err != nil {
+			return nil, 0, err
+		}
+
+		startDate = startDate.Truncate(24 * time.Hour)        // Start at 00:00:00
+		endDate = endDate.Add(24*time.Hour - time.Nanosecond) // End at 23:59:59.999
 		whereClauses = append(whereClauses, "(to_date BETWEEN ? AND ?)")
-		queryArgs = append(queryArgs, params.ToDate[0], params.ToDate[1])
+		queryArgs = append(queryArgs, startDate, endDate)
 	}
 
 	//? field "created_at"
 	if len(params.CreatedAt) == 1 {
-		// If only one date is provided, use equality
 		whereClauses = append(whereClauses, "(created_at LIKE ?)")
 		queryArgs = append(queryArgs, "%"+params.CreatedAt[0]+"%")
 	} else if len(params.CreatedAt) == 2 {
-		// If two dates are provided, use BETWEEN
+		// Parse the dates and adjust the time for the range
+		startDate, err := time.Parse("2006-01-02", params.CreatedAt[0])
+		if err != nil {
+			return nil, 0, err
+		}
+		endDate, err := time.Parse("2006-01-02", params.CreatedAt[1])
+		if err != nil {
+			return nil, 0, err
+		}
+
+		startDate = startDate.Truncate(24 * time.Hour)        // Start at 00:00:00
+		endDate = endDate.Add(24*time.Hour - time.Nanosecond) // End at 23:59:59.999
 		whereClauses = append(whereClauses, "(created_at BETWEEN ? AND ?)")
-		queryArgs = append(queryArgs, params.CreatedAt[0], params.CreatedAt[1])
+		queryArgs = append(queryArgs, startDate, endDate)
 	}
 
 	//? Construct the WHERE clause

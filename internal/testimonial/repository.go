@@ -3,6 +3,7 @@ package testimonial
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -66,15 +67,25 @@ func (r *repository) FindAll(params GetAllTestimonialParams) ([]Testimonial, int
 		queryArgs = append(queryArgs, is_used)
 	}
 
-	// Apply date range filtering for created_at if provided
+	//? field "created_at"
 	if len(params.CreatedAt) == 1 {
-		// If only one date is provided, use equality
 		whereClauses = append(whereClauses, "(created_at LIKE ?)")
 		queryArgs = append(queryArgs, "%"+params.CreatedAt[0]+"%")
 	} else if len(params.CreatedAt) == 2 {
-		// If two dates are provided, use BETWEEN
+		// Parse the dates and adjust the time for the range
+		startDate, err := time.Parse("2006-01-02", params.CreatedAt[0])
+		if err != nil {
+			return nil, 0, err
+		}
+		endDate, err := time.Parse("2006-01-02", params.CreatedAt[1])
+		if err != nil {
+			return nil, 0, err
+		}
+
+		startDate = startDate.Truncate(24 * time.Hour)        // Start at 00:00:00
+		endDate = endDate.Add(24*time.Hour - time.Nanosecond) // End at 23:59:59.999
 		whereClauses = append(whereClauses, "(created_at BETWEEN ? AND ?)")
-		queryArgs = append(queryArgs, params.CreatedAt[0], params.CreatedAt[1])
+		queryArgs = append(queryArgs, startDate, endDate)
 	}
 
 	//? Construct the WHERE clause

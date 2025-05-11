@@ -33,19 +33,16 @@ func (h *handler) GetAll(c *gin.Context) {
 	// Check if the created_at parameter has a value and parse the range
 	var createdAtRange []string
 	if created_at != "" {
-		created_at = strings.Trim(created_at, "[]")
 		createdAtRange = strings.Split(created_at, ",")
 	}
 
 	var fromDateAtRange []string
 	if from_date != "" {
-		from_date = strings.Trim(from_date, "[]")
 		fromDateAtRange = strings.Split(from_date, ",")
 	}
 
 	var toDateAtRange []string
 	if to_date != "" {
-		to_date = strings.Trim(to_date, "[]")
 		toDateAtRange = strings.Split(to_date, ",")
 	}
 
