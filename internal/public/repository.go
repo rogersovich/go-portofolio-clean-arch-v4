@@ -427,7 +427,7 @@ func (r *repository) GetRawPublicPaginateProjects(params ProjectPublicParams) ([
 	//! Build the raw SQL query
 
 	//? Construct the ORDER BY clause
-	orderBySQL := fmt.Sprintf("ORDER BY p.%s %s", params.Sort, params.Order)
+	orderBySQL := fmt.Sprintf("ORDER BY p.%s %s", params.Order, params.Sort)
 
 	// Construct the final SQL query with LIMIT and OFFSET
 	finalSQL := fmt.Sprintf(`
@@ -480,7 +480,7 @@ func (r *repository) GetRawPublicProjectTechnologies(params ProjectPublicParams,
 	}
 
 	//? Construct the ORDER BY clause
-	orderBySQL := fmt.Sprintf("ORDER BY p.%s %s", params.Sort, params.Order)
+	orderBySQL := fmt.Sprintf("ORDER BY p.%s %s", params.Order, params.Sort)
 
 	//? Construct the final SQL query with LIMIT and OFFSET
 	finalSQL := fmt.Sprintf(`

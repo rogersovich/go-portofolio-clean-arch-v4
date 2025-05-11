@@ -223,8 +223,8 @@ type TopicPublicResponse struct {
 type ProjectPublicParams struct {
 	Page   int    `binding:"required"`
 	Limit  int    `binding:"required"`
-	Sort   string `binding:"required,oneof=published_at created_at id"`
-	Order  string `binding:"required"`
+	Order  string `binding:"required,oneof=published_at created_at id updated_at"`
+	Sort   string `binding:"required"`
 	Search string
 }
 
