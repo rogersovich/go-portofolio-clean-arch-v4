@@ -22,8 +22,8 @@ func (h *handler) GetPublicBlogs(c *gin.Context) {
 	// Retrieve query parameters from the request
 	page := utils.GetQueryParamInt(c, "page", 1)    // Default to page 1
 	limit := utils.GetQueryParamInt(c, "limit", 10) // Default to 10 items per page
-	sort := c.DefaultQuery("sort", "id")
-	order := c.DefaultQuery("order", "ASC")
+	sort := c.DefaultQuery("sort", "ASC")
+	order := c.DefaultQuery("order", "id")
 	search := c.DefaultQuery("search", "")
 	topicParam := c.DefaultQuery("topics", "")
 

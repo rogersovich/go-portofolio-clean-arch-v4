@@ -53,7 +53,7 @@ func JWTMiddleware() gin.HandlerFunc {
 		// Get the token from the Authorization header
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {
-			Error(c, http.StatusBadRequest, "Unauthorized request")
+			Error(c, http.StatusUnauthorized, "Unauthorized request")
 			c.Abort()
 			return
 		}
@@ -64,7 +64,7 @@ func JWTMiddleware() gin.HandlerFunc {
 		// Validate the token
 		token, err := ValidateJWT(tokenString)
 		if err != nil || !token.Valid {
-			Error(c, http.StatusBadRequest, "Invalid or expired token")
+			Error(c, http.StatusUnauthorized, "Invalid or expired token")
 			c.Abort()
 			return
 		}

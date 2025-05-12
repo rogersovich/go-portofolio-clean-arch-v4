@@ -50,8 +50,8 @@ func (r *repository) FindAll(params GetAllBlogParams) ([]Blog, int, error) {
 
 	//? field "status"
 	if params.Status != "" {
-		whereClauses = append(whereClauses, "(status LIKE ?)")
-		queryArgs = append(queryArgs, "%"+params.Status+"%")
+		whereClauses = append(whereClauses, "(status = ?)")
+		queryArgs = append(queryArgs, params.Status)
 	}
 
 	//? field "published_at"

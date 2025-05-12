@@ -209,14 +209,15 @@ func (s *service) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicResponse,
 func (s *service) MapBlogRawToResponse(raw BlogPublicRaw, blogTopics []BlogTopicPublicRaw) BlogPublicResponse {
 	// Mapping the BlogPublicRaw to BlogPublicResponse
 	blogResponse := BlogPublicResponse{
-		ID:             raw.ID,
-		Title:          raw.Title,
-		BannerUrl:      raw.BannerUrl,
-		BannerFileName: raw.BannerFileName,
-		Summary:        raw.Summary,
-		Status:         raw.Status,
-		Slug:           raw.Slug,
-		PublishedAt:    raw.PublishedAt,
+		ID:              raw.ID,
+		Title:           raw.Title,
+		BannerUrl:       raw.BannerUrl,
+		BannerFileName:  raw.BannerFileName,
+		Summary:         raw.Summary,
+		DescriptionHTML: raw.DescriptionHTML,
+		Status:          raw.Status,
+		Slug:            raw.Slug,
+		PublishedAt:     raw.PublishedAt,
 	}
 
 	// Mapping Author (Assuming Author info comes from the same raw data)

@@ -66,8 +66,8 @@ type ProfilePublicResponse struct {
 type BlogPublicParams struct {
 	Page   int    `binding:"required"`
 	Limit  int    `binding:"required"`
-	Sort   string `binding:"required,oneof=published_at id views"`
-	Order  string `binding:"required"`
+	Order  string `binding:"required,oneof=published_at id views created_at updated_at"`
+	Sort   string `binding:"required"`
 	Search string
 	Topics []int
 }
@@ -87,6 +87,7 @@ type BlogPublicRaw struct {
 	BannerUrl                   string     `json:"banner_url"`
 	BannerFileName              string     `json:"banner_file_name"`
 	Summary                     string     `json:"summary"`
+	DescriptionHTML             string     `json:"description_html"`
 	Status                      string     `json:"status"`
 	Slug                        string     `json:"slug"`
 	PublishedAt                 *time.Time `json:"published_at"`
@@ -145,18 +146,19 @@ type BlogPublicContentImageResponse struct {
 }
 
 type BlogPublicResponse struct {
-	ID             int                            `json:"id"`
-	Title          string                         `json:"title"`
-	BannerUrl      string                         `json:"banner_url"`
-	BannerFileName string                         `json:"banner_file_name"`
-	Summary        string                         `json:"summary"`
-	Status         string                         `json:"status"`
-	Slug           string                         `json:"slug"`
-	PublishedAt    *time.Time                     `json:"published_at"`
-	Author         *BlogPublicAuthorResponse      `json:"author"`
-	ReadingTime    *BlogPublicReadingTimeResponse `json:"reading_time"`
-	Statistic      *BlogPublicStatisticResponse   `json:"statistic"`
-	Topics         []BlogPublicTopicResponse      `json:"topics"`
+	ID              int                            `json:"id"`
+	Title           string                         `json:"title"`
+	BannerUrl       string                         `json:"banner_url"`
+	BannerFileName  string                         `json:"banner_file_name"`
+	Summary         string                         `json:"summary"`
+	DescriptionHTML string                         `json:"description_html"`
+	Status          string                         `json:"status"`
+	Slug            string                         `json:"slug"`
+	PublishedAt     *time.Time                     `json:"published_at"`
+	Author          *BlogPublicAuthorResponse      `json:"author"`
+	ReadingTime     *BlogPublicReadingTimeResponse `json:"reading_time"`
+	Statistic       *BlogPublicStatisticResponse   `json:"statistic"`
+	Topics          []BlogPublicTopicResponse      `json:"topics"`
 }
 
 type SingleBlogPublicRaw struct {
@@ -315,8 +317,8 @@ type SingleProjectPublicResponse struct {
 	Slug          string                              `json:"slug"`
 	PublishedAt   *string                             `json:"published_at"`
 	Statistic     *ProjectPublicStatisticResponse     `json:"statistic"`
-	ContentImages []ProjectPublicContentImageResponse `json:"content_image"`
-	Technologies  []ProjectTechnologyPublicResponse   `json:"topics"`
+	ContentImages []ProjectPublicContentImageResponse `json:"images"`
+	Technologies  []ProjectTechnologyPublicResponse   `json:"technologies"`
 }
 
 type TechnologyPublicResponse struct {

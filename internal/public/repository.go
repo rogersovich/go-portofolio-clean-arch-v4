@@ -153,7 +153,7 @@ func (r *repository) GetRawPublicPaginateBlogs(params BlogPublicParams) ([]BlogP
 	//! Build Query Paginate
 
 	//? Construct the ORDER BY clause
-	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Sort, params.Order)
+	orderBySQL := fmt.Sprintf("ORDER BY b.%s %s", params.Order, params.Sort)
 
 	// Construct the final SQL query with LIMIT and OFFSET
 	finalSQL := fmt.Sprintf(`
@@ -184,6 +184,7 @@ func (r *repository) GetRawPublicBlogs(params BlogPublicParams, uniquePaginateBl
 			b.id, 
 			b.title,
 			b.summary,
+			b.description_html,
 			b.banner_url,
 			b.banner_file_name,
 			b.published_at,
@@ -231,7 +232,7 @@ func (r *repository) GetRawPublicBlogs(params BlogPublicParams, uniquePaginateBl
 	}
 
 	//? Construct the ORDER BY clause
-	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Sort, params.Order)
+	orderBySQL := fmt.Sprintf("ORDER BY b.%s %s", params.Order, params.Sort)
 
 	// Construct the final SQL query with LIMIT and OFFSET
 	finalSQL := fmt.Sprintf(`
@@ -276,7 +277,7 @@ func (r *repository) GetRawPublicBlogTopics(params BlogPublicParams, uniqueBlogI
 	}
 
 	//? Construct the ORDER BY clause
-	orderBySQL := fmt.Sprintf("ORDER BY %s %s", params.Sort, params.Order)
+	orderBySQL := fmt.Sprintf("ORDER BY b.%s %s", params.Order, params.Sort)
 
 	// Construct the final SQL query with LIMIT and OFFSET
 	finalSQL := fmt.Sprintf(`
@@ -398,7 +399,7 @@ func (r *repository) GetRawPublicPaginateProjects(params ProjectPublicParams) ([
 
 	//? field "search"
 	if params.Search != "" {
-		whereClauses = append(whereClauses, "(b.title LIKE ? OR b.summary LIKE ?)")
+		whereClauses = append(whereClauses, "(p.title LIKE ? OR p.summary LIKE ?)")
 		queryArgs = append(queryArgs, "%"+params.Search+"%", "%"+params.Search+"%")
 	}
 
