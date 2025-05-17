@@ -20,7 +20,7 @@ func GenerateJWT(username string) (string, error) {
 	// Create JWT claims
 	claims := jwt.MapClaims{
 		"username": username,
-		"exp":      time.Now().Add(time.Hour * 24).Unix(),
+		"exp":      time.Now().Add(time.Hour * 24 * 7).Unix(), // Token expires in 7 days
 	}
 
 	// Create token with claims

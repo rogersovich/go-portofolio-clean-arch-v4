@@ -73,7 +73,7 @@ func (r *repository) GetExperiencesPublic() ([]ExperiencesPublicResponse, error)
 	// Build the query
 	query := r.db.Table("experiences").Where("deleted_at IS NULL")
 
-	sort := "ASC"
+	sort := "DESC"
 	order := "from_date"
 
 	// Apply sorting if provided
@@ -146,8 +146,7 @@ func (r *repository) GetRawPublicPaginateBlogs(params BlogPublicParams) ([]BlogP
 	}
 
 	if totalCount == 0 {
-		errMsg := errors.New("data not found")
-		return nil, 0, errMsg
+		return []BlogPaginatePublicRaw{}, 0, nil
 	}
 
 	//! Build Query Paginate
@@ -421,8 +420,7 @@ func (r *repository) GetRawPublicPaginateProjects(params ProjectPublicParams) ([
 	}
 
 	if totalCount == 0 {
-		errMsg := errors.New("data not found")
-		return nil, 0, errMsg
+		return []ProjectPaginatePublicRaw{}, 0, nil
 	}
 
 	//! Build the raw SQL query
