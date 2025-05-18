@@ -6,6 +6,8 @@ services:
     image: my-go-be-portfolio:latest
     container_name: go_be_portfolio
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "4000:4000"
     env_file:
