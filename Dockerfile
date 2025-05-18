@@ -1,5 +1,5 @@
 # Step 1: Build the Go application
-FROM golang:1.23 AS builder
+FROM golang:1.20-alpine AS builder
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -12,7 +12,10 @@ RUN go mod download
 COPY . .
 
 # Build the application (main.go is in the cmd directory)
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /bin/app cmd/main.go
+RUN CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64 \
+    go build -ldflags="-s -w" -o /app/bin/app cmd/main.go
 
 # Step 2: Create a minimal container for running the application
 FROM alpine:latest
@@ -21,13 +24,10 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 
 # Copy the compiled binary from the builder container
-COPY --from=builder /bin/app /bin/app
+COPY --from=builder /app/bin/app .
 
 # Set the entry point for the container (the built Go binary)
-ENTRYPOINT ["/bin/app"]
+ENTRYPOINT ["./app"]
 
 # Expose the port on which your application will run
 EXPOSE 4000
-
-# Command to run the app
-CMD ["/bin/app"]

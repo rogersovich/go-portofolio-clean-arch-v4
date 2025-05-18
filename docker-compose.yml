@@ -1,0 +1,22 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: my-go-be-portfolio:latest
+    container_name: go_be_portfolio
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
+      - MINIO_KEY_ID=${MINIO_KEY_ID}
+      - MINIO_KEY_SECRET=${MINIO_KEY_SECRET}
+      - MINIO_SSL=${MINIO_SSL}
+      - MINIO_BUCKET=${MINIO_BUCKET}
+      - JWT_SECRET=${JWT_SECRET}
