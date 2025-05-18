@@ -1,10 +1,13 @@
 package public
 
 import (
+	"context"
+	"fmt"
 	"slices"
-	"sync"
 
 	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
+	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/semaphore"
 )
 
 type Service interface {
@@ -17,6 +20,7 @@ type Service interface {
 	GetPublicProjectBySlug(slug string) (SingleProjectPublicResponse, error)
 	GetPublicTechnologies() ([]TechnologyPublicResponse, error)
 	GetPublicAuthors() ([]AuthorPublicResponse, error)
+	GetPublicExperiences() ([]ExperiencesPublicResponse, error)
 }
 
 type service struct {
@@ -30,81 +34,105 @@ func NewService(r Repository) Service {
 }
 
 func (s *service) GetProfile() (ProfilePublicResponse, error) {
-	// Create channels to collect results and errors
-	aboutCh := make(chan AboutPublicResponse, 1)
-	technologiesCh := make(chan []TechnologyProfilePublicResponse, 1)
-	currentWorkCh := make(chan CurrentWorkPublicResponse, 1)
-	experiencesCh := make(chan []ExperiencesPublicResponse, 1)
+	// base context
+	ctx := context.Background()
 
-	// Create a WaitGroup to ensure all goroutines finish
-	var wg sync.WaitGroup
+	// errgroup to collect errors and wait
+	eg, ctx := errgroup.WithContext(ctx)
 
-	// Error channel to capture any errors from goroutines
-	errCh := make(chan error, 1)
+	// limit concurrency to 2
+	sem := semaphore.NewWeighted(2)
 
-	// Goroutines to call repository functions concurrently
-	wg.Add(4) // We are launching 4 goroutines
+	// placeholders for results
+	var (
+		about        AboutPublicResponse
+		technologies []TechnologyProfilePublicResponse
+		currentWork  CurrentWorkPublicResponse
+		experiences  []ExperiencesPublicResponse
+	)
 
-	// Goroutines to call repository functions concurrently
-	go func() {
-		defer wg.Done()
-		about, err := s.repo.GetAboutPublic()
-		if err != nil {
-			errCh <- err
-			return
-		}
-		aboutCh <- about
-	}()
+	// helper: run fn(), store into targetVar
+	run := func(name string, fn func() (interface{}, error), store func(interface{})) {
+		eg.Go(func() error {
+			// acquire a semaphore slot
+			if err := sem.Acquire(ctx, 1); err != nil {
+				return fmt.Errorf("acquire %s: %w", name, err)
+			}
+			defer sem.Release(1)
 
-	go func() {
-		defer wg.Done()
-		technologies, err := s.repo.GetTechnologiesPublic()
-		if err != nil {
-			errCh <- err
-			return
-		}
-		technologiesCh <- technologies
-	}()
+			res, err := fn()
+			if err != nil {
+				return fmt.Errorf("%s failed: %w", name, err)
+			}
 
-	go func() {
-		defer wg.Done()
-		currentWork, err := s.repo.GetCurrentWork()
-		if err != nil {
-			errCh <- err
-			return
-		}
-		currentWorkCh <- currentWork
-	}()
-
-	go func() {
-		defer wg.Done()
-		experiences, err := s.repo.GetExperiencesPublic()
-		if err != nil {
-			errCh <- err
-			return
-		}
-		experiencesCh <- experiences
-	}()
-
-	// Wait for all goroutines to finish
-	wg.Wait()
-
-	// Handle any errors from the goroutines
-	select {
-	case err := <-errCh:
-		return ProfilePublicResponse{}, err
-	default:
-		// No errors, continue processing
+			store(res)
+			return nil
+		})
 	}
 
-	// Collect results from channels
-	about := <-aboutCh
-	technologies := <-technologiesCh
-	currentWork := <-currentWorkCh
-	experiences := <-experiencesCh
+	// schedule all calls
+	run("GetAboutPublic",
+		func() (interface{}, error) { return s.repo.GetAboutPublic() },
+		func(r interface{}) { about = r.(AboutPublicResponse) },
+	)
+
+	run("GetTechnologiesPublic",
+		func() (interface{}, error) { return s.repo.GetTechnologiesPublic() },
+		func(r interface{}) { technologies = r.([]TechnologyProfilePublicResponse) },
+	)
+
+	run("GetCurrentWork",
+		func() (interface{}, error) { return s.repo.GetCurrentWork() },
+		func(r interface{}) { currentWork = r.(CurrentWorkPublicResponse) },
+	)
+
+	run("GetExperiencesPublic",
+		func() (interface{}, error) { return s.repo.GetExperiencesPublic() },
+		func(r interface{}) { experiences = r.([]ExperiencesPublicResponse) },
+	)
+
+	// wait for all or first error
+	if err := eg.Wait(); err != nil {
+		return ProfilePublicResponse{}, err
+	}
+
+	// post-process experiences: reformat FromDate
+	var formatted []ExperiencesPublicResponse
+	for _, exp := range experiences {
+		t, _ := utils.ParseStringToTime(exp.FromDate, "2006-01-02T15:04:05-07:00")
+		formatted = append(formatted, ExperiencesPublicResponse{
+			Position:          exp.Position,
+			CompanyName:       exp.CompanyName,
+			WorkType:          exp.WorkType,
+			Country:           exp.Country,
+			City:              exp.City,
+			CompWebsiteUrl:    exp.CompWebsiteUrl,
+			SummaryHTML:       exp.SummaryHTML,
+			FromDate:          t.Format("2006-01-02"),
+			ToDate:            exp.ToDate,
+			CompImageUrl:      exp.CompImageUrl,
+			CompImageFileName: exp.CompImageFileName,
+			IsCurrent:         exp.IsCurrent,
+		})
+	}
+
+	// assemble final response
+	return ProfilePublicResponse{
+		About:        about,
+		Technologies: technologies,
+		CurrentWork:  currentWork,
+		Experiences:  formatted,
+	}, nil
+}
+
+func (s *service) GetPublicExperiences() ([]ExperiencesPublicResponse, error) {
+	datas, err := s.repo.GetExperiencesPublic()
+	if err != nil {
+		return []ExperiencesPublicResponse{}, err
+	}
 
 	var experiences_formatted []ExperiencesPublicResponse
-	for _, experience := range experiences {
+	for _, experience := range datas {
 		fromDateTime, _ := utils.ParseStringToTime(experience.FromDate, "2006-01-02T15:04:05-07:00")
 		experiences_formatted = append(experiences_formatted, ExperiencesPublicResponse{
 			Position:          experience.Position,
@@ -122,13 +150,7 @@ func (s *service) GetProfile() (ProfilePublicResponse, error) {
 		})
 	}
 
-	data := ProfilePublicResponse{
-		About:        about,
-		Technologies: technologies,
-		CurrentWork:  currentWork,
-		Experiences:  experiences_formatted,
-	}
-	return data, nil
+	return experiences_formatted, nil
 }
 
 func (s *service) GetPublicBlogs(params BlogPublicParams) ([]BlogPublicResponse, int, error) {
@@ -476,10 +498,11 @@ func (s *service) MapProjectRawToResponse(raw ProjectPaginatePublicRaw, projectT
 	if len(projectTechnologies) != 0 {
 		for _, tech := range projectTechnologies {
 			projectResponse.Technologies = append(projectResponse.Technologies, ProjectTechnologyPublicResponse{
-				TechID:      tech.TechID,
-				TechName:    tech.TechName,
-				TechLogoURL: tech.TechLogoURL,
-				TechLink:    tech.TechLink,
+				TechID:           tech.TechID,
+				TechName:         tech.TechName,
+				TechLogoURL:      tech.TechLogoURL,
+				TechLogoFileName: tech.TechLogoFileName,
+				TechLink:         tech.TechLink,
 			})
 		}
 	} else {

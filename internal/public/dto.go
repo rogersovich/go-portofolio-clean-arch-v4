@@ -242,18 +242,20 @@ type ProjectPaginatePublicRaw struct {
 }
 
 type ProjectTechnologyPublicRaw struct {
-	ProjectID   int    `json:"project_id"`
-	TechID      int    `json:"tech_id"`
-	TechName    string `json:"tech_name"`
-	TechLogoURL string `json:"tech_logo_url"`
-	TechLink    string `json:"tech_link"`
+	ProjectID        int    `json:"project_id"`
+	TechID           int    `json:"tech_id"`
+	TechName         string `json:"tech_name"`
+	TechLogoURL      string `json:"tech_logo_url"`
+	TechLogoFileName string `json:"tech_logo_file_name"`
+	TechLink         string `json:"tech_link"`
 }
 
 type ProjectTechnologyPublicResponse struct {
-	TechID      int    `json:"tech_id"`
-	TechName    string `json:"tech_name"`
-	TechLogoURL string `json:"tech_logo_url"`
-	TechLink    string `json:"tech_link"`
+	TechID           int    `json:"tech_id"`
+	TechName         string `json:"tech_name"`
+	TechLogoURL      string `json:"tech_logo_url"`
+	TechLogoFileName string `json:"tech_logo_file_name"`
+	TechLink         string `json:"tech_link"`
 }
 
 type ProjectPublicContentImageResponse struct {

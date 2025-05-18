@@ -37,7 +37,12 @@ func NewRepository(db *gorm.DB) Repository {
 func (r *repository) GetTechnologiesPublic() ([]TechnologyProfilePublicResponse, error) {
 	var data []TechnologyProfilePublicResponse
 
-	err := r.db.Table("technologies").Where("is_major = ? AND deleted_at IS NULL", 1).Scan(&data).Error
+	rawQuery := `
+		SELECT id, name, logo_url, logo_file_name
+		FROM technologies
+		WHERE is_major = ? AND deleted_at IS NULL
+	`
+	err := r.db.Raw(rawQuery, 1).Scan(&data).Error
 
 	if err != nil {
 		return []TechnologyProfilePublicResponse{}, err
@@ -59,7 +64,13 @@ func (r *repository) GetAboutPublic() (AboutPublicResponse, error) {
 func (r *repository) GetCurrentWork() (CurrentWorkPublicResponse, error) {
 	var data CurrentWorkPublicResponse
 
-	err := r.db.Table("experiences").Where("is_current = ? AND deleted_at IS NULL", 1).First(&data).Error
+	rawQuery := `
+		SELECT id, position, company_name, work_type, country, city, comp_website_url
+		FROM experiences
+		WHERE is_current = ? AND deleted_at IS NULL
+		LIMIT 1
+	`
+	err := r.db.Raw(rawQuery, 1).Scan(&data).Error
 	if err != nil {
 		return CurrentWorkPublicResponse{}, err
 	}
@@ -458,6 +469,7 @@ func (r *repository) GetRawPublicProjectTechnologies(params ProjectPublicParams,
 			t.id AS tech_id,
 			t.name AS tech_name,
 			t.logo_url AS tech_logo_url,
+			t.logo_file_name AS tech_logo_file_name,
 			t.link AS tech_link
 		FROM projects p
 		LEFT JOIN project_technologies pt ON pt.project_id = p.id

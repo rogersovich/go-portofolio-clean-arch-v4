@@ -36,5 +36,6 @@ air
 
 .env
 .env.production
+.env.development
 
 config.yaml
