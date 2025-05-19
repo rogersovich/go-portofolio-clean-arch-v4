@@ -31,10 +31,10 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 
 	// Configure CORS options
 	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{"http://localhost:3000"}                   // Allow requests from the frontend (e.g., React app)
-	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "DELETE"}            // Allowed methods
-	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"} // Allowed headers
-	corsConfig.AllowCredentials = true                                            // Allow credentials (cookies, authorization headers)
+	corsConfig.AllowOrigins = []string{"http://localhost:3000", "http://43.134.162.211:3000"} // Allow requests from local and remote frontend
+	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "DELETE"}                        // Allowed methods
+	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"}             // Allowed headers
+	corsConfig.AllowCredentials = true                                                        // Allow credentials (cookies, authorization headers)
 
 	// Apply CORS middleware
 	r.Use(cors.New(corsConfig))
