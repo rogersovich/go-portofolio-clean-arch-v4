@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/rogersovich/go-portofolio-clean-arch-v4/pkg/utils"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/semaphore"
 )
@@ -99,7 +98,6 @@ func (s *service) GetProfile() (ProfilePublicResponse, error) {
 	// post-process experiences: reformat FromDate
 	var formatted []ExperiencesPublicResponse
 	for _, exp := range experiences {
-		t, _ := utils.ParseStringToTime(exp.FromDate, "2006-01-02T15:04:05-07:00")
 		formatted = append(formatted, ExperiencesPublicResponse{
 			Position:          exp.Position,
 			CompanyName:       exp.CompanyName,
@@ -108,7 +106,7 @@ func (s *service) GetProfile() (ProfilePublicResponse, error) {
 			City:              exp.City,
 			CompWebsiteUrl:    exp.CompWebsiteUrl,
 			SummaryHTML:       exp.SummaryHTML,
-			FromDate:          t.Format("2006-01-02"),
+			FromDate:          exp.FromDate,
 			ToDate:            exp.ToDate,
 			CompImageUrl:      exp.CompImageUrl,
 			CompImageFileName: exp.CompImageFileName,
@@ -133,7 +131,6 @@ func (s *service) GetPublicExperiences() ([]ExperiencesPublicResponse, error) {
 
 	var experiences_formatted []ExperiencesPublicResponse
 	for _, experience := range datas {
-		fromDateTime, _ := utils.ParseStringToTime(experience.FromDate, "2006-01-02T15:04:05-07:00")
 		experiences_formatted = append(experiences_formatted, ExperiencesPublicResponse{
 			Position:          experience.Position,
 			CompanyName:       experience.CompanyName,
@@ -142,7 +139,7 @@ func (s *service) GetPublicExperiences() ([]ExperiencesPublicResponse, error) {
 			City:              experience.City,
 			CompWebsiteUrl:    experience.CompWebsiteUrl,
 			SummaryHTML:       experience.SummaryHTML,
-			FromDate:          fromDateTime.Format("2006-01-02"),
+			FromDate:          experience.FromDate,
 			ToDate:            experience.ToDate,
 			CompImageUrl:      experience.CompImageUrl,
 			CompImageFileName: experience.CompImageFileName,
