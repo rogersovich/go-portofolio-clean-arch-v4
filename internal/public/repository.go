@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/rogersovich/go-portofolio-clean-arch-v4/internal/statistic"
 	"gorm.io/gorm"
 )
 
@@ -24,6 +25,10 @@ type Repository interface {
 	GetPublicProjectBySlug(slug string) ([]SingleProjectPublicRaw, error)
 	GetPublicTechnologies() ([]TechnologyPublicResponse, error)
 	GetPublicAuthors() ([]AuthorPublicResponse, error)
+	FindProjectById(id int) (ProjectByIdResponse, error)
+	UpdatePublicProjectStatistic(p ProjectStatisticUpdatePublicDTO) (ProjectStatisticUpdatePubblicResponse, error)
+	FindBlogById(id int) (BlogByIdResponse, error)
+	UpdatePublicBlogStatistic(p BlogStatisticUpdatePublicDTO) (BlogStatisticUpdatePubblicResponse, error)
 }
 
 type repository struct {
@@ -569,4 +574,70 @@ func (r *repository) GetPublicAuthors() ([]AuthorPublicResponse, error) {
 	var datas []AuthorPublicResponse
 	err := r.db.Table("authors").Where("deleted_at IS NULL").Order("updated_at DESC").Scan(&datas).Error
 	return datas, err
+}
+
+func (r *repository) FindProjectById(id int) (ProjectByIdResponse, error) {
+	var data ProjectByIdResponse
+	err := r.db.Table("projects").Where("id = ?", id).Scan(&data).Error
+	if data.ID == 0 {
+		return ProjectByIdResponse{}, gorm.ErrRecordNotFound
+	}
+	return data, err
+}
+
+func (r *repository) UpdatePublicProjectStatistic(p ProjectStatisticUpdatePublicDTO) (ProjectStatisticUpdatePubblicResponse, error) {
+	data := statistic.Statistic{
+		ID:    p.StatisticID,
+		Likes: p.Likes,
+		Views: p.Views,
+		Type:  p.Type,
+	}
+	err := r.db.Where("ID = ?", p.StatisticID).Updates(&data).Error
+	if err != nil {
+		return ProjectStatisticUpdatePubblicResponse{}, err
+	}
+
+	res := ProjectStatisticUpdatePubblicResponse{
+		ProjectID:    p.ProjectID,
+		ProjectTitle: p.ProjectTitle,
+		StatisticID:  p.StatisticID,
+		Likes:        *data.Likes,
+		Views:        *data.Views,
+		Type:         data.Type,
+	}
+
+	return res, nil
+}
+
+func (r *repository) FindBlogById(id int) (BlogByIdResponse, error) {
+	var data BlogByIdResponse
+	err := r.db.Table("blogs").Where("id = ?", id).Scan(&data).Error
+	if data.ID == 0 {
+		return BlogByIdResponse{}, gorm.ErrRecordNotFound
+	}
+	return data, err
+}
+
+func (r *repository) UpdatePublicBlogStatistic(p BlogStatisticUpdatePublicDTO) (BlogStatisticUpdatePubblicResponse, error) {
+	data := statistic.Statistic{
+		ID:    p.StatisticID,
+		Likes: p.Likes,
+		Views: p.Views,
+		Type:  p.Type,
+	}
+	err := r.db.Where("ID = ?", p.StatisticID).Updates(&data).Error
+	if err != nil {
+		return BlogStatisticUpdatePubblicResponse{}, err
+	}
+
+	res := BlogStatisticUpdatePubblicResponse{
+		BlogID:      p.BlogID,
+		Title:       p.Title,
+		StatisticID: p.StatisticID,
+		Likes:       *data.Likes,
+		Views:       *data.Views,
+		Type:        data.Type,
+	}
+
+	return res, nil
 }

@@ -162,3 +162,35 @@ func (h *handler) GetPublicExperiences(c *gin.Context) {
 	}
 	utils.Success(c, "success get all data", data)
 }
+
+func (h *handler) UpdatePublicProjectStatistic(c *gin.Context) {
+	var req ProjectStatisticUpdatePublicRequest
+
+	if !utils.ValidateStruct(c, &req, c.ShouldBindJSON(&req)) {
+		return
+	}
+
+	data, err := h.service.UpdatePublicProjectStatistic(req)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.Success(c, "success updated data", data)
+}
+
+func (h *handler) UpdatePublicBlogStatistic(c *gin.Context) {
+	var req BlogStatisticUpdatePublicRequest
+
+	if !utils.ValidateStruct(c, &req, c.ShouldBindJSON(&req)) {
+		return
+	}
+
+	data, err := h.service.UpdatePublicBlogStatistic(req)
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.Success(c, "success updated data", data)
+}

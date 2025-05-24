@@ -28,4 +28,6 @@ func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	r.GET("/technologies", h.GetPublicTechnologies)
 	r.GET("/authors", h.GetPublicAuthors)
 	r.GET("/experiences", h.GetPublicExperiences)
+	r.POST("/update-statistic-project", h.UpdatePublicProjectStatistic)
+	r.POST("/update-statistic-blog", h.UpdatePublicBlogStatistic)
 }

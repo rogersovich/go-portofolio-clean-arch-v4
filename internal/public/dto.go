@@ -330,3 +330,81 @@ type TechnologyPublicResponse struct {
 	LogoFileName string `json:"logo_file_name"`
 	IsMajor      string `json:"is_major"`
 }
+
+type ProjectStatisticUpdatePublicRequest struct {
+	ProjectID   int    `json:"project_id" binding:"required,gt=0"`
+	StatisticID int    `json:"statistic_id" binding:"required,gt=0"`
+	Likes       *int   `json:"likes" binding:"required"`
+	Views       *int   `json:"views" binding:"required"`
+	Type        string `json:"type" binding:"required,oneof=Blog Project"`
+}
+
+type ProjectStatisticUpdatePubblicResponse struct {
+	ProjectID    int    `json:"project_id"`
+	StatisticID  int    `json:"statistic_id"`
+	ProjectTitle string `json:"project_title"`
+	Likes        int    `json:"likes"`
+	Views        int    `json:"views"`
+	Type         string `json:"type"`
+}
+
+type ProjectStatisticUpdatePublicDTO struct {
+	ProjectID    int
+	ProjectTitle string
+	StatisticID  int
+	Likes        *int
+	Views        *int
+	Type         string
+}
+
+type ProjectByIdResponse struct {
+	ID            int     `json:"id"`
+	Title         string  `json:"title"`
+	Description   string  `json:"description"`
+	ImageUrl      string  `json:"image_url"`
+	ImageFileName string  `json:"image_file_name"`
+	RepositoryUrl *string `json:"repository_url"`
+	Summary       string  `json:"summary"`
+	Status        string  `json:"status"`
+	Slug          string  `json:"slug"`
+	PublishedAt   *string `json:"published_at"`
+	CreatedAt     string  `json:"created_at"`
+}
+
+type BlogStatisticUpdatePublicRequest struct {
+	BlogID      int    `json:"blog_id" binding:"required,gt=0"`
+	StatisticID int    `json:"statistic_id" binding:"required,gt=0"`
+	Likes       *int   `json:"likes" binding:"required"`
+	Views       *int   `json:"views" binding:"required"`
+	Type        string `json:"type" binding:"required,oneof=Blog Project"`
+}
+
+type BlogStatisticUpdatePubblicResponse struct {
+	BlogID      int    `json:"blog_id"`
+	StatisticID int    `json:"statistic_id"`
+	Title       string `json:"title"`
+	Likes       int    `json:"likes"`
+	Views       int    `json:"views"`
+	Type        string `json:"type"`
+}
+
+type BlogStatisticUpdatePublicDTO struct {
+	BlogID      int
+	Title       string
+	StatisticID int
+	Likes       *int
+	Views       *int
+	Type        string
+}
+
+type BlogByIdResponse struct {
+	ID             int     `json:"id"`
+	Title          string  `json:"title"`
+	Description    string  `json:"description"`
+	BannerUrl      string  `json:"banner_url"`
+	BannerFileName string  `json:"banner_file_name"`
+	Status         string  `json:"status"`
+	Slug           string  `json:"slug"`
+	PublishedAt    *string `json:"published_at"`
+	CreatedAt      string  `json:"created_at"`
+}

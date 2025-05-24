@@ -20,6 +20,8 @@ type Service interface {
 	GetPublicTechnologies() ([]TechnologyPublicResponse, error)
 	GetPublicAuthors() ([]AuthorPublicResponse, error)
 	GetPublicExperiences() ([]ExperiencesPublicResponse, error)
+	UpdatePublicProjectStatistic(p ProjectStatisticUpdatePublicRequest) (ProjectStatisticUpdatePubblicResponse, error)
+	UpdatePublicBlogStatistic(p BlogStatisticUpdatePublicRequest) (BlogStatisticUpdatePubblicResponse, error)
 }
 
 type service struct {
@@ -629,4 +631,64 @@ func (s *service) GetPublicAuthors() ([]AuthorPublicResponse, error) {
 	}
 
 	return datas, nil
+}
+
+func (s *service) GetProjectById(id int) (ProjectByIdResponse, error) {
+	data, err := s.repo.FindProjectById(id)
+	if err != nil {
+		return ProjectByIdResponse{}, err
+	}
+	return data, nil
+}
+
+func (s *service) UpdatePublicProjectStatistic(p ProjectStatisticUpdatePublicRequest) (ProjectStatisticUpdatePubblicResponse, error) {
+	project, err := s.GetProjectById(p.ProjectID)
+	if err != nil {
+		return ProjectStatisticUpdatePubblicResponse{}, err
+	}
+
+	payload := ProjectStatisticUpdatePublicDTO{
+		ProjectID:    p.ProjectID,
+		ProjectTitle: project.Title,
+		StatisticID:  p.StatisticID,
+		Likes:        p.Likes,
+		Views:        p.Views,
+		Type:         p.Type,
+	}
+
+	data, err := s.repo.UpdatePublicProjectStatistic(payload)
+	if err != nil {
+		return ProjectStatisticUpdatePubblicResponse{}, err
+	}
+	return data, nil
+}
+
+func (s *service) GetBlogById(id int) (BlogByIdResponse, error) {
+	data, err := s.repo.FindBlogById(id)
+	if err != nil {
+		return BlogByIdResponse{}, err
+	}
+	return data, nil
+}
+
+func (s *service) UpdatePublicBlogStatistic(p BlogStatisticUpdatePublicRequest) (BlogStatisticUpdatePubblicResponse, error) {
+	blog, err := s.GetBlogById(p.BlogID)
+	if err != nil {
+		return BlogStatisticUpdatePubblicResponse{}, err
+	}
+
+	payload := BlogStatisticUpdatePublicDTO{
+		BlogID:      p.BlogID,
+		Title:       blog.Title,
+		StatisticID: p.StatisticID,
+		Likes:       p.Likes,
+		Views:       p.Views,
+		Type:        p.Type,
+	}
+
+	data, err := s.repo.UpdatePublicBlogStatistic(payload)
+	if err != nil {
+		return BlogStatisticUpdatePubblicResponse{}, err
+	}
+	return data, nil
 }
