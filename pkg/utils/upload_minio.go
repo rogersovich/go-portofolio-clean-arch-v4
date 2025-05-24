@@ -46,7 +46,8 @@ func GenerateAdditionalInfo(input UploadFileInput, folder string) (fileName stri
 }
 
 func GenerateMinioClient() (*minio.Client, error) {
-	endpoint := os.Getenv("MINIO_ENDPOINT")
+	endpoint := os.Getenv("MINIO_ENDPOINT_UPLOAD")
+
 	accessKeyID := os.Getenv("MINIO_KEY_ID")
 	secretAccessKey := os.Getenv("MINIO_KEY_SECRET")
 	useSSL := os.Getenv("MINIO_SSL")
@@ -146,7 +147,7 @@ func HandlUploadFile(file *multipart.FileHeader, folderName string) (UploadRespo
 }
 
 func UploadFile(ctx context.Context, input UploadFileInput, folder string) (*UploadResponse, error) {
-	endpoint := os.Getenv("MINIO_ENDPOINT")
+	endpoint := os.Getenv("MINIO_ENDPOINT_VIEW")
 	bucketName := os.Getenv("MINIO_BUCKET")
 
 	// Init client
