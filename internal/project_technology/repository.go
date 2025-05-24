@@ -13,7 +13,7 @@ type Repository interface {
 	CountTechnologiesByIDs(ids []int) (total int, err error)
 	BulkCreateTechnologies(tech_ids []ProjectTechnology, tx *gorm.DB) error
 	FindExistingProjectTechnologies(project_id int) ([]ProjectTechnologyExistingResponse, error)
-	BulkDeleteHard(tech_ids []int, tx *gorm.DB) error
+	BulkHardDeleteTechnology(tech_ids []int, project_id int, tx *gorm.DB) error
 }
 
 type repository struct {
@@ -103,7 +103,7 @@ func (r *repository) FindExistingProjectTechnologies(project_id int) ([]ProjectT
 	return data, err
 }
 
-func (r *repository) BulkDeleteHard(tech_ids []int, tx *gorm.DB) error {
+func (r *repository) BulkHardDeleteTechnology(tech_ids []int, project_id int, tx *gorm.DB) error {
 	var db *gorm.DB
 	if tx != nil {
 		db = tx
@@ -112,10 +112,10 @@ func (r *repository) BulkDeleteHard(tech_ids []int, tx *gorm.DB) error {
 	}
 
 	// Create a raw SQL query to delete records with IDs in the slice
-	query := "DELETE FROM project_technologies WHERE technology_id IN ?"
+	query := "DELETE FROM project_technologies WHERE technology_id IN ? AND project_id = ?"
 
 	// Execute the raw query
-	if err := db.Exec(query, tech_ids).Error; err != nil {
+	if err := db.Exec(query, tech_ids, project_id).Error; err != nil {
 		return err
 	}
 

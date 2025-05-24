@@ -122,7 +122,7 @@ func (s *service) BatchUpdateTechnologies(tech_ids []int, project_id int, tx *go
 		return nil
 	}
 
-	err = s.repo.BulkDeleteHard(existing_tech_ids, tx)
+	err = s.repo.BulkHardDeleteTechnology(existing_tech_ids, project_id, tx)
 	if err != nil {
 		return err
 	}
