@@ -491,6 +491,7 @@ func (s *service) MapProjectRawToResponse(raw ProjectPaginatePublicRaw, projectT
 		RepositoryURL: raw.RepositoryURL,
 		PublishedAt:   raw.PublishedAt,
 		Slug:          raw.Slug,
+		IsHighlight:   raw.IsHighlight,
 	}
 
 	// Mapping the Topics (Assuming topics is an array, you may want to append more topic records here)
@@ -558,6 +559,7 @@ func (s *service) MapSingleProjectRawToResponse(rawData []SingleProjectPublicRaw
 				Summary:       row.Summary,
 				Status:        row.Status,
 				Slug:          row.Slug,
+				IsHighlight:   row.IsHighlight,
 				PublishedAt:   publishedAtPointer,
 				Statistic:     projectStatistic,
 				ContentImages: []ProjectPublicContentImageResponse{},

@@ -212,6 +212,7 @@ type TestimonialPublicResponse struct {
 	Name      string  `json:"name"`
 	Via       *string `json:"via"`
 	Role      *string `json:"role"`
+	Message   *string `json:"message"`
 	WorkingAt *string `json:"working_at"`
 	IsUsed    string  `json:"is_used"`
 	CreatedAt string  `json:"created_at"`
@@ -239,6 +240,7 @@ type ProjectPaginatePublicRaw struct {
 	RepositoryURL *string    `json:"repository_url"`
 	PublishedAt   *time.Time `json:"published_at"`
 	Slug          string     `json:"slug"`
+	IsHighlight   bool       `json:"is_highlight"`
 }
 
 type ProjectTechnologyPublicRaw struct {
@@ -279,6 +281,7 @@ type ProjectPublicResponse struct {
 	ImageFileName string                            `json:"image_file_name"`
 	RepositoryURL *string                           `json:"repository_url"`
 	Slug          string                            `json:"slug"`
+	IsHighlight   bool                              `json:"is_highlight"`
 	PublishedAt   *time.Time                        `json:"published_at"`
 	Technologies  []ProjectTechnologyPublicResponse `json:"technologies"`
 }
@@ -293,6 +296,7 @@ type SingleProjectPublicRaw struct {
 	Summary              string     `json:"summary"`
 	Status               string     `json:"status"`
 	Slug                 string     `json:"slug"`
+	IsHighlight          bool       `json:"is_highlight"`
 	PublishedAt          *time.Time `json:"published_at"`
 	StatisticID          int        `json:"statistic_id"`
 	StatisticLikes       int        `json:"statistic_likes"`
@@ -317,6 +321,7 @@ type SingleProjectPublicResponse struct {
 	Summary       string                              `json:"summary"`
 	Status        string                              `json:"status"`
 	Slug          string                              `json:"slug"`
+	IsHighlight   bool                                `json:"is_highlight"`
 	PublishedAt   *string                             `json:"published_at"`
 	Statistic     *ProjectPublicStatisticResponse     `json:"statistic"`
 	ContentImages []ProjectPublicContentImageResponse `json:"images"`

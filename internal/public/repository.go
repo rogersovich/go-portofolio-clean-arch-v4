@@ -369,7 +369,7 @@ func (r *repository) GetPublicBlogBySlug(slug string) ([]SingleBlogPublicRaw, er
 
 func (r *repository) GetPublicTestimonials() ([]TestimonialPublicResponse, error) {
 	var datas []TestimonialPublicResponse
-	err := r.db.Table("testimonials").Where("deleted_at IS NULL AND is_used = ?", 1).Order("created_at DESC").Scan(&datas).Error
+	err := r.db.Table("testimonials").Where("deleted_at IS NULL AND is_used = ?", 1).Order("updated_at DESC").Scan(&datas).Error
 	return datas, err
 }
 
@@ -400,7 +400,8 @@ func (r *repository) GetRawPublicPaginateProjects(params ProjectPublicParams) ([
 			p.image_file_name,
 			p.repository_url,
 			p.published_at,
-			p.slug
+			p.slug,
+			p.is_highlight
 		FROM projects p
 	`
 
@@ -528,6 +529,7 @@ func (r *repository) GetPublicProjectBySlug(slug string) ([]SingleProjectPublicR
 			p.status,
 			p.slug,
 			p.published_at,
+			p.is_highlight,
 			s.id as statistic_id,
 			s.likes as statistic_likes,
 			s.views as statistic_views,

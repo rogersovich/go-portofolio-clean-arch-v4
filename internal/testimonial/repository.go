@@ -112,6 +112,7 @@ func (r *repository) FindAll(params GetAllTestimonialParams) ([]Testimonial, int
 			name,
 			via,
 			role,
+			message,
 			working_at,
 			is_used,
 			created_at
@@ -159,6 +160,7 @@ func (r *repository) CreateTestimonial(p CreateTestimonialDTO) (Testimonial, err
 		Name:      p.Name,
 		Via:       p.Via,
 		Role:      p.Role,
+		Message:   p.Message,
 		WorkingAt: p.WorkingAt,
 		IsUsed:    p.IsUsed,
 	}
@@ -172,6 +174,7 @@ func (r *repository) UpdateTestimonial(p UpdateTestimonialDTO) error {
 		"name":       p.Name,
 		"via":        p.Via,
 		"role":       p.Role,
+		"message":    p.Message,
 		"working_at": p.WorkingAt,
 		"is_used":    p.IsUsed,
 	}

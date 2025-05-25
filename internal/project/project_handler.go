@@ -180,6 +180,7 @@ func (h *handler) UpdateProject(c *gin.Context) {
 	repository_url := c.PostForm("repository_url")
 	summary := c.PostForm("summary")
 	slug := c.PostForm("slug")
+	is_highlight := c.PostForm("is_highlight") // Y or N
 
 	var technologyIds []ProjectTechUpdatePayload
 	if err := json.Unmarshal([]byte(c.PostForm("technology_ids")), &technologyIds); err != nil {
@@ -212,6 +213,7 @@ func (h *handler) UpdateProject(c *gin.Context) {
 		TechnologyIds: technologyIds,
 		ProjectImages: project_images,
 		Slug:          slug,
+		IsHighlight:   is_highlight,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {

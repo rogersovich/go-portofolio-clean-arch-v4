@@ -100,6 +100,7 @@ func (s *service) GetProjectByIdWithRelations(id int) (ProjectRelationResponse, 
 				RepositoryUrl: row.RepositoryUrl,
 				Summary:       row.Summary,
 				Status:        row.Status,
+				IsHighlight:   row.IsHighlight,
 				PublishedAt:   publishedAtPointer,
 				CreatedAt:     row.CreatedAt.Format("2006-01-02 15:04:05"),
 				StatisticID:   row.StatisticID,
@@ -229,6 +230,7 @@ func (s *service) CreateProject(p CreateProjectRequest) (ProjectResponse, error)
 		Summary:              p.Summary,
 		Status:               status,
 		Slug:                 slugVal,
+		IsHighlight:          false,
 		PublishedAt:          publishedAt,
 	}
 
@@ -371,6 +373,7 @@ func (s *service) UpdateProject(p UpdateProjectRequest) (ProjectUpdateResponse, 
 		Summary:       p.Summary,
 		Status:        status,
 		Slug:          slugVal,
+		IsHighlight:   p.IsHighlight,
 		PublishedAt:   publishedAt,
 	}
 

@@ -132,6 +132,7 @@ func (r *repository) FindAll(params GetAllProjectParams) ([]Project, int, error)
 			summary,
 			status,
 			slug,
+			is_highlight,
 			published_at,
 			created_at
 		FROM projects
@@ -174,6 +175,7 @@ func (r *repository) FindByIdWithRelations(id int) ([]RawProjectRelationResponse
 			p.repository_url, 
 			p.summary, 
 			p.status, 
+			p.is_highlight, 
 			p.published_at,
 			p.created_at,
 			s.id as statistic_id,
@@ -264,6 +266,7 @@ func (r *repository) UpdateProject(p UpdateProjectDTO, tx *gorm.DB) (Project, er
 		Summary:       p.Summary,
 		Status:        p.Status,
 		Slug:          p.Slug,
+		IsHighlight:   p.IsHighlight == "Y",
 		PublishedAt:   p.PublishedAt}
 
 	err := db.Where("ID = ?", p.Id).Updates(&data).Error

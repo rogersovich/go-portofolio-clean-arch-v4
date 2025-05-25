@@ -46,6 +46,7 @@ func (s *service) CreateTestimonial(p CreateTestimonialRequest) (TestimonialResp
 		Name:      p.Name,
 		Via:       p.Via,
 		Role:      p.Role,
+		Message:   p.Message,
 		WorkingAt: p.WorkingAt,
 		IsUsed:    false,
 	}
@@ -68,6 +69,7 @@ func (s *service) UpdateTestimonial(p UpdateTestimonialRequest) error {
 		Name:      p.Name,
 		Via:       p.Via,
 		Role:      p.Role,
+		Message:   p.Message,
 		WorkingAt: p.WorkingAt,
 		IsUsed:    p.IsUsed == "Y",
 	}

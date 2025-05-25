@@ -11,6 +11,7 @@ type Testimonial struct {
 	Name      string  `json:"name"`
 	Via       *string `json:"via"`
 	Role      *string `json:"role"`
+	Message   *string `json:"message"`
 	WorkingAt *string `json:"working_at"`
 	IsUsed    bool    `json:"is_used"`
 	CreatedAt time.Time

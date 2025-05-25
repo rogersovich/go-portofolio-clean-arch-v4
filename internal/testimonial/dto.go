@@ -6,6 +6,7 @@ type CreateTestimonialRequest struct {
 	Name      string  `json:"name" binding:"required"`
 	Via       *string `json:"via"`
 	Role      *string `json:"role"`
+	Message   *string `json:"message"`
 	WorkingAt *string `json:"working_at"`
 }
 
@@ -13,6 +14,7 @@ type CreateTestimonialDTO struct {
 	Name      string  `json:"name"`
 	Via       *string `json:"via"`
 	Role      *string `json:"role"`
+	Message   *string `json:"message"`
 	WorkingAt *string `json:"working_at"`
 	IsUsed    bool    `json:"is_used"`
 }
@@ -22,6 +24,7 @@ type UpdateTestimonialRequest struct {
 	Name      string  `json:"name" binding:"required"`
 	Via       *string `json:"via"`
 	Role      *string `json:"role"`
+	Message   *string `json:"message"`
 	WorkingAt *string `json:"working_at"`
 	IsUsed    string  `json:"is_used" binding:"required,oneof=Y N"`
 }
@@ -31,6 +34,7 @@ type UpdateTestimonialDTO struct {
 	Name      string  `json:"name"`
 	Via       *string `json:"via"`
 	Role      *string `json:"role"`
+	Message   *string `json:"message"`
 	WorkingAt *string `json:"working_at"`
 	IsUsed    bool    `json:"is_used"`
 }
@@ -40,6 +44,7 @@ type TestimonialResponse struct {
 	Name      string  `json:"name"`
 	Via       *string `json:"via"`
 	Role      *string `json:"role"`
+	Message   *string `json:"message"`
 	WorkingAt *string `json:"working_at"`
 	IsUsed    string  `json:"is_used"`
 	CreatedAt string  `json:"created_at"`
@@ -77,6 +82,7 @@ func ToTestimonialResponse(p Testimonial) TestimonialResponse {
 		Name:      p.Name,
 		Via:       p.Via,
 		Role:      p.Role,
+		Message:   p.Message,
 		WorkingAt: p.WorkingAt,
 		IsUsed:    utils.BoolToYN(p.IsUsed),
 		CreatedAt: p.CreatedAt.Format("2006-01-02"),

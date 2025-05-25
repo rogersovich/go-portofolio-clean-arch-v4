@@ -26,6 +26,7 @@ type UpdateProjectRequest struct {
 	Summary       string                     `validate:"required"`
 	IsPublished   string                     `validate:"required,oneof=Y N"`
 	Slug          string                     `validate:"required"`
+	IsHighlight   string                     `validate:"required,oneof=Y N"`
 	TechnologyIds []ProjectTechUpdatePayload `json:"technology_ids" validate:"required,dive"`
 	ProjectImages []string                   `json:"project_images" validate:"required,dive"`
 }
@@ -43,6 +44,7 @@ type CreateProjectDTO struct {
 	Summary              string
 	Status               string
 	Slug                 string
+	IsHighlight          bool
 	PublishedAt          *time.Time
 }
 
@@ -56,6 +58,7 @@ type UpdateProjectDTO struct {
 	Summary       string
 	Status        string
 	Slug          string
+	IsHighlight   string
 	PublishedAt   *time.Time
 }
 
@@ -69,6 +72,7 @@ type ProjectResponse struct {
 	Summary       string  `json:"summary"`
 	Status        string  `json:"status"`
 	Slug          string  `json:"slug"`
+	IsHighlight   bool    `json:"is_highlight"`
 	PublishedAt   *string `json:"published_at"`
 	CreatedAt     string  `json:"created_at"`
 }
@@ -87,6 +91,7 @@ type RawProjectRelationResponse struct {
 	ProjectImgUrl       string     `json:"project_img_url"`
 	Title               string     `json:"title"`
 	Slug                string     `json:"slug"`
+	IsHighlight         bool       `json:"is_highlight"`
 	Description         string     `json:"description"`
 	ImageUrl            string     `json:"image_url"`
 	ImageFileName       string     `json:"image_file_name"`
@@ -107,6 +112,7 @@ type ProjectRelationResponse struct {
 	RepositoryUrl *string                   `json:"repository_url"`
 	Summary       string                    `json:"summary"`
 	Status        string                    `json:"status"`
+	IsHighlight   bool                      `json:"is_highlight"`
 	PublishedAt   *string                   `json:"published_at"`
 	CreatedAt     string                    `json:"created_at"`
 	StatisticID   int                       `json:"statistic_id"`
@@ -226,6 +232,7 @@ func ToProjectResponse(p Project) ProjectResponse {
 		Summary:       p.Summary,
 		Status:        p.Status,
 		Slug:          p.Slug,
+		IsHighlight:   p.IsHighlight,
 		PublishedAt:   publishedAtPointer,
 		CreatedAt:     p.CreatedAt.Format("2006-01-02"),
 	}
