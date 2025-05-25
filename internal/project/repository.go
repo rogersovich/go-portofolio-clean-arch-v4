@@ -256,6 +256,24 @@ func (r *repository) UpdateProject(p UpdateProjectDTO, tx *gorm.DB) (Project, er
 
 	//todo: UPDATE PROJECT
 
+	// Use map to ensure all fields, including IsHighlight (even if false), are updated
+	updateFields := map[string]interface{}{
+		"title":           p.Title,
+		"description":     p.Description,
+		"image_url":       p.ImageUrl,
+		"image_file_name": p.ImageFileName,
+		"repository_url":  p.RepositoryUrl,
+		"summary":         p.Summary,
+		"status":          p.Status,
+		"slug":            p.Slug,
+		"is_highlight":    p.IsHighlight == "Y",
+		"published_at":    p.PublishedAt,
+		"updated_at":      time.Now(),
+	}
+
+	err := db.Model(&Project{}).Where("id = ?", p.Id).Updates(updateFields).Error
+
+	// Fetch the updated project to return
 	data := Project{
 		ID:            p.Id,
 		Title:         p.Title,
@@ -267,15 +285,11 @@ func (r *repository) UpdateProject(p UpdateProjectDTO, tx *gorm.DB) (Project, er
 		Status:        p.Status,
 		Slug:          p.Slug,
 		IsHighlight:   p.IsHighlight == "Y",
-		PublishedAt:   p.PublishedAt}
-
-	err := db.Where("ID = ?", p.Id).Updates(&data).Error
-
-	if err != nil {
-		return Project{}, err
+		PublishedAt:   p.PublishedAt,
+		UpdatedAt:     time.Now(),
 	}
 
-	return data, nil
+	return data, err
 }
 
 func (r *repository) UpdateProjectStatistic(p ProjectStatisticUpdateDTO) (ProjectStatisticUpdateResponse, error) {

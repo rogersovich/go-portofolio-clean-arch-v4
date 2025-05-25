@@ -48,6 +48,7 @@ type TestimonialResponse struct {
 	WorkingAt *string `json:"working_at"`
 	IsUsed    string  `json:"is_used"`
 	CreatedAt string  `json:"created_at"`
+	UpdatedAt string  `json:"updated_at"`
 }
 
 type TestimonialDeleteRequest struct {
@@ -86,5 +87,6 @@ func ToTestimonialResponse(p Testimonial) TestimonialResponse {
 		WorkingAt: p.WorkingAt,
 		IsUsed:    utils.BoolToYN(p.IsUsed),
 		CreatedAt: p.CreatedAt.Format("2006-01-02"),
+		UpdatedAt: p.UpdatedAt.Format("2006-01-02"),
 	}
 }

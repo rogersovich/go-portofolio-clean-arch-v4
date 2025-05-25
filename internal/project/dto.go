@@ -150,6 +150,7 @@ type ProjectUpdateResponse struct {
 	Summary       string  `json:"summary"`
 	Status        string  `json:"status"`
 	Slug          string  `json:"slug"`
+	IsHighlight   bool    `json:"is_highlight"`
 	PublishedAt   *string `json:"published_at"`
 }
 

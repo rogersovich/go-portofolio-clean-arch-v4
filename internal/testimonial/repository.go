@@ -177,6 +177,7 @@ func (r *repository) UpdateTestimonial(p UpdateTestimonialDTO) error {
 		"message":    p.Message,
 		"working_at": p.WorkingAt,
 		"is_used":    p.IsUsed,
+		"updated_at": time.Now(),
 	}
 	err := r.db.Table("testimonials").Where("id = ?", p.ID).Updates(updates).Error
 	if err != nil {

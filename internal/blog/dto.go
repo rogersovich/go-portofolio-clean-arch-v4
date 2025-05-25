@@ -30,6 +30,7 @@ type CreateBlogDTO struct {
 	Status          string
 	PublishedAt     *time.Time
 	Slug            string
+	IsHighlight     bool
 }
 
 type BlogResponse struct {
@@ -44,6 +45,7 @@ type BlogResponse struct {
 	Summary         string  `json:"summary"`
 	Status          string  `json:"status"`
 	Slug            string  `json:"slug"`
+	IsHighlight     bool    `json:"is_highlight"`
 	PublishedAt     *string `json:"published_at"`
 	CreatedAt       string  `json:"created_at"`
 }
@@ -57,6 +59,7 @@ type RawBlogRelationResponse struct {
 	Summary                     string     `json:"summary"`
 	Status                      string     `json:"status"`
 	Slug                        string     `json:"slug"`
+	IsHighlight                 bool       `json:"is_highlight"`
 	PublishedAt                 *time.Time `json:"published_at"`
 	CreatedAt                   time.Time  `json:"created_at"`
 	AuthorID                    int        `json:"author_id"`
@@ -121,6 +124,7 @@ type UpdateBlogRequest struct {
 	Summary         string `validate:"required"`
 	IsPublished     string `validate:"required,oneof=Y N"`
 	Slug            string `validate:"required"`
+	IsHighlight     string `validate:"required,oneof=Y N"`
 }
 
 type UpdateBlogDTO struct {
@@ -136,6 +140,7 @@ type UpdateBlogDTO struct {
 	Summary         string
 	Status          string
 	Slug            string
+	IsHighlight     string
 	PublishedAt     *time.Time
 }
 
@@ -152,6 +157,7 @@ type BlogRelationResponse struct {
 	Summary         string                `json:"summary"`
 	Status          string                `json:"status"`
 	Slug            string                `json:"slug"`
+	IsHighlight     bool                  `json:"is_highlight"`
 	PublishedAt     *string               `json:"published_at"`
 	CreatedAt       string                `json:"created_at"`
 	Author          *BlogAuthorDTO        `json:"author"`
@@ -170,6 +176,7 @@ type BlogUpdateResponse struct {
 	Summary         string `json:"summary"`
 	Status          string `json:"status"`
 	Slug            string `json:"slug"`
+	IsHighlight     bool   `json:"is_highlight"`
 	StatisticID     int    `json:"statistic_id"`
 	ReadingTimeID   int    `json:"reading_time_id"`
 	AuthorID        int    `json:"author_id"`
@@ -208,6 +215,7 @@ func ToBlogResponse(p Blog) BlogResponse {
 		Summary:         p.Summary,
 		Status:          p.Status,
 		Slug:            p.Slug,
+		IsHighlight:     p.IsHighlight,
 		PublishedAt:     publishedAtPointer,
 		CreatedAt:       p.CreatedAt.Format("2006-01-02"),
 	}
@@ -223,6 +231,7 @@ func ToBlogUpdateResponse(p Blog) BlogUpdateResponse {
 		Summary:         p.Summary,
 		Status:          p.Status,
 		Slug:            p.Slug,
+		IsHighlight:     p.IsHighlight,
 		StatisticID:     p.StatisticID,
 		ReadingTimeID:   p.ReadingTimeID,
 		AuthorID:        p.AuthorID,

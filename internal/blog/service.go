@@ -139,6 +139,7 @@ func (s *service) GetBlogByIdWithRelations(id int) (BlogRelationResponse, error)
 				Summary:         row.Summary,
 				Status:          row.Status,
 				Slug:            row.Slug,
+				IsHighlight:     row.IsHighlight,
 				PublishedAt:     publishedAtPointer,
 				CreatedAt:       row.CreatedAt.Format("2006-01-02 15:04:05"),
 				Author:          blogAuthor,
@@ -472,6 +473,7 @@ func (s *service) UpdateBlog(p UpdateBlogRequest) (BlogUpdateResponse, error) {
 		Summary:         p.Summary,
 		Status:          status,
 		Slug:            slugVal,
+		IsHighlight:     p.IsHighlight,
 		PublishedAt:     publishedAt,
 	}
 

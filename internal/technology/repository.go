@@ -166,6 +166,7 @@ func (r *repository) UpdateTechnology(p UpdateTechnologyDTO) error {
 		"logo_file_name":   p.LogoFileName,
 		"is_major":         p.IsMajor,
 		"link":             p.Link,
+		"updated_at":       time.Now(),
 	}
 	err := r.db.Table("technologies").Where("id = ?", p.ID).Updates(updateMap).Error
 	if err != nil {

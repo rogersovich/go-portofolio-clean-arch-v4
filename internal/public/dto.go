@@ -90,6 +90,7 @@ type BlogPublicRaw struct {
 	DescriptionHTML             string     `json:"description_html"`
 	Status                      string     `json:"status"`
 	Slug                        string     `json:"slug"`
+	IsHighlight                 bool       `json:"is_highlight"`
 	PublishedAt                 *time.Time `json:"published_at"`
 	AuthorID                    int        `json:"author_id"`
 	AuthorName                  string     `json:"author_name"`
@@ -154,6 +155,7 @@ type BlogPublicResponse struct {
 	DescriptionHTML string                         `json:"description_html"`
 	Status          string                         `json:"status"`
 	Slug            string                         `json:"slug"`
+	IsHighlight     bool                           `json:"is_highlight"`
 	PublishedAt     *time.Time                     `json:"published_at"`
 	Author          *BlogPublicAuthorResponse      `json:"author"`
 	ReadingTime     *BlogPublicReadingTimeResponse `json:"reading_time"`
@@ -170,6 +172,7 @@ type SingleBlogPublicRaw struct {
 	Summary                     string     `json:"summary"`
 	Status                      string     `json:"status"`
 	Slug                        string     `json:"slug"`
+	IsHighlight                 bool       `json:"is_highlight"`
 	PublishedAt                 *time.Time `json:"published_at"`
 	AuthorID                    int        `json:"author_id"`
 	AuthorName                  string     `json:"author_name"`
@@ -199,6 +202,7 @@ type SingleBlogPublicResponse struct {
 	Summary         string                           `json:"summary"`
 	Status          string                           `json:"status"`
 	Slug            string                           `json:"slug"`
+	IsHighlight     bool                             `json:"is_highlight"`
 	PublishedAt     *string                          `json:"published_at"`
 	Author          *BlogPublicAuthorResponse        `json:"author"`
 	ReadingTime     *BlogPublicReadingTimeResponse   `json:"reading_time"`

@@ -132,6 +132,7 @@ func (r *repository) FindAll(params GetAllBlogParams) ([]Blog, int, error) {
 			banner_file_name,
 			status,
 			slug,
+			is_highlight,
 			published_at,
 			created_at
 		FROM blogs
@@ -183,6 +184,7 @@ func (r *repository) FindByIdWithRelations(id int) ([]RawBlogRelationResponse, e
 			b.published_at,
 			b.status,
 			b.slug,
+			b.is_highlight,
 			b.created_at,
 			a.id as author_id,
 			a.name as author_name,
@@ -244,6 +246,7 @@ func (r *repository) CreateBlog(p CreateBlogDTO, tx *gorm.DB) (Blog, error) {
 		Status:          p.Status,
 		Slug:            p.Slug,
 		PublishedAt:     p.PublishedAt,
+		IsHighlight:     false,
 	}
 
 	err := db.Table("blogs").Create(&data).Error
@@ -258,6 +261,24 @@ func (r *repository) UpdateBlog(p UpdateBlogDTO, tx *gorm.DB) (Blog, error) {
 		db = r.db
 	}
 
+	updateMap := map[string]interface{}{
+		"statistic_id":     p.StatisticID,
+		"reading_time_id":  p.ReadingTimeID,
+		"author_id":        p.AuthorID,
+		"title":            p.Title,
+		"description_html": p.DescriptionHTML,
+		"banner_url":       p.BannerUrl,
+		"banner_file_name": p.BannerFileName,
+		"summary":          p.Summary,
+		"status":           p.Status,
+		"slug":             p.Slug,
+		"is_highlight":     p.IsHighlight == "Y",
+		"published_at":     p.PublishedAt,
+		"updated_at":       time.Now(),
+	}
+
+	err := db.Table("blogs").Where("id = ?", p.ID).Updates(updateMap).Error
+
 	data := Blog{
 		ID:              p.ID,
 		StatisticID:     p.StatisticID,
@@ -270,10 +291,10 @@ func (r *repository) UpdateBlog(p UpdateBlogDTO, tx *gorm.DB) (Blog, error) {
 		Summary:         p.Summary,
 		Status:          p.Status,
 		Slug:            p.Slug,
+		IsHighlight:     p.IsHighlight == "Y",
 		PublishedAt:     p.PublishedAt,
+		UpdatedAt:       time.Now(),
 	}
-
-	err := db.Table("blogs").Where("id = ?", p.ID).Updates(&data).Error
 	return data, err
 }
 

@@ -195,6 +195,7 @@ func (h *handler) UpdateBlog(c *gin.Context) {
 	is_published := c.PostForm("is_published") // Y or N
 	summary := c.PostForm("summary")
 	slug := c.PostForm("slug")
+	is_highlight := c.PostForm("is_highlight") // Y or N
 
 	var topic_ids []UpdateBlogTopicDTO
 	if err := json.Unmarshal([]byte(c.PostForm("topic_ids")), &topic_ids); err != nil {
@@ -227,6 +228,7 @@ func (h *handler) UpdateBlog(c *gin.Context) {
 		ContentImages:   content_images,
 		AuthorID:        author_id,
 		Slug:            slug,
+		IsHighlight:     is_highlight,
 	}
 
 	if verr := utils.ValidateRequest(&req); verr != nil {

@@ -256,6 +256,7 @@ func (r *repository) UpdateExperience(p UpdateExperienceDTO) error {
 		"comp_image_file_name": p.CompImageFileName,
 		"comp_website_url":     p.CompWebsiteUrl,
 		"is_current":           p.IsCurrent,
+		"updated_at":           time.Now(),
 	}
 
 	err := r.db.Table("experiences").Where("id = ?", p.ID).Updates(updateMap).Error

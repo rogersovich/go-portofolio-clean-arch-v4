@@ -18,6 +18,7 @@ type Blog struct {
 	Summary         string `json:"summary"`
 	Status          string `json:"status"`
 	Slug            string `json:"slug"`
+	IsHighlight     bool   `json:"is_highlight"`
 	PublishedAt     *time.Time
 	CreatedAt       time.Time
 	UpdatedAt       time.Time

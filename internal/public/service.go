@@ -238,6 +238,7 @@ func (s *service) MapBlogRawToResponse(raw BlogPublicRaw, blogTopics []BlogTopic
 		DescriptionHTML: raw.DescriptionHTML,
 		Status:          raw.Status,
 		Slug:            raw.Slug,
+		IsHighlight:     raw.IsHighlight,
 		PublishedAt:     raw.PublishedAt,
 	}
 
@@ -365,6 +366,7 @@ func (s *service) MapSingleBlogRawToResponse(rawData []SingleBlogPublicRaw) Sing
 				Summary:         row.Summary,
 				Status:          row.Status,
 				Slug:            row.Slug,
+				IsHighlight:     row.IsHighlight,
 				Author:          blogAuthor,
 				ReadingTime:     blogReadingTime,
 				Statistic:       blogStatistic,
