@@ -6,8 +6,8 @@ services:
     image: my-go-be-portfolio:latest
     container_name: go_be_portfolio
     restart: unless-stopped
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
     ports:
       - "4000:4000"
     environment:
@@ -25,5 +25,5 @@ services:
       - MINIO_KEY_ID=${MINIO_KEY_ID}
       - MINIO_KEY_SECRET=${MINIO_KEY_SECRET}
       - MINIO_SSL=${MINIO_SSL}
-    env_file:
-      - .env
+    # env_file:
+    #   - .env
