@@ -10,5 +10,20 @@ services:
       - "host.docker.internal:host-gateway"
     ports:
       - "4000:4000"
+    environment:
+      - APP_ENV=${APP_ENV}
+      - APP_PORT=${APP_PORT}
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - JWT_SECRET=${JWT_SECRET}
+      - MINIO_BUCKET=${MINIO_BUCKET}
+      - MINIO_ENDPOINT_UPLOAD=${MINIO_ENDPOINT_UPLOAD}
+      - MINIO_ENDPOINT_VIEW=${MINIO_ENDPOINT_VIEW}
+      - MINIO_KEY_ID=${MINIO_KEY_ID}
+      - MINIO_KEY_SECRET=${MINIO_KEY_SECRET}
+      - MINIO_SSL=${MINIO_SSL}
     env_file:
       - .env
