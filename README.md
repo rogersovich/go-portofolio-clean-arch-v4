@@ -166,6 +166,6 @@ Contributions are highly appreciated\! If you have ideas for improvements, new f
 
 ## License
 
-This project is licensed under the [MIT License](https://www.google.com/search?q=LICENSE).
+This project is licensed under the [MIT License](LICENSE).
 
 -----
