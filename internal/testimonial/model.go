@@ -7,14 +7,15 @@ import (
 )
 
 type Testimonial struct {
-	ID        int     `json:"id" gorm:"primaryKey"`
-	Name      string  `json:"name"`
-	Via       *string `json:"via"`
-	Role      *string `json:"role"`
-	Message   *string `json:"message"`
-	WorkingAt *string `json:"working_at"`
-	IsUsed    bool    `json:"is_used"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	ID         int     `json:"id" gorm:"primaryKey"`
+	Name       string  `json:"name"`
+	Via        *string `json:"via"`
+	Role       *string `json:"role"`
+	Message    *string `json:"message"`
+	WorkingAt  *string `json:"working_at"`
+	CompanyURL *string `json:"company_url"`
+	IsUsed     bool    `json:"is_used"`
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+	DeletedAt  gorm.DeletedAt `gorm:"index"`
 }

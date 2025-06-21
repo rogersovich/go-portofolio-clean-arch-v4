@@ -64,12 +64,13 @@ type ProfilePublicResponse struct {
 }
 
 type BlogPublicParams struct {
-	Page   int    `binding:"required"`
-	Limit  int    `binding:"required"`
-	Order  string `binding:"required,oneof=published_at id views created_at updated_at"`
-	Sort   string `binding:"required"`
-	Search string
-	Topics []int
+	Page             int    `binding:"required"`
+	Limit            int    `binding:"required"`
+	Order            string `binding:"required,oneof=published_at id views created_at updated_at"`
+	Sort             string `binding:"required"`
+	isHighlightParam string
+	Search           string
+	Topics           []int
 }
 
 type BlogPaginatePublicRaw struct {
@@ -212,14 +213,15 @@ type SingleBlogPublicResponse struct {
 }
 
 type TestimonialPublicResponse struct {
-	ID        int     `json:"id"`
-	Name      string  `json:"name"`
-	Via       *string `json:"via"`
-	Role      *string `json:"role"`
-	Message   *string `json:"message"`
-	WorkingAt *string `json:"working_at"`
-	IsUsed    string  `json:"is_used"`
-	CreatedAt string  `json:"created_at"`
+	ID         int     `json:"id"`
+	Name       string  `json:"name"`
+	Via        *string `json:"via"`
+	Role       *string `json:"role"`
+	Message    *string `json:"message"`
+	WorkingAt  *string `json:"working_at"`
+	CompanyURL *string `json:"company_url"`
+	IsUsed     string  `json:"is_used"`
+	CreatedAt  string  `json:"created_at"`
 }
 
 type TopicPublicResponse struct {
@@ -228,11 +230,12 @@ type TopicPublicResponse struct {
 }
 
 type ProjectPublicParams struct {
-	Page   int    `binding:"required"`
-	Limit  int    `binding:"required"`
-	Order  string `binding:"required,oneof=published_at created_at id updated_at"`
-	Sort   string `binding:"required"`
-	Search string
+	Page             int    `binding:"required"`
+	Limit            int    `binding:"required"`
+	Order            string `binding:"required,oneof=published_at created_at id updated_at"`
+	Sort             string `binding:"required"`
+	isHighlightParam string
+	Search           string
 }
 
 type ProjectPaginatePublicRaw struct {

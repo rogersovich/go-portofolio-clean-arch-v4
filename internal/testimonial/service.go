@@ -43,12 +43,13 @@ func (s *service) GetTestimonialById(id int) (TestimonialResponse, error) {
 
 func (s *service) CreateTestimonial(p CreateTestimonialRequest) (TestimonialResponse, error) {
 	payload := CreateTestimonialDTO{
-		Name:      p.Name,
-		Via:       p.Via,
-		Role:      p.Role,
-		Message:   p.Message,
-		WorkingAt: p.WorkingAt,
-		IsUsed:    false,
+		Name:       p.Name,
+		Via:        p.Via,
+		Role:       p.Role,
+		Message:    p.Message,
+		WorkingAt:  p.WorkingAt,
+		CompanyURL: p.CompanyURL,
+		IsUsed:     false,
 	}
 
 	data, err := s.repo.CreateTestimonial(payload)
@@ -65,13 +66,14 @@ func (s *service) UpdateTestimonial(p UpdateTestimonialRequest) error {
 	}
 
 	payload := UpdateTestimonialDTO{
-		ID:        p.ID,
-		Name:      p.Name,
-		Via:       p.Via,
-		Role:      p.Role,
-		Message:   p.Message,
-		WorkingAt: p.WorkingAt,
-		IsUsed:    p.IsUsed == "Y",
+		ID:         p.ID,
+		Name:       p.Name,
+		Via:        p.Via,
+		Role:       p.Role,
+		Message:    p.Message,
+		WorkingAt:  p.WorkingAt,
+		CompanyURL: p.CompanyURL,
+		IsUsed:     p.IsUsed == "Y",
 	}
 
 	err = s.repo.UpdateTestimonial(payload)

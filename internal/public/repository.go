@@ -144,6 +144,12 @@ func (r *repository) GetRawPublicPaginateBlogs(params BlogPublicParams) ([]BlogP
 		queryArgs = append(queryArgs, "%"+params.Search+"%", "%"+params.Search+"%")
 	}
 
+	//? field "is_highlight"
+	if params.isHighlightParam == "Y" {
+		whereClauses = append(whereClauses, "b.is_highlight = ?")
+		queryArgs = append(queryArgs, 1)
+	}
+
 	//? Construct the WHERE clause
 	whereSQL := ""
 	if len(whereClauses) != 0 {
@@ -419,6 +425,12 @@ func (r *repository) GetRawPublicPaginateProjects(params ProjectPublicParams) ([
 	if params.Search != "" {
 		whereClauses = append(whereClauses, "(p.title LIKE ? OR p.summary LIKE ?)")
 		queryArgs = append(queryArgs, "%"+params.Search+"%", "%"+params.Search+"%")
+	}
+
+	//? field "is_highlight"
+	if params.isHighlightParam == "Y" {
+		whereClauses = append(whereClauses, "p.is_highlight = ?")
+		queryArgs = append(queryArgs, 1)
 	}
 
 	//? Construct the WHERE clause

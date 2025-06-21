@@ -114,6 +114,7 @@ func (r *repository) FindAll(params GetAllTestimonialParams) ([]Testimonial, int
 			role,
 			message,
 			working_at,
+			company_url,
 			is_used,
 			created_at
 		FROM testimonials
@@ -157,12 +158,13 @@ func (r *repository) FindByMultiId(ids []int) ([]Testimonial, error) {
 
 func (r *repository) CreateTestimonial(p CreateTestimonialDTO) (Testimonial, error) {
 	data := Testimonial{
-		Name:      p.Name,
-		Via:       p.Via,
-		Role:      p.Role,
-		Message:   p.Message,
-		WorkingAt: p.WorkingAt,
-		IsUsed:    p.IsUsed,
+		Name:       p.Name,
+		Via:        p.Via,
+		Role:       p.Role,
+		Message:    p.Message,
+		WorkingAt:  p.WorkingAt,
+		CompanyURL: p.CompanyURL,
+		IsUsed:     p.IsUsed,
 	}
 	err := r.db.Create(&data).Error
 	return data, err
@@ -170,14 +172,15 @@ func (r *repository) CreateTestimonial(p CreateTestimonialDTO) (Testimonial, err
 
 func (r *repository) UpdateTestimonial(p UpdateTestimonialDTO) error {
 	updates := map[string]interface{}{
-		"id":         p.ID,
-		"name":       p.Name,
-		"via":        p.Via,
-		"role":       p.Role,
-		"message":    p.Message,
-		"working_at": p.WorkingAt,
-		"is_used":    p.IsUsed,
-		"updated_at": time.Now(),
+		"id":          p.ID,
+		"name":        p.Name,
+		"via":         p.Via,
+		"role":        p.Role,
+		"message":     p.Message,
+		"working_at":  p.WorkingAt,
+		"company_url": p.CompanyURL,
+		"is_used":     p.IsUsed,
+		"updated_at":  time.Now(),
 	}
 	err := r.db.Table("testimonials").Where("id = ?", p.ID).Updates(updates).Error
 	if err != nil {

@@ -26,6 +26,7 @@ func (h *handler) GetPublicBlogs(c *gin.Context) {
 	order := c.DefaultQuery("order", "id")
 	search := c.DefaultQuery("search", "")
 	topicParam := c.DefaultQuery("topics", "")
+	isHighlightParam := c.DefaultQuery("is_highlight", "N")
 
 	// Remove the square brackets from the parameter (e.g., "[1,2]" -> "1,2")
 	topicParam = strings.Trim(topicParam, "[]")
@@ -46,12 +47,13 @@ func (h *handler) GetPublicBlogs(c *gin.Context) {
 
 	// Call the GetAllPublicAuthors method of the service layer
 	params := BlogPublicParams{
-		Page:   page,
-		Limit:  limit,
-		Sort:   sort,
-		Order:  order,
-		Search: search,
-		Topics: topicIDs,
+		Page:             page,
+		Limit:            limit,
+		Sort:             sort,
+		Order:            order,
+		Search:           search,
+		Topics:           topicIDs,
+		isHighlightParam: isHighlightParam,
 	}
 
 	// Validate the params using the binding tags
@@ -103,13 +105,15 @@ func (h *handler) GetPublicProjects(c *gin.Context) {
 	sort := c.DefaultQuery("sort", "ASC")
 	order := c.DefaultQuery("order", "id")
 	search := c.DefaultQuery("search", "")
+	isHighlightParam := c.DefaultQuery("is_highlight", "N")
 
 	params := ProjectPublicParams{
-		Page:   page,
-		Limit:  limit,
-		Sort:   sort,
-		Order:  order,
-		Search: search,
+		Page:             page,
+		Limit:            limit,
+		Sort:             sort,
+		Order:            order,
+		Search:           search,
+		isHighlightParam: isHighlightParam,
 	}
 
 	// Validate the params using the binding tags

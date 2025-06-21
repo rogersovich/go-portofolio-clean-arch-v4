@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"fmt"
+	"log"
 	"mime/multipart"
 	"net/url"
 	"os"
@@ -138,6 +139,7 @@ func HandlUploadFile(file *multipart.FileHeader, folderName string) (UploadRespo
 		FileHeader: file,
 		File:       openedFile,
 	}
+
 	uploadedData, err := UploadFile(context.Background(), payload, folderName)
 	if err != nil {
 		return UploadResponse{}, err
@@ -164,6 +166,7 @@ func UploadFile(ctx context.Context, input UploadFileInput, folder string) (*Upl
 		ContentType: contentType,
 	})
 	if err != nil {
+		log.Println("err:", err)
 		return nil, err
 	}
 
